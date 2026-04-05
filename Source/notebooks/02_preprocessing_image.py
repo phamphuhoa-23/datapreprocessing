@@ -306,7 +306,10 @@ print(f"\nANOVA: F={f_val:.2f}, p={p_val:.2e}, η²={eta2_resize:.3f}")
 # - Đường cong SSIM tăng nhanh từ 64 $\to$ 128, chậm lại từ 128 $\to$ 224
 # - k-NN accuracy **gần như không đổi** qua các kích thước (~0.35)
 #   - 256x256 thậm chí thấp nhất do curse of dimensionality
-# - **Lựa chọn: 224x224** – giữ chất lượng cao nhất, phù hợp input pretrained CNNs
+# - **Lựa chọn: 128x128** – k-NN accuracy cao và mất mát thông tin ở mức trung bình
+#   - 128x128 đạt SSIM tốt (mất mát vừa phải) đồng thời k-NN accuracy ngang ngửa 224x224
+#   - 224x224 chỉ cải thiện SSIM thêm ~5% nhưng tăng feature dimension 3× → không đáng
+#   - 128x128 là điểm cân bằng tối ưu giữa chất lượng ảnh và hiệu quả tính toán
 
 # %% [markdown]
 # ---
@@ -379,14 +382,14 @@ for cs_name, evr in pca_results.items():
 # ### Ablation: k-NN accuracy theo color space
 
 # %%
-# k-NN accuracy theo color space (resize 64x64 để feature vector ngắn)
+# k-NN accuracy theo color space (resize 128x128 — kích thước đã chọn từ ablation trên)
 cs_knn_samples = load_sample(n_per_class=50)
 
 cs_knn_results = {}
 for cs_name, convert_fn in COLOR_SPACES.items():
     X, y = [], []
     for img, cls in cs_knn_samples:
-        converted = convert_fn(cv2.resize(img, (64, 64)))
+        converted = convert_fn(cv2.resize(img, (128, 128)))
         if converted.ndim == 2:
             converted = converted[:, :, np.newaxis]
         X.append(converted.reshape(-1).astype(np.float32) / 255.0)
@@ -523,21 +526,7 @@ plt.suptitle("Phân bố pixel sau mỗi phương pháp Normalization", fontsize
 plt.tight_layout()
 plt.show()
 
-# %%
-# Ảnh mẫu trước/sau normalization
-sample_img = norm_samples[0][0]
-fig, axes = plt.subplots(1, len(NORM_METHODS), figsize=(18, 3.5))
-for idx, (method, norm_fn) in enumerate(NORM_METHODS.items()):
-    normed = norm_fn(sample_img)
-    # Rescale to [0,1] cho hiển thị
-    display = (normed - normed.min()) / (normed.max() - normed.min() + 1e-8)
-    display = np.clip(display, 0, 1)
-    axes[idx].imshow(display)
-    axes[idx].set_title(method, fontsize=9)
-    axes[idx].axis('off')
-plt.suptitle("Ảnh mẫu sau mỗi phương pháp Normalization", fontsize=13)
-plt.tight_layout()
-plt.show()
+
 
 # %% [markdown]
 # ### Ablation: k-NN accuracy theo normalization
