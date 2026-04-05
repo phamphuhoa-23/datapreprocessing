@@ -31,4 +31,5 @@ Chạy script tải tự động:
 `
 python download_text_dataset.py
 `
-File agtruth_full.parquet sẽ được tạo trong data/text/raw/.
+File 
+agtruth_full.parquet sẽ được tạo trong data/text/raw/.
