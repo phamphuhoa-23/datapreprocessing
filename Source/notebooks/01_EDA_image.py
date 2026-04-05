@@ -222,8 +222,14 @@ plt.show()
 # %% [markdown]
 # ### 1.4 So sánh chi tiết pixel distribution - 5 lớp đại diện
 #
-# Chọn 5 lớp ở vị trí **min, Q1, median, Q3, max** theo overall pixel mean
-# để đại diện cho toàn bộ dải giá trị.
+# Để minh họa sự đa dạng phân bố pixel, chọn **5 lớp đại diện** ở 5 vị trí
+# phân vị đều nhau (min, Q1, median, Q3, max) trên thang overall pixel mean.
+# Cách chọn này đảm bảo bao phủ toàn bộ dải giá trị một cách có hệ thống,
+# không thiên vị lớp cụ thể nào, và phản ánh cả hai cực cảnh sáng (cloud, desert)
+# lẫn cảnh tối (forest, mountain).
+#
+# > **Lưu ý:** Phần này chỉ là **visualization** để quan sát định tính.
+# > Kiểm định thống kê chính thức được thực hiện trên **toàn bộ 45 lớp** ở mục 1.5.
 
 # %%
 sorted_classes = df_pixel.index.tolist()
@@ -267,7 +273,8 @@ plt.show()
 #   - Chạy ANOVA song song để đối chiếu
 # - **Levene test** kiểm tra variance đồng nhất giữa các lớp
 # - $\eta^2$ đo effect size (lớp giải thích bao nhiêu % variance)
-# - **Post-hoc Mann-Whitney** chỉ trên 5 lớp đại diện (Bonferroni correction)
+# - **Post-hoc Mann-Whitney** trên 5 lớp đại diện (đại diện 5 phân vị rải đều)
+#   để minh họa cặp nào khác biệt — giảm số cặp kiểm định từ 990 xuống 10 (Bonferroni)
 
 # %%
 # Kiểm định KW/ANOVA/η² cho từng kênh R, G, B
@@ -349,15 +356,25 @@ print(f"Ảnh/lớp (train): min={df_counts['train'].min()}, max={df_counts['tra
 print(f"Ảnh/lớp (test):  min={df_counts['test'].min()}, max={df_counts['test'].max()}, mean={df_counts['test'].mean():.0f}")
 
 # %%
-fig, ax = plt.subplots(figsize=(18, 5))
-x = np.arange(len(classes))
-ax.bar(x - 0.2, df_counts['train'], 0.4, label='Train', color='#4C72B0')
-ax.bar(x + 0.2, df_counts['test'], 0.4, label='Test', color='#DD8452')
-ax.set_xticks(x)
-ax.set_xticklabels(classes, rotation=90, fontsize=7)
-ax.set_ylabel("Số ảnh")
-ax.set_title("Phân bố số ảnh theo lớp")
-ax.legend()
+# Pie chart: phân bố train và test theo lớp
+colors = [plt.cm.tab20c(i / len(classes)) for i in range(len(classes))]
+fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+
+for ax, split, counts_col in zip(axes,
+                                  ['Train (27,000 ảnh ‒ 600/lớp)', 'Test (4,500 ảnh ‒ 100/lớp)'],
+                                  ['train', 'test']):
+    wedges, texts = ax.pie(
+        df_counts[counts_col],
+        labels=classes,
+        colors=colors,
+        startangle=90,
+        textprops={'fontsize': 5},
+        wedgeprops={'linewidth': 0.5, 'edgecolor': 'white'}
+    )
+    ax.set_title(split, fontsize=11)
+
+plt.suptitle("Phân bố số ảnh theo lớp — Dataset cân bằng hoàn hảo (45 lớp bằng nhau)",
+             fontsize=12)
 plt.tight_layout()
 plt.show()
 
