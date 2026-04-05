@@ -1,0 +1,36 @@
+# Explicitly excluded directory (per project requirements)
+DataMining-Lab1/
+
+# Dataset images and archives (large binary files)
+Source/Dataset/
+
+# Generated/processed data outputs
+Source/notebooks/data/
+
+# Raw tabular data (very large CSV files)
+data/tabular/raw/
+data/tabular/processed/
+data/tabular/output/
+
+# Text dataset raw and processed
+data/text/raw/
+data/text/processed/
+
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
