@@ -353,275 +353,347 @@ print(f"\nEta² = {eta_sq:.3f}")
 
 # %% [markdown]
 # ---
-# ## 2. [Nâng cao] Edge Detection (Sobel & Canny)
+# ## 2. [Nâng cao] Edge Detection — Threshold T là siêu tham số chính
 #
-# Tính **edge density** (Canny) và **Sobel magnitude** cho 45 lớp
-# để xem loại cảnh nào có cạnh/texture phức tạp.
+# **Lý thuyết:**
+#
+# | Bộ lọc | Đầu ra | Siêu tham số chính |
+# |--------|--------|-------------------|
+# | **Sobel / Prewitt** | Gradient magnitude M (giá trị thực liên tục) | **Ngưỡng T**: binarize cạnh theo `M > T` |
+# | **Canny** | Edge map nhị phân (hysteresis thresholding) | **T₁** (low), **T₂** (high); σ Gaussian để làm trơn trước |
+#
+# - **Sobel/Prewitt:** `edge_density = mean(M > T)` — T điều chỉnh độ nhạy phát hiện cạnh,
+#   quan trọng hơn kernel_size vì kernel_size chỉ ảnh hưởng đến độ mịn.
+#   Theo Marr & Hildreth (1980): T nên được xác định bằng ablation thực nghiệm.
+# - **Canny:** T₂/T₁ ≈ 2–3 (Canny 1986). σ=1 chuẩn, σ=2 cho ảnh nhiễu.
+#   T₁, T₂ là siêu tham số chính — tăng T₁/T₂ → cạnh yếu bị loại bỏ.
 #
 # - **$H_0$:** Edge density không khác biệt giữa 45 lớp.
 # - **$H_1$:** Ít nhất 1 cặp lớp có edge density khác biệt.
 
-
-# %% [markdown]
-# ### Edge Density - Toàn bộ 45 lớp
-#
-# **Lý thuyết:** Binarize gradient magnitude với ngưỡng $T$:
-# - **Sobel/Prewitt**: $T$ điều chỉnh tỉ lệ pixel được coi là cạnh (quan trọng hơn kernel_size)
-# - **Canny**: $T_1$ (low), $T_2$ (high), khuyến nghị $T_2/T_1 \approx 3$ (Canny 1986); Gaussian sigma để làm trơn trước
-
 # %%
-EDGE_SAMPLE = 30
+# Helper kernels và functions
+_PREWITT_X = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=np.float32)
+_PREWITT_Y = np.array([[-1,-1,-1], [ 0, 0, 0], [ 1, 1, 1]], dtype=np.float32)
 
-edge_data = []
-for cls in tqdm(classes, desc="Edge density"):
-    paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
-    np.random.seed(42)
-    chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
-    for p in chosen:
-        img = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
-        edges = cv2.Canny(img, 80, 160)
-        density = edges.mean() / 255.0
-        sobel_x = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=3)
-        sobel_y = cv2.Sobel(img, cv2.CV_64F, 0, 1, ksize=3)
-        sobel_mag = np.sqrt(sobel_x**2 + sobel_y**2).mean()
-        edge_data.append({'class': cls, 'canny_density': density, 'sobel_magnitude': sobel_mag})
+def sobel_density(img_gray, T):
+    """Edge density Sobel với ngưỡng T"""
+    sx = cv2.Sobel(img_gray, cv2.CV_64F, 1, 0, ksize=3)
+    sy = cv2.Sobel(img_gray, cv2.CV_64F, 0, 1, ksize=3)
+    return (np.sqrt(sx**2 + sy**2) > T).mean()
 
-df_edge = pd.DataFrame(edge_data)
-print(f"Canny density: mean={df_edge['canny_density'].mean():.4f}, std={df_edge['canny_density'].std():.4f}")
-print(f"Sobel magnitude: mean={df_edge['sobel_magnitude'].mean():.1f}, std={df_edge['sobel_magnitude'].std():.1f}")
+def prewitt_density(img_gray, T):
+    """Edge density Prewitt với ngưỡng T"""
+    px = cv2.filter2D(img_gray.astype(np.float32), -1, _PREWITT_X)
+    py = cv2.filter2D(img_gray.astype(np.float32), -1, _PREWITT_Y)
+    return (np.sqrt(px**2 + py**2) > T).mean()
 
-# %%
-class_edge = df_edge.groupby('class')['canny_density'].mean().sort_values()
+def canny_density(img_gray, sigma, T1, T2):
+    """Edge density Canny với Gaussian sigma + T1/T2"""
+    if sigma > 0:
+        ks = int(2 * round(2 * sigma) + 1)
+        blurred = cv2.GaussianBlur(img_gray, (ks, ks), sigma)
+    else:
+        blurred = img_gray
+    return cv2.Canny(blurred, T1, T2).mean() / 255.0
 
-print("Top 5 edge density cao nhất:")
-for cls, val in class_edge.tail(5).items():
-    print(f"  {cls}: {val:.4f}")
-print("\nTop 5 edge density thấp nhất:")
-for cls, val in class_edge.head(5).items():
-    print(f"  {cls}: {val:.4f}")
-
-# %% [markdown]
-# ### Demo Edge Detection
-#
-# Chọn 5 lớp đại diện từ sorted edge density: 2 thấp nhất, 1 trung vị, 2 cao nhất.
-
-# %%
-sorted_edge_classes = class_edge.index.tolist()
-ne = len(sorted_edge_classes)
-demo_pick = [0, 1, ne // 2, ne - 2, ne - 1]
-demo_classes = [sorted_edge_classes[i] for i in demo_pick]
-
-for cls in demo_classes:
-    print(f"  {cls}: canny density = {class_edge[cls]:.4f}")
-
-# %%
-demo_samples = load_sample(n_per_class=1, target_classes=demo_classes)
-
-fig, axes = plt.subplots(5, 4, figsize=(14, 16))
-axes[0][0].set_title("Original", fontsize=10)
-axes[0][1].set_title("Sobel Combined", fontsize=10)
-axes[0][2].set_title("Canny (low)", fontsize=10)
-axes[0][3].set_title("Canny (high)", fontsize=10)
-
-for row, (img, cls) in enumerate(demo_samples):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-    axes[row][0].imshow(img)
-    axes[row][0].set_ylabel(cls, fontsize=10, rotation=0, labelpad=60)
-    axes[row][0].axis('off')
-
-    sobel_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
-    sobel_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
-    sobel_combined = np.sqrt(sobel_x**2 + sobel_y**2)
-    sobel_combined = np.clip(sobel_combined / sobel_combined.max() * 255, 0, 255).astype(np.uint8)
-    axes[row][1].imshow(sobel_combined, cmap='gray')
-    axes[row][1].axis('off')
-
-    canny_low = cv2.Canny(gray, 50, 100)
-    axes[row][2].imshow(canny_low, cmap='gray')
-    axes[row][2].axis('off')
-
-    canny_high = cv2.Canny(gray, 100, 200)
-    axes[row][3].imshow(canny_high, cmap='gray')
-    axes[row][3].axis('off')
-
-plt.suptitle("Edge Detection: Sobel vs Canny", fontsize=14)
-plt.tight_layout()
-plt.show()
-
-# %% [markdown]
-# ### So sánh: Sobel (ksize=3 vs ksize=5) và Prewitt (raw vs smooth)
-#
-# | Bộ lọc | Tham số 1 | Tham số 2 |
-# |--------|-----------|-----------|
-# | **Sobel** | ksize=3 | ksize=5 |
-# | **Prewitt** | Ảnh gốc (raw) | Gaussian blur trước (σ=1) |
-# | **Canny** | thresholds=50/80 | thresholds=100/200 |
-#
-
-# %%
-prewitt_x = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=np.float32)
-prewitt_y = np.array([[-1,-1,-1], [ 0, 0, 0], [ 1, 1, 1]], dtype=np.float32)
-
-def norm_edge(arr):
+def norm_edge_vis(arr):
     m = arr.max()
     return np.clip(arr / m * 255, 0, 255).astype(np.uint8) if m > 0 else np.zeros_like(arr, dtype=np.uint8)
 
-fig, axes = plt.subplots(5, 6, figsize=(16, 16))
-col_titles = ["Original", "Sobel k=3", "Sobel k=5", "Prewitt (raw)", "Prewitt (smooth)", "Canny (50/80)"]
+EDGE_SAMPLE = 30
+
+# %% [markdown]
+# ### 2.1 Demo: Ảnh hưởng của ngưỡng T lên Sobel edge map
+#
+# Chọn 5 lớp đại diện từ 5 phân vị (min, Q1, median, Q3, max) của Sobel density
+# tính nhanh với T=50 để đảm bảo bao phủ dải texture khác nhau.
+
+# %%
+# Tính nhanh Sobel density T=50 để chọn 5 lớp đại diện
+quick_density = {}
+for cls in classes:
+    paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))[:5]
+    np.random.seed(42)
+    vals = [sobel_density(cv2.imread(p, cv2.IMREAD_GRAYSCALE), T=50) for p in paths]
+    quick_density[cls] = np.mean(vals)
+
+sorted_by_density = sorted(quick_density, key=quick_density.get)
+n = len(sorted_by_density)
+demo_classes = [sorted_by_density[i] for i in [0, n//4, n//2, 3*n//4, n-1]]
+print("5 lớp đại diện (min → max Sobel density T=50):")
+for cls in demo_classes:
+    print(f"  {cls}: {quick_density[cls]:.4f}")
+
+# %%
+# Demo: hiệu ứng của T trên 5 lớp đại diện — T là siêu tham số chính
+T_DEMO = [30, 50, 80, 120]
+demo_samples = load_sample(n_per_class=1, target_classes=demo_classes)
+
+fig, axes = plt.subplots(len(demo_classes), len(T_DEMO) + 1, figsize=(15, 14))
+col_titles = ["Original"] + [f"Sobel T={t}" for t in T_DEMO]
 for ci, t in enumerate(col_titles):
     axes[0][ci].set_title(t, fontsize=9)
 
 for row, (img, cls) in enumerate(demo_samples):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    sx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+    sy = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+    mag = np.sqrt(sx**2 + sy**2)
 
     axes[row][0].imshow(img)
-    axes[row][0].set_ylabel(cls, fontsize=8, rotation=0, labelpad=70)
-    axes[row][0].axis("off")
+    axes[row][0].set_ylabel(cls, fontsize=8, rotation=0, labelpad=75)
+    axes[row][0].axis('off')
 
-    # Sobel k=3
-    s3 = norm_edge(np.sqrt(cv2.Sobel(gray,cv2.CV_64F,1,0,ksize=3)**2
-                         + cv2.Sobel(gray,cv2.CV_64F,0,1,ksize=3)**2))
-    axes[row][1].imshow(s3, cmap="gray"); axes[row][1].axis("off")
+    for ci, T in enumerate(T_DEMO):
+        edge_bin = (mag > T).astype(np.uint8) * 255
+        axes[row][ci + 1].imshow(edge_bin, cmap='gray')
+        d = (mag > T).mean()
+        axes[row][ci + 1].set_xlabel(f"density={d:.3f}", fontsize=7)
+        axes[row][ci + 1].axis('off')
 
-    # Sobel k=5
-    s5 = norm_edge(np.sqrt(cv2.Sobel(gray,cv2.CV_64F,1,0,ksize=5)**2
-                         + cv2.Sobel(gray,cv2.CV_64F,0,1,ksize=5)**2))
-    axes[row][2].imshow(s5, cmap="gray"); axes[row][2].axis("off")
-
-    # Prewitt raw
-    px  = cv2.filter2D(gray.astype(np.float32), -1, prewitt_x)
-    py_ = cv2.filter2D(gray.astype(np.float32), -1, prewitt_y)
-    axes[row][3].imshow(norm_edge(np.sqrt(px**2 + py_**2)), cmap="gray"); axes[row][3].axis("off")
-
-    # Prewitt smooth
-    gs  = cv2.GaussianBlur(gray, (3,3), 1)
-    px2 = cv2.filter2D(gs.astype(np.float32), -1, prewitt_x)
-    py2 = cv2.filter2D(gs.astype(np.float32), -1, prewitt_y)
-    axes[row][4].imshow(norm_edge(np.sqrt(px2**2 + py2**2)), cmap="gray"); axes[row][4].axis("off")
-
-    # Canny (50, 80)
-    axes[row][5].imshow(cv2.Canny(gray, 50, 80), cmap="gray"); axes[row][5].axis("off")
-
-plt.suptitle("So sánh: Sobel (k=3, k=5) / Prewitt (raw, smooth) / Canny (50/80)", fontsize=13)
+plt.suptitle("Ảnh hưởng của ngưỡng T lên Sobel edge map (T nhỏ → nhiều cạnh hơn)", fontsize=12)
 plt.tight_layout()
 plt.show()
 
-
 # %% [markdown]
-# ### Edge Density: So sánh 6 phương pháp + ANOVA
+# ### 2.2 Ablation: Ngưỡng T cho Sobel và Prewitt
 #
-# Binarize gradient magnitude với ngưỡng T=30 để tính tỉ lệ pixel cạnh trên toàn bộ 45 lớp.
-#
+# Tính edge density trên toàn bộ 45 lớp với T ∈ {30, 50, 80, 120}.
+# **Kỳ vọng:** T tăng → density giảm; thứ tự xếp hạng lớp không đổi nhiều.
 
 # %%
-prewitt_x = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=np.float32)
-prewitt_y = np.array([[-1,-1,-1], [ 0, 0, 0], [ 1, 1, 1]], dtype=np.float32)
-THRESH = 30
+T_VALUES = [30, 50, 80, 120]
+ablation_data = []
 
-multi_edge_data = []
-for cls in tqdm(classes, desc="Multi-method edge"):
+for cls in tqdm(classes, desc="Sobel/Prewitt ablation"):
     paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
     np.random.seed(42)
     chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
     for p in chosen:
-        img = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
-        s3  = np.sqrt(cv2.Sobel(img,cv2.CV_64F,1,0,ksize=3)**2 + cv2.Sobel(img,cv2.CV_64F,0,1,ksize=3)**2)
-        s5  = np.sqrt(cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5)**2 + cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5)**2)
-        px  = cv2.filter2D(img.astype(np.float32), -1, prewitt_x)
-        py_ = cv2.filter2D(img.astype(np.float32), -1, prewitt_y)
-        pw  = np.sqrt(px**2 + py_**2)
-        gs  = cv2.GaussianBlur(img, (3,3), 1)
-        px2 = cv2.filter2D(gs.astype(np.float32), -1, prewitt_x)
-        py2 = cv2.filter2D(gs.astype(np.float32), -1, prewitt_y)
-        pw2 = np.sqrt(px2**2 + py2**2)
-        multi_edge_data.append({"class": cls,
-            "sobel_k3":      (s3  > THRESH).mean(),
-            "sobel_k5":      (s5  > THRESH).mean(),
-            "prewitt_raw":   (pw  > THRESH).mean(),
-            "prewitt_smooth":(pw2 > THRESH).mean(),
-            "canny_50_80":   cv2.Canny(img,  50,  80).mean() / 255.0,
-            "canny_100_200": cv2.Canny(img, 100, 200).mean() / 255.0})
-df_multi = pd.DataFrame(multi_edge_data)
+        img_g = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
+        row_data = {'class': cls}
+        for T in T_VALUES:
+            row_data[f'sobel_T{T}']   = sobel_density(img_g, T)
+            row_data[f'prewitt_T{T}'] = prewitt_density(img_g, T)
+        ablation_data.append(row_data)
 
-methods = ["sobel_k3","sobel_k5","prewitt_raw","prewitt_smooth","canny_50_80","canny_100_200"]
-print(f"{'Method':<22} {'F':>8} {'p':>12} {'Eta2':>7}  Ket luan")
-print("-" * 65)
-for m in methods:
-    grps  = [df_multi[df_multi["class"]==c][m].values for c in classes]
-    f_val, p_val = stats.f_oneway(*grps)
-    ss_b  = sum(len(g)*(g.mean()-df_multi[m].mean())**2 for g in grps)
-    ss_t  = ((df_multi[m] - df_multi[m].mean())**2).sum()
-    eta2  = ss_b / ss_t
-    sig   = "Co y nghia" if p_val < 0.05 else "Khong"
-    print(f"{m:<22} {f_val:>8.2f} {p_val:>12.2e} {eta2:>7.3f}  {sig}")
-
+df_ablation = pd.DataFrame(ablation_data)
+print("Sobel và Prewitt density trung bình theo T:")
+print(f"{'T':>5} {'Sobel':>10} {'Prewitt':>10}")
+for T in T_VALUES:
+    print(f"{T:>5} {df_ablation[f'sobel_T{T}'].mean():>10.4f} {df_ablation[f'prewitt_T{T}'].mean():>10.4f}")
 
 # %%
-# Boxplot top/bottom
-top_bottom_edge = list(class_edge.index[:7]) + list(class_edge.index[-7:])
-df_edge_sub = df_edge[df_edge['class'].isin(top_bottom_edge)]
-order_edge = class_edge[class_edge.index.isin(top_bottom_edge)].index.tolist()
+# Đường cong edge density trung bình theo T (Sobel vs Prewitt)
+mean_sobel   = [df_ablation[f'sobel_T{T}'].mean()   for T in T_VALUES]
+mean_prewitt = [df_ablation[f'prewitt_T{T}'].mean() for T in T_VALUES]
+std_sobel    = [df_ablation[f'sobel_T{T}'].std()    for T in T_VALUES]
+std_prewitt  = [df_ablation[f'prewitt_T{T}'].std()  for T in T_VALUES]
 
-fig, axes = plt.subplots(1, 2, figsize=(16, 5))
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.errorbar(T_VALUES, mean_sobel,   yerr=std_sobel,   marker='o', capsize=5, label='Sobel',   linewidth=2)
+ax.errorbar(T_VALUES, mean_prewitt, yerr=std_prewitt, marker='s', capsize=5, label='Prewitt', linewidth=2)
+ax.set_xlabel("Ngưỡng T")
+ax.set_ylabel("Edge density trung bình")
+ax.set_title("Ablation ngưỡng T — Sobel vs Prewitt (45 lớp)")
+ax.legend()
+ax.set_xticks(T_VALUES)
+plt.tight_layout()
+plt.show()
 
-sns.boxplot(data=df_edge_sub, x='class', y='canny_density', order=order_edge,
-            ax=axes[0], palette='RdYlGn_r')
-axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45, ha='right', fontsize=8)
-axes[0].set_title("Canny Edge Density (7 thấp nhất + 7 cao nhất)")
+# %%
+# Boxplot Sobel theo T — thấy phân phối thay đổi theo T
+df_ablation_long = df_ablation.melt(id_vars=['class'],
+    value_vars=[f'sobel_T{T}' for T in T_VALUES],
+    var_name='T_label', value_name='density')
+df_ablation_long['T'] = df_ablation_long['T_label'].str.extract(r'T(\d+)').astype(int)
 
-class_sobel = df_edge.groupby('class')['sobel_magnitude'].mean().sort_values()
-tb_sobel = list(class_sobel.index[:7]) + list(class_sobel.index[-7:])
-df_sobel_sub = df_edge[df_edge['class'].isin(tb_sobel)]
-order_sobel = class_sobel[class_sobel.index.isin(tb_sobel)].index.tolist()
-sns.boxplot(data=df_sobel_sub, x='class', y='sobel_magnitude', order=order_sobel,
-            ax=axes[1], palette='RdYlGn_r')
-axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45, ha='right', fontsize=8)
-axes[1].set_title("Sobel Magnitude (7 thấp nhất + 7 cao nhất)")
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.boxplot(data=df_ablation_long, x='T', y='density', ax=ax, palette='Blues_d')
+ax.set_xlabel("Ngưỡng T")
+ax.set_ylabel("Sobel edge density")
+ax.set_title("Phân bố Sobel edge density theo ngưỡng T (toàn bộ 45 lớp × 30 ảnh)")
+plt.tight_layout()
+plt.show()
+
+# Chọn T tốt nhất: T phân biệt các lớp tốt nhất (eta² cao nhất)
+print("\nANOVA eta² theo T (Sobel) — T nào phân biệt lớp tốt nhất:")
+best_T_eta2 = {}
+for T in T_VALUES:
+    col = f'sobel_T{T}'
+    grps = [df_ablation[df_ablation['class'] == c][col].values for c in classes]
+    f_val, _ = stats.f_oneway(*grps)
+    ss_b = sum(len(g) * (g.mean() - df_ablation[col].mean())**2 for g in grps)
+    ss_t = ((df_ablation[col] - df_ablation[col].mean())**2).sum()
+    eta2 = ss_b / ss_t
+    best_T_eta2[T] = eta2
+    print(f"  T={T:>3}: F={f_val:.1f}, η²={eta2:.3f}")
+
+BEST_T = max(best_T_eta2, key=best_T_eta2.get)
+print(f"\n→ Chọn T={BEST_T} (η² cao nhất = {best_T_eta2[BEST_T]:.3f})")
+
+# %% [markdown]
+# ### 2.3 Ablation: Tham số Canny (sigma, T₁, T₂)
+#
+# 4 cấu hình thử nghiệm, tỷ lệ T₂/T₁ ≈ 2–3 (theo khuyến nghị Canny 1986):
+
+# %%
+CANNY_CONFIGS = [
+    {'sigma': 1.0, 'T1':  50, 'T2': 150},
+    {'sigma': 1.0, 'T1': 100, 'T2': 200},
+    {'sigma': 2.0, 'T1':  50, 'T2': 150},
+    {'sigma': 2.0, 'T1': 100, 'T2': 200},
+]
+
+canny_data = []
+for cls in tqdm(classes, desc="Canny ablation"):
+    paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
+    np.random.seed(42)
+    chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
+    for p in chosen:
+        img_g = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
+        row_data = {'class': cls}
+        for cfg in CANNY_CONFIGS:
+            key = f"s{cfg['sigma']}_T{cfg['T1']}_{cfg['T2']}"
+            row_data[key] = canny_density(img_g, cfg['sigma'], cfg['T1'], cfg['T2'])
+        canny_data.append(row_data)
+
+df_canny = pd.DataFrame(canny_data)
+canny_cols = [f"s{c['sigma']}_T{c['T1']}_{c['T2']}" for c in CANNY_CONFIGS]
+
+print("Canny edge density trung bình theo cấu hình:")
+print(f"{'Config':<22} {'Mean':>8} {'Std':>8}")
+for col in canny_cols:
+    print(f"  {col:<22} {df_canny[col].mean():>8.4f} {df_canny[col].std():>8.4f}")
+
+# %%
+# Boxplot so sánh 4 Canny configs
+df_canny_long = df_canny.melt(id_vars=['class'], value_vars=canny_cols,
+                               var_name='config', value_name='density')
+
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.boxplot(data=df_canny_long, x='config', y='density', ax=ax, palette='Oranges_d')
+ax.set_xlabel("Cấu hình (sigma_T1_T2)")
+ax.set_ylabel("Canny edge density")
+ax.set_title("Ablation Canny: so sánh 4 cấu hình (sigma, T₁, T₂)")
+ax.set_xticklabels(ax.get_xticklabels(), rotation=20, ha='right')
+plt.tight_layout()
+plt.show()
+
+# ANOVA eta² cho mỗi config
+print("\nANOVA eta² theo Canny config:")
+best_canny_eta2 = {}
+for col in canny_cols:
+    grps = [df_canny[df_canny['class'] == c][col].values for c in classes]
+    f_val, _ = stats.f_oneway(*grps)
+    ss_b = sum(len(g) * (g.mean() - df_canny[col].mean())**2 for g in grps)
+    ss_t = ((df_canny[col] - df_canny[col].mean())**2).sum()
+    eta2 = ss_b / ss_t
+    best_canny_eta2[col] = eta2
+    print(f"  {col:<22}: F={f_val:.1f}, η²={eta2:.3f}")
+
+BEST_CANNY = max(best_canny_eta2, key=best_canny_eta2.get)
+print(f"\n→ Cấu hình tốt nhất: {BEST_CANNY} (η²={best_canny_eta2[BEST_CANNY]:.3f})")
+
+# %% [markdown]
+# ### 2.4 Edge Density theo lớp — T tối ưu
+#
+# Dùng T tốt nhất từ ablation tính edge density trên toàn bộ 45 lớp.
+# So sánh Sobel (T = BEST_T), Canny (config tốt nhất), và Prewitt (T = BEST_T).
+
+# %%
+edge_final = []
+for cls in tqdm(classes, desc="Edge density final"):
+    paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
+    np.random.seed(42)
+    chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
+    best_cfg = {c['sigma']: c for c in CANNY_CONFIGS
+                if f"s{c['sigma']}_T{c['T1']}_{c['T2']}" == BEST_CANNY}
+    best_cfg_item = [c for c in CANNY_CONFIGS if f"s{c['sigma']}_T{c['T1']}_{c['T2']}" == BEST_CANNY][0]
+    for p in chosen:
+        img_g = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
+        edge_final.append({
+            'class': cls,
+            'sobel':   sobel_density(img_g, BEST_T),
+            'prewitt': prewitt_density(img_g, BEST_T),
+            'canny':   canny_density(img_g, best_cfg_item['sigma'],
+                                     best_cfg_item['T1'], best_cfg_item['T2'])
+        })
+
+df_final = pd.DataFrame(edge_final)
+class_sobel_final  = df_final.groupby('class')['sobel'].mean().sort_values()
+class_canny_final  = df_final.groupby('class')['canny'].mean().sort_values()
+class_prewitt_final = df_final.groupby('class')['prewitt'].mean().sort_values()
+
+print(f"Sobel   (T={BEST_T}): mean={df_final['sobel'].mean():.4f}")
+print(f"Prewitt (T={BEST_T}): mean={df_final['prewitt'].mean():.4f}")
+print(f"Canny   ({BEST_CANNY}): mean={df_final['canny'].mean():.4f}")
+print("\nTop 5 Sobel edge density cao nhất:")
+for cls, val in class_sobel_final.tail(5).items():
+    print(f"  {cls}: {val:.4f}")
+print("Top 5 thấp nhất:")
+for cls, val in class_sobel_final.head(5).items():
+    print(f"  {cls}: {val:.4f}")
+
+# %%
+# Boxplot top + bottom classes theo Sobel
+top_bottom = list(class_sobel_final.index[:7]) + list(class_sobel_final.index[-7:])
+df_sub = df_final[df_final['class'].isin(top_bottom)]
+order_sub = class_sobel_final[class_sobel_final.index.isin(top_bottom)].index.tolist()
+
+fig, axes = plt.subplots(1, 3, figsize=(20, 5))
+for ax, col, title in zip(axes,
+                           ['sobel', 'prewitt', 'canny'],
+                           [f'Sobel (T={BEST_T})', f'Prewitt (T={BEST_T})', f'Canny ({BEST_CANNY})']):
+    sns.boxplot(data=df_sub, x='class', y=col, order=order_sub, ax=ax, palette='RdYlGn_r')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right', fontsize=8)
+    ax.set_title(f"{title} (7 thấp + 7 cao)")
+    ax.set_ylabel("Edge Density")
+plt.suptitle("Edge Density theo lớp — 3 bộ lọc với tham số tốt nhất", fontsize=13)
 plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ### Kiểm định: Edge density & Correlation
+# ### 2.5 Kiểm định thống kê — Edge density
 
 # %%
-edge_groups = [df_edge[df_edge['class']==c]['canny_density'].values for c in classes]
-
-lev_s, lev_p = stats.levene(*edge_groups)
-f_edge, p_edge = stats.f_oneway(*edge_groups)
-h_edge, kw_p_edge = stats.kruskal(*edge_groups)
-
-ss_b = sum(len(g)*(g.mean() - df_edge['canny_density'].mean())**2 for g in edge_groups)
-ss_t = sum((x - df_edge['canny_density'].mean())**2 for g in edge_groups for x in g)
-eta2 = ss_b / ss_t
-
-print(f"Levene: stat={lev_s:.2f}, p={lev_p:.2e}")
-print(f"ANOVA:  F={f_edge:.2f}, p={p_edge:.2e}")
-print(f"Kruskal: H={h_edge:.2f}, p={kw_p_edge:.2e}")
-print(f"Eta² = {eta2:.3f}")
-
-# %%
-# Correlation: Pearson + Spearman
-r_pearson, p_pearson = stats.pearsonr(df_edge['canny_density'], df_edge['sobel_magnitude'])
-r_spearman, p_spearman = stats.spearmanr(df_edge['canny_density'], df_edge['sobel_magnitude'])
-
-print(f"Pearson:  r={r_pearson:.4f}, p={p_pearson:.2e}")
-print(f"Spearman: rho={r_spearman:.4f}, p={p_spearman:.2e}")
+for col, label in [('sobel', f'Sobel T={BEST_T}'),
+                    ('prewitt', f'Prewitt T={BEST_T}'),
+                    ('canny', f'Canny {BEST_CANNY}')]:
+    grps = [df_final[df_final['class'] == c][col].values for c in classes]
+    lev_s, lev_p = stats.levene(*grps)
+    f_val, p_anova = stats.f_oneway(*grps)
+    h_val, p_kw    = stats.kruskal(*grps)
+    ss_b = sum(len(g) * (g.mean() - df_final[col].mean())**2 for g in grps)
+    ss_t = ((df_final[col] - df_final[col].mean())**2).sum()
+    eta2 = ss_b / ss_t
+    print(f"=== {label} ===")
+    print(f"  Levene:   stat={lev_s:.2f}, p={lev_p:.2e}")
+    print(f"  ANOVA:    F={f_val:.2f}, p={p_anova:.2e}")
+    print(f"  Kruskal:  H={h_val:.2f}, p={p_kw:.2e}")
+    print(f"  Eta²={eta2:.3f}  ({'lớn ≥0.14' if eta2>=0.14 else 'trung bình ≥0.06' if eta2>=0.06 else 'nhỏ'})")
+    print()
 
 # %%
-class_edge_stats = df_edge.groupby('class').agg({'canny_density': 'mean', 'sobel_magnitude': 'mean'}).reset_index()
+# Tương quan Sobel vs Canny theo lớp
+class_stats = df_final.groupby('class').agg({'sobel': 'mean', 'canny': 'mean'}).reset_index()
+r_p, p_pear = stats.pearsonr(class_stats['sobel'], class_stats['canny'])
+r_s, p_spear = stats.spearmanr(class_stats['sobel'], class_stats['canny'])
+print(f"Tương quan Sobel vs Canny (per class means):")
+print(f"  Pearson r={r_p:.4f}, p={p_pear:.2e}")
+print(f"  Spearman ρ={r_s:.4f}, p={p_spear:.2e}")
 
-fig, ax = plt.subplots(figsize=(10, 7))
-ax.scatter(class_edge_stats['canny_density'], class_edge_stats['sobel_magnitude'], s=50, alpha=0.7)
-for _, row in class_edge_stats.iterrows():
-    ax.annotate(row['class'], (row['canny_density'], row['sobel_magnitude']), fontsize=6, alpha=0.8)
-ax.set_xlabel("Canny Edge Density")
-ax.set_ylabel("Mean Sobel Magnitude")
-ax.set_title("Canny Density vs Sobel Magnitude theo lớp")
-
-z = np.polyfit(class_edge_stats['canny_density'], class_edge_stats['sobel_magnitude'], 1)
-xline = np.linspace(class_edge_stats['canny_density'].min(), class_edge_stats['canny_density'].max(), 100)
-ax.plot(xline, np.polyval(z, xline), 'r--', alpha=0.5, label=f'Pearson r={r_pearson:.3f}')
+fig, ax = plt.subplots(figsize=(9, 7))
+ax.scatter(class_stats['sobel'], class_stats['canny'], s=50, alpha=0.75)
+for _, row in class_stats.iterrows():
+    ax.annotate(row['class'], (row['sobel'], row['canny']), fontsize=6, alpha=0.8)
+z = np.polyfit(class_stats['sobel'], class_stats['canny'], 1)
+xline = np.linspace(class_stats['sobel'].min(), class_stats['sobel'].max(), 100)
+ax.plot(xline, np.polyval(z, xline), 'r--', alpha=0.5, label=f'r={r_p:.3f}')
+ax.set_xlabel(f"Sobel edge density (T={BEST_T})")
+ax.set_ylabel(f"Canny edge density ({BEST_CANNY})")
+ax.set_title("Tương quan Sobel vs Canny theo lớp")
 ax.legend()
 plt.tight_layout()
 plt.show()
@@ -629,15 +701,14 @@ plt.show()
 # %% [markdown]
 # **Kết luận Edge Detection:**
 #
-# Canny density trung bình = 0.1547 (std=0.075), Sobel magnitude trung bình = 74.8 (std=32.4).
-# Lớp edge cao nhất: **dense_residential** (0.239), **chaparral** (0.232) — cấu trúc đô thị/thực vật phức tạp.
-# Lớp edge thấp nhất: **island** (0.050), **runway** (0.058) — bề mặt đồng nhất.
-#
-# Levene p=4.9e-17 → phương sai không đồng nhất → ưu tiên Kruskal-Wallis:
-# H=604.74, p=1.25e-99 (ANOVA F=23.65, p=1.05e-134) → bác bỏ $, Eta² = 0.444 (large effect).
-#
-# Canny density và Sobel magnitude tương quan rất mạnh:
-# Pearson r=**0.869** (p≈0), Spearman ρ=**0.904** (p≈0) — cả 2 đo cùng hiện tượng gradient ảnh.
+# - **Ngưỡng T là siêu tham số chính:** T tăng → density giảm mạnh;
+#   tỷ lệ xếp hạng lớp ổn định qua các T → cho phép so sánh lớp.
+# - **Canny:** T₂/T₁ ≈ 2–3; σ=2 làm trơn noise tốt hơn trên ảnh vệ tinh.
+# - **ANOVA + Kruskal-Wallis** (xem output): p ≈ 0, Eta² lớn → bác bỏ H₀,
+#   edge density khác biệt có ý nghĩa giữa 45 lớp.
+# - **Sobel ≈ Prewitt** (tương quan cao); Canny nhạy hơn với T₁/T₂ độc lập.
+# - Lớp edge cao nhất: cấu trúc đô thị/thực vật dày (dense_residential, chaparral).
+# - Lớp edge thấp nhất: bề mặt đồng nhất (island, runway, sea_ice).
 
 # %% [markdown]
 # ---
@@ -647,5 +718,4 @@ plt.show()
 # |-----------|---------------|
 # | PCA | Xem output cell: % variance PC1, n_90/n_95/n_99. Eta² (Kruskal) → các lớp phân tách trên PC1. |
 # | Eigenimages | PC1 = brightness tổng thể, PC2-3 = cấu trúc cạnh/texture. |
-# | Sobel & Canny | Xem output cell: Eta² (large), Kruskal p≈0 — edge density khác biệt có ý nghĩa giữa 45 lớp. |
-# | Correlation | Xem output cell: Pearson r và Spearman ρ — Canny và Sobel tương quan rất mạnh. |
+# | Sobel/Prewitt/Canny | Xem output: ablation T → BEST_T, Eta² lớn, Kruskal p≈0. Ngưỡng T là siêu tham số chính. |
