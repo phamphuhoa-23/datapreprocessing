@@ -19,4 +19,18 @@ Nhận xét juputext text data
 thế quái nào vẫn thiếu plot lên cái số ký tự (số từ, số câu thì có nhưng số ký tụ thì không)
 
 
+[NEW FEEDBACK]
+
+Jupytext 01 ----
+Phần pixel: kiểm định với 5 lớp đại diện ở phần pixel, hơi awkard, why 5 lớp này, không nói rõ, kiểm định hơi kỳ hmm
+
+Phần class imbalance: Vẽ cái pie chart thay vì bar chart như hiện tại
+
+Phần chọn kích thước resize, có lẽ nên chọn 128x128 vì nó có KNN cao và độ mất mát thông tin ở mức trung bình
+
+Phần chuyển đổi không gian màu nên sài ảnh 128x128 như được chọn lựa ở trên, kết quả thay đổi dẫn đến nhận xét, phân tích kêt luận không còn chính xác
+
+Phần chuẩn hóa có thể bỏ cell mà visualize cái ảnh trước và sau chuẩn hóa
+
+Phần Sobel Canny gì đó chưa chỉnh gì hết, làm sai hết rồi, haiz xóa code đọc lại đề rồi làm (chú ý ngưỡng mới là siêu tham số chính)
 
