@@ -13,3 +13,8 @@ torch
 Pillow
 scipy
 imagehash
+imbalanced-learn
+statsmodels
+category_encoders
+missingno
+umap-learn

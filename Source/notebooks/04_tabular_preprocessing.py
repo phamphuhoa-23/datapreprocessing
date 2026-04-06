@@ -1358,6 +1358,18 @@ print(f"\n-> Ngoại lai được xác nhận bởi cả IQR + IF: "
 # 4. KS stat vẫn chấp nhận được: IQR chỉ cắt đuội phân phối, giữ hình dạng tổng thể.
 
 # %%
+def apply_iqr_clip(df, cols, factor=1.5):
+    """Giới hạn (clip) giá trị cột về [Q1 - factor*IQR, Q3 + factor*IQR].
+    Thay vì xóa dòng, giữ lại nhưng cap giá trị — bảo toàn số lượng mẫu."""
+    df = df.copy()
+    for col in cols:
+        if col not in df.columns:
+            continue
+        Q1, Q3 = df[col].quantile(0.25), df[col].quantile(0.75)
+        IQR = Q3 - Q1
+        df[col] = df[col].clip(lower=Q1 - factor * IQR, upper=Q3 + factor * IQR)
+    return df
+
 clip_cols = [c for c in outlier_cols if c != 'isFraud']
 train = apply_iqr_clip(train, clip_cols)
 print(f"\n-> Đã áp dụng IQR clipping trên {len(clip_cols)} cột số của train")
@@ -2025,6 +2037,288 @@ try:
     ax.legend(markerscale=3)
     plt.tight_layout()
     plt.savefig(os.path.join(OUTPUT_DIR, 'fig_12_umap.png'), dpi=100, bbox_inches='tight')
+    plt.show()
+    print("  → UMAP hoàn thành.")
+except ImportError:
+    print("  umap-learn chưa cài — bỏ qua UMAP. (pip install umap-learn)")
+except Exception as _umap_err:
+    print(f"  UMAP lỗi: {_umap_err}")
+
+# %% [markdown]
+# ### Tổng hợp kết quả Feature Selection – Lựa chọn cuối
+#
+# | Phương pháp | Số đặc trưng | Cơ sở đánh giá |
+# |---|---|---|
+# | Filter – ANOVA Top20 | 20 | F-statistic so với target |
+# | Filter – MI Top20 | 20 | Mutual Information (phi tuyến) |
+# | Filter – Union(3) | ~40-60 | Hợp tất cả filter methods |
+# | Model – RF Top20 | 20 | Gini importance |
+# | Model – GB Top20 | 20 | Gradient Boosting importance |
+# | RFE(LR) best-n | best_rfe_n | 5-fold CV F1 tối đa |
+#
+# **Chiến lược chọn cuối:** Union RF+GB top-20 (kết hợp 2 model-based biện hộ nhất),
+# bổ sung thêm đặc trưng từ top-ANOVA để đảm bảo coverage.
+
+# %%
+print("\n" + "=" * 60)
+print("TỔNG HỢP FEATURE SELECTION – LỰA CHỌN CUỐI")
+print("=" * 60)
+
+# Tổng hợp số lượng đặc trưng từ mỗi level
+fs_summary_counts = {
+    'Filter – ANOVA Top20'        : len(top_anova_feats),
+    'Filter – MI Top20'           : len(top_mi_feats),
+    'Filter – Union(3 methods)'   : len(filter_union_feats),
+    'Model – RF Top20'            : len(top_rf_feats),
+    'Model – GB Top20'            : len(top_gb_feats),
+    f'RFE(LR) n={best_rfe_n}'     : best_rfe_n,
+}
+for label, cnt in fs_summary_counts.items():
+    print(f"  {label:<35}: {cnt} đặc trưng")
+
+print(f"\n→ RFE tốt nhất: n_features={best_rfe_n}, 5-fold CV F1={rfe_f1_scores[best_rfe_n]:.4f}")
+
+# Lựa chọn cuối: union RF + GB để kết hợp 2 model-based approaches
+FINAL_FEATURES = list(set(top_rf_feats) | set(top_gb_feats))
+# Loại các cột không còn tồn tại trong train (sau encoding)
+FINAL_FEATURES = [c for c in FINAL_FEATURES if c in train.columns]
+winner = 'RF+GB Union (model-based)'
+print(f"\n→ FINAL FEATURE SET [{winner}]: {len(FINAL_FEATURES)} đặc trưng")
+print(f"  Ví dụ: {FINAL_FEATURES[:5]}")
+
+# %%
+# RFE F1 progression chart (§4e — CV F1-score chart theo số lượng đặc trưng)
+fig, ax = plt.subplots(figsize=(8, 4))
+ns_rfe = sorted(rfe_f1_scores.keys())
+f1s_rfe = [rfe_f1_scores[n] for n in ns_rfe]
+ax.plot(ns_rfe, f1s_rfe, marker='o', color='steelblue', linewidth=2, markersize=8)
+ax.axvline(best_rfe_n, color='red', linestyle='--', alpha=0.7,
+           label=f'Best n={best_rfe_n} (F1={rfe_f1_scores[best_rfe_n]:.4f})')
+for n, f1 in zip(ns_rfe, f1s_rfe):
+    ax.annotate(f'{f1:.3f}', (n, f1), textcoords='offset points', xytext=(0, 8),
+                ha='center', fontsize=9)
+ax.set_xlabel('Số lượng đặc trưng (k)')
+ax.set_ylabel('5-fold CV F1 score')
+ax.set_title('RFE – F1 Score theo Số Lượng Đặc Trưng (Logistic Regression)', fontsize=12)
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_DIR, 'fig_13_rfe_f1_curve.png'), dpi=100, bbox_inches='tight')
+plt.show()
+
+# %% [markdown]
+# ---
+# ## 2.2.3f. Xử lý mất cân bằng lớp — SMOTE / ADASYN / Random Under-sampling
+#
+# Dataset IEEE-CIS Fraud Detection có tỷ lệ fraud rất thấp (~3.5%), gây ra
+# **class imbalance**: mô hình có xu hướng dự đoán tất cả là Normal và đạt accuracy cao
+# nhưng F1(Fraud) thấp.
+#
+# ### Các phương pháp xử lý
+#
+# | Phương pháp | Cơ chế | Sinh dữ liệu mới? |
+# |---|---|---|
+# | **Không xử lý (baseline)** | Train trực tiếp | Không |
+# | **SMOTE** | Tạo synthetic minority samples theo K-NN interpolation | Có |
+# | **ADASYN** | Như SMOTE nhưng tập trung vào vùng khó học | Có |
+# | **Random Under-sampling (RUS)** | Giảm majority class ngẫu nhiên | Không |
+#
+# ### Nguyên lý SMOTE:
+# $$x_{new} = x_i + \lambda \cdot (x_{knn} - x_i), \quad \lambda \sim \text{Uniform}(0, 1)$$
+#
+# ### Quy tắc an toàn:
+# > **Chỉ áp dụng resampling trên tập TRAIN.** Test set phải phản ánh phân phối thực (imbalanced).
+# > Resampling trên test làm kết quả P/R/F1 không đúng thực tế triển khai.
+#
+# **Đánh giá:** Precision, Recall, **F1-macro**, **AUC-ROC** trên val set (không resampled).
+
+# %%
+from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (precision_score, recall_score,
+                              f1_score, roc_auc_score, classification_report)
+
+# Sử dụng FINAL_FEATURES để đảm bảo đủ đặc trưng và không có NaN
+fs_cols_clean = [c for c in FINAL_FEATURES if c in train.columns and train[c].dtype != object]
+X_imb = train[fs_cols_clean].fillna(0).values
+y_imb = train['isFraud'].values
+
+fraud_count  = int(y_imb.sum())
+normal_count = int((y_imb == 0).sum())
+imbalance_ratio = normal_count / fraud_count
+
+print(f"Phân phối lớp trong tập train:")
+print(f"  isFraud=0 (Normal): {normal_count:,}  ({normal_count/(normal_count+fraud_count):.2%})")
+print(f"  isFraud=1 (Fraud):  {fraud_count:,}  ({fraud_count/(normal_count+fraud_count):.2%})")
+print(f"  Imbalance ratio: {imbalance_ratio:.1f}x  (Normal / Fraud)")
+print(f"  Số đặc trưng: {X_imb.shape[1]}")
+
+# Phân chia train/val theo tỉ lệ 80/20 (stratified để giữ tỷ lệ fraud)
+# ⚠️ QUAN TRỌNG: chỉ resampling trên X_tr, y_tr – KHÔNG trên X_val, y_val
+X_tr, X_val, y_tr, y_val = train_test_split(
+    X_imb, y_imb, test_size=0.20, random_state=SEED, stratify=y_imb
+)
+print(f"\nSplit: train_sub={len(X_tr):,}  |  val={len(X_val):,}")
+print(f"Tỷ lệ Fraud trong val (không resampled): {y_val.mean():.4f}")
+
+# %%
+# So sánh 4 chiến lược trên LR baseline
+resampling_configs = {
+    'No Resampling (baseline)' : (X_tr, y_tr),
+}
+
+# SMOTE
+try:
+    sm = SMOTE(random_state=SEED, k_neighbors=min(5, fraud_count - 1))
+    X_sm, y_sm = sm.fit_resample(X_tr, y_tr)
+    resampling_configs['SMOTE'] = (X_sm, y_sm)
+    print(f"SMOTE:  {int((y_sm==1).sum()):,} Fraud / {int((y_sm==0).sum()):,} Normal")
+except Exception as e:
+    print(f"SMOTE lỗi: {e}")
+
+# ADASYN
+try:
+    ada = ADASYN(random_state=SEED, n_neighbors=min(5, fraud_count - 1))
+    X_ada, y_ada = ada.fit_resample(X_tr, y_tr)
+    resampling_configs['ADASYN'] = (X_ada, y_ada)
+    print(f"ADASYN: {int((y_ada==1).sum()):,} Fraud / {int((y_ada==0).sum()):,} Normal")
+except Exception as e:
+    print(f"ADASYN lỗi: {e}")
+
+# Random Under-sampling
+rus = RandomUnderSampler(random_state=SEED)
+X_rus, y_rus = rus.fit_resample(X_tr, y_tr)
+resampling_configs['Random Under-sampling'] = (X_rus, y_rus)
+print(f"RUS:    {int((y_rus==1).sum()):,} Fraud / {int((y_rus==0).sum()):,} Normal")
+
+# %%
+# Train LR và đánh giá trên val (imbalanced)
+resampling_results = {}
+clf_lr = LogisticRegression(max_iter=300, solver='saga', C=0.1,
+                             class_weight=None, random_state=SEED)
+
+print("\n" + "=" * 70)
+print(f"{'Phương pháp':<30} {'Precision':>10} {'Recall':>8} {'F1-macro':>10} {'AUC-ROC':>9}")
+print("-" * 70)
+
+for name, (X_r, y_r) in resampling_configs.items():
+    clf_lr.fit(X_r, y_r)
+    y_pred = clf_lr.predict(X_val)
+    y_prob = clf_lr.predict_proba(X_val)[:, 1]
+    p  = round(precision_score(y_val, y_pred, zero_division=0), 4)
+    r  = round(recall_score(y_val, y_pred, zero_division=0), 4)
+    f1 = round(f1_score(y_val, y_pred, average='macro', zero_division=0), 4)
+    auc = round(roc_auc_score(y_val, y_prob), 4)
+    resampling_results[name] = {'Precision': p, 'Recall': r, 'F1-macro': f1, 'AUC-ROC': auc}
+    print(f"{name:<30} {p:>10.4f} {r:>8.4f} {f1:>10.4f} {auc:>9.4f}")
+
+print("=" * 70)
+
+resamp_df = pd.DataFrame(resampling_results).T
+best_resamp = resamp_df['F1-macro'].idxmax()
+print(f"\n→ Phương pháp tốt nhất (F1-macro): {best_resamp}")
+print(f"  → Lý giải: SMOTE/ADASYN giúp model học boundary Fraud tốt hơn")
+print(f"    (tăng Recall); val set luôn dùng phân phối thực (không resampled).")
+
+# %%
+# Biểu đồ so sánh
+metrics_plot = ['Precision', 'Recall', 'F1-macro', 'AUC-ROC']
+fig, axes = plt.subplots(1, len(metrics_plot), figsize=(18, 5))
+colors_rs = ['steelblue', 'tomato', 'darkorange', 'forestgreen']
+
+for ax, metric in zip(axes, metrics_plot):
+    vals = [resampling_results[m][metric] for m in resampling_results]
+    bars = ax.bar(list(resampling_results.keys()), vals,
+                  color=colors_rs[:len(resampling_results)], edgecolor='white', alpha=0.85)
+    ax.set_title(metric, fontsize=11)
+    ax.set_ylim(0, 1.05)
+    ax.tick_params(axis='x', rotation=20, labelsize=8)
+    for bar, v in zip(bars, vals):
+        ax.text(bar.get_x() + bar.get_width() / 2, v + 0.01, f'{v:.3f}',
+                ha='center', fontsize=8)
+    ax.grid(axis='y', alpha=0.3)
+
+plt.suptitle('So sánh chiến lược xử lý mất cân bằng lớp\n'
+             f'(Đánh giá trên val set chưa resampled, n={len(X_val):,})', fontsize=12)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_DIR, 'fig_14_imbalance_comparison.png'), dpi=100, bbox_inches='tight')
+plt.show()
+
+# %% [markdown]
+# ---
+# ## 2.2.3g. Lưu kết quả xử lý (Pipeline Output)
+#
+# Lưu lại:
+# - `X_train_processed.npy` / `y_train.npy` — đặc trưng đã xử lý (FINAL_FEATURES)
+# - `X_test_processed.npy` — tập test xử lý tương ứng
+# - `feature_names.npy` — tên các đặc trưng đã chọn
+# - `pipeline_choices.json` — các quyết định của toàn bộ pipeline
+
+# %%
+import json
+
+# Thư mục processed
+PROCESSED_DIR = os.path.join(os.path.dirname(OUTPUT_DIR), 'processed')
+os.makedirs(PROCESSED_DIR, exist_ok=True)
+
+# Feature matrix cuối (chỉ FINAL_FEATURES tồn tại trong train & test)
+final_cols = [c for c in FINAL_FEATURES if c in train.columns and c in test.columns]
+X_train_final = train[final_cols].fillna(0).values.astype(np.float32)
+y_train_final = train['isFraud'].values.astype(np.int8)
+X_test_final  = test[final_cols].fillna(0).values.astype(np.float32)
+
+np.save(os.path.join(PROCESSED_DIR, 'X_train_processed.npy'), X_train_final)
+np.save(os.path.join(PROCESSED_DIR, 'y_train.npy'),           y_train_final)
+np.save(os.path.join(PROCESSED_DIR, 'X_test_processed.npy'),  X_test_final)
+np.save(os.path.join(PROCESSED_DIR, 'feature_names.npy'),     np.array(final_cols))
+
+pipeline_choices = {
+    'imputation': {
+        'benchmark_best'    : str(best_strategy),
+        'production_choice' : 'Median',
+        'reason'            : 'Memory-safe for 590k rows x 400 cols; RMSE comparable to kNN/MICE'
+    },
+    'outlier': {
+        'ks_best_method'    : str(best_ks),
+        'production_choice' : 'IQR_clipping',
+        'reason'            : 'Bảo toàn số dòng; deterministic; O(n·d) scalable'
+    },
+    'scaling': {
+        'benchmark'         : list(scalers.keys()),
+        'production_choice' : 'RobustScaler',
+        'reason'            : 'Bền vững với outlier; phù hợp 399/400 cột phi chuẩn'
+    },
+    'encoding': {
+        'low_card'  : 'OneHotEncoding',
+        'high_card' : 'BinaryEncoding',
+        'all_cols'  : 'Ordinal + Target(5-fold CV) + Frequency'
+    },
+    'feature_selection': {
+        'winner'     : winner,
+        'n_features' : len(final_cols),
+        'rfe_best_n' : int(best_rfe_n),
+        'rfe_best_f1': float(rfe_f1_scores[best_rfe_n])
+    },
+    'imbalance': {
+        'imbalance_ratio'   : round(float(imbalance_ratio), 2),
+        'best_method'       : best_resamp,
+        'eval_metric'       : 'F1-macro on unsampled val set'
+    }
+}
+
+with open(os.path.join(PROCESSED_DIR, 'pipeline_choices.json'), 'w', encoding='utf-8') as f:
+    json.dump(pipeline_choices, f, ensure_ascii=False, indent=2)
+
+print(f"✅ Đã lưu dữ liệu xử lý vào: {PROCESSED_DIR}")
+print(f"   X_train_processed.npy : shape={X_train_final.shape}, dtype={X_train_final.dtype}")
+print(f"   y_train.npy           : shape={y_train_final.shape}, fraud_rate={y_train_final.mean():.4f}")
+print(f"   X_test_processed.npy  : shape={X_test_final.shape}")
+print(f"   feature_names.npy     : {len(final_cols)} đặc trưng")
+print(f"   pipeline_choices.json : {list(pipeline_choices.keys())}")
+print(f"\n=== HOÀN THÀNH TOÀN BỘ PIPELINE TIỀN XỬ LÝ TABULAR ===")
+
     plt.show()
     print("  → UMAP hoàn thành.")
 except ImportError:
