@@ -800,6 +800,18 @@ plt.show()
 # - **BPE** cân bằng tốt nhất: từ vựng vừa phải, OOV thấp, độ dài hợp lý. Ở notebook này BPE được huấn luyện trực tiếp trên corpus (`train_from_iterator`), không dùng tokenizer prebuilt.
 # - **Sentence-level** phù hợp cho tác vụ cấp câu; OOV kiểu *từ* không định nghĩa trực tiếp → bảng ghi `N/A`.
 #
+# **Lựa chọn cho pipeline downstream:** BPE đạt OOV thấp nhất nhưng subword units không tương thích với
+# NLTK stop word list và WordNet lemmatizer (cần whole-word tokens). Do đó **Word-level** được chọn cho các bước 3.3–3.5.
+
+# %%
+# === QUYẾT ĐỊNH 1: TOKENIZATION ===
+CHOSEN_TOKENIZER = 'Word-level'
+print(f"[CHỌN] Tokenizer: {CHOSEN_TOKENIZER}")
+print(f"  Word-level OOV={word_oov:.4f} → được kiểm soát bởi min_df/max_features trong TF-IDF")
+print(f"  BPE OOV={bpe_oov:.4f} thấp hơn nhưng subwords không tương thích với stop word list + lemmatizer")
+print(f"  → Bước 3.3 và 3.4 sẽ dùng df['tokens'] (word-level)")
+
+# %% [markdown]
 # ---
 #
 # ### 3.3. Stop Words [Bắt buộc]
@@ -925,7 +937,16 @@ print(f"Cohen's d effect size: {cohens_d:.4f} ({'nhỏ' if abs(cohens_d)<0.5 els
 # - Xóa stop words làm giảm mạnh số token (giảm nhiễu và giảm kích thước đặc trưng), nhưng mức giảm vocab có thể nhỏ vì nhiều stop words lặp lại cao.
 # - Đã báo cáo thêm **MI trung bình trước/sau** (`MI_MEAN_WITH_STOP`, `MI_MEAN_NO_STOP`) để định lượng mức thông tin phân biệt theo toàn bộ không gian đặc trưng.
 # - Kết quả Naive Bayes cho thấy bỏ stop words **không phải lúc nào cũng cải thiện đáng kể**; chênh lệch có thể rất nhỏ hoặc đảo chiều tùy dataset/tác vụ.
-#
+
+# %%
+# === QUYẾT ĐỊNH 2: STOP WORDS ===
+CHOSEN_STOPWORDS = 'remove' if scores_no.mean() >= scores_with.mean() else 'keep'
+print(f"[CHỌN] Stop words: {CHOSEN_STOPWORDS}")
+print(f"  F1 (remove stop)={scores_no.mean():.4f}, F1 (keep stop)={scores_with.mean():.4f}")
+print(f"  ΔMI mean={MI_MEAN_DELTA:+.6f} → bỏ stop words {'tăng' if MI_MEAN_DELTA > 0 else 'không tăng'} thông tin phân biệt trung bình")
+print(f"  → Bước 3.4 dùng: df['tokens_no_stop']")
+
+# %% [markdown]
 # ---
 #
 # ### 3.4. Stemming và Lemmatization [Bắt buộc]
@@ -1026,6 +1047,11 @@ for name, texts in [('None (baseline)', texts_none), ('Porter', texts_porter),
 
 print("\nKết luận: Phương pháp tốt nhất:", max(results_stemlem, key=lambda k: results_stemlem[k]['mean']))
 
+# === QUYẾT ĐỊNH 3: STEMMING / LEMMATIZATION ===
+BEST_STEMLEM = max(results_stemlem, key=lambda k: results_stemlem[k]['mean'])
+print(f"[CHỌN] Stemming/Lemmatization: {BEST_STEMLEM} (F1={results_stemlem[BEST_STEMLEM]['mean']:.4f})")
+print(f"  → Bước 3.5 sẽ dùng '{BEST_STEMLEM}' để tạo texts_final")
+
 # ===========================================================================
 # Friedman test: so sánh đồng thời 4 phương pháp (dữ liệu lặp = 5 folds)
 # Friedman là non-parametric equivalent của repeated-measures ANOVA
@@ -1102,10 +1128,16 @@ plt.show()
 # **Ghi chú triển khai:** Phần BoW/TF-IDF phía dưới được cài đặt thủ công (xây vocab + ma trận sparse + IDF + chuẩn hóa), không dùng vectorizer có sẵn của scikit-learn.
 
 # %% papermill={"duration": 31.29175, "end_time": "2026-03-25T13:09:48.212098+00:00", "exception": false, "start_time": "2026-03-25T13:09:16.920348+00:00", "status": "completed"}
-# Chuẩn bị text (dùng text đã chuẩn hóa, loại stop words, lemmatize)
-df['text_processed'] = df['tokens_no_stop'].apply(
-    lambda toks: ' '.join([lemmatizer.lemmatize(t) for t in toks])
-)
+# Chuẩn bị text — áp dụng BEST_STEMLEM đã chọn ở bước 3.4
+if BEST_STEMLEM == 'Porter':
+    df['text_processed'] = df['tokens_no_stop'].apply(lambda toks: ' '.join([porter.stem(t) for t in toks]))
+elif BEST_STEMLEM == 'Snowball':
+    df['text_processed'] = df['tokens_no_stop'].apply(lambda toks: ' '.join([snowball.stem(t) for t in toks]))
+elif BEST_STEMLEM == 'WordNet':
+    df['text_processed'] = df['tokens_no_stop'].apply(lambda toks: ' '.join([lemmatizer.lemmatize(t) for t in toks]))
+else:  # None (baseline)
+    df['text_processed'] = df['tokens_no_stop'].apply(lambda toks: ' '.join(toks))
+print(f"[ÁP DỤNG] {BEST_STEMLEM} → df['text_processed']")
 
 texts_final = df['text_processed'].tolist()
 y = df['label'].values
@@ -1778,29 +1810,35 @@ _idx_tr, _idx_te = train_test_split(
 y_train_best = y[_idx_tr]
 y_test_best  = y[_idx_te]
 
-# Chọn mô hình theo hàng đầu tiên của leaderboard
+# === QUYẾT ĐỊNH 4: VECTORIZER (theo leaderboard) ===
 best_method = results_df.iloc[0]['Method']
+print(f"[CHỌN] Vectorizer/Model: {best_method} (F1={results_df.iloc[0]['F1-macro']:.4f})")
 
 if best_method == 'LR + TF-IDF bi':
     X_train_best = X_tfidf_bi[_idx_tr]
     X_test_best  = X_tfidf_bi[_idx_te]
+    X_final_all  = X_tfidf_bi
     best_model = LogisticRegression(max_iter=1000, random_state=SEED)
 elif best_method == 'LR + TF-IDF uni':
     X_train_best = X_tfidf_uni[_idx_tr]
     X_test_best  = X_tfidf_uni[_idx_te]
+    X_final_all  = X_tfidf_uni
     best_model = LogisticRegression(max_iter=1000, random_state=SEED)
 elif best_method == 'SVM + TF-IDF':
     X_train_best = X_tfidf_uni[_idx_tr]
     X_test_best  = X_tfidf_uni[_idx_te]
+    X_final_all  = X_tfidf_uni
     best_model = LinearSVC(max_iter=5000, random_state=SEED)
 elif best_method == 'SVM + SentenceTransformer':
     X_train_best = X_st[_idx_tr]
     X_test_best  = X_st[_idx_te]
+    X_final_all  = X_st
     best_model = LinearSVC(max_iter=5000, random_state=SEED)
 else:
     # Fallback an toàn
     X_train_best = X_tfidf_bi[_idx_tr]
     X_test_best  = X_tfidf_bi[_idx_te]
+    X_final_all  = X_tfidf_bi
     best_model = LogisticRegression(max_iter=1000, random_state=SEED)
 
 best_model.fit(X_train_best, y_train_best)
@@ -1857,9 +1895,37 @@ plt.show()
 
 # %% papermill={"duration": 1.19179, "end_time": "2026-03-25T13:12:56.015943+00:00", "exception": false, "start_time": "2026-03-25T13:12:54.824153+00:00", "status": "completed"}
 # Lưu dữ liệu đã xử lý
+import scipy.sparse as sp_io, json as _json
+
 df_save = df[['id', 'text', 'text_normalized', 'text_processed', 'label', 'label_name',
               'task_type', 'model', 'text_len_char', 'text_len_words', 'text_len_sents', 'ttr']].copy()
 df_save.to_csv(OUTPUT_DIR / 'ragtruth_processed.csv', index=False)
-print(f"Saved processed data: {df_save.shape}")
-print(f"File: {OUTPUT_DIR / 'ragtruth_processed.csv'}")
+print(f"Saved processed text: {df_save.shape} → ragtruth_processed.csv")
+
+# Lưu feature matrix tốt nhất (dựa trên QUYẾT ĐỊNH 4)
+if hasattr(X_final_all, 'toarray'):  # sparse (TF-IDF)
+    sp_io.save_npz(str(OUTPUT_DIR / 'X_processed_best.npz'), X_final_all.tocsr())
+    print(f"Saved feature matrix (sparse): X_processed_best.npz {X_final_all.shape}")
+else:  # dense (Word2Vec / SentenceTransformer)
+    np.save(str(OUTPUT_DIR / 'X_processed_best.npy'), X_final_all)
+    print(f"Saved feature matrix (dense): X_processed_best.npy {X_final_all.shape}")
+
+# Lưu labels
+np.save(str(OUTPUT_DIR / 'y_labels.npy'), y)
+print(f"Saved labels: y_labels.npy shape={y.shape}")
+
+# Lưu metadata pipeline (các quyết định đã chọn)
+pipeline_choices = {
+    'decision_1_tokenizer': CHOSEN_TOKENIZER,
+    'decision_2_stopwords': CHOSEN_STOPWORDS,
+    'decision_3_stemlem': BEST_STEMLEM,
+    'decision_4_vectorizer': best_method,
+    'X_shape': list(X_final_all.shape),
+    'n_classes': int(len(np.unique(y))),
+    'label_map': {str(k): v for k, v in enumerate(df['label_name'].unique())},
+}
+with open(OUTPUT_DIR / 'pipeline_choices.json', 'w', encoding='utf-8') as _f:
+    _json.dump(pipeline_choices, _f, indent=2, ensure_ascii=False)
+print(f"Saved pipeline choices: pipeline_choices.json")
+print(f"  {pipeline_choices}")
 print("\n=== NOTEBOOK HOÀN TẤT ===")
