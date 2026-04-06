@@ -595,23 +595,20 @@ if exact_dupes:
 #   - Tránh **data leakage** khi train model
 
 # %%
-# Lưu danh sách duplicate ra CSV trước (để kiểm tra trước khi xóa)
-import json as _json
+# Lưu danh sách duplicate ra CSV (để 02_preprocessing có thể đọc và bỏ qua khi load)
 if files_to_delete:
     dup_csv_path = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
     pd.DataFrame({'path': files_to_delete}).to_csv(dup_csv_path, index=False)
     print(f"Đã lưu danh sách {len(files_to_delete)} ảnh duplicate → {dup_csv_path}")
-
-# Xóa ảnh duplicate (giữ lại 1 ảnh đầu tiên mỗi nhóm)
-if files_to_delete:
-    deleted = 0
-    for f in files_to_delete:
-        if os.path.exists(f):
-            os.remove(f)
-            deleted += 1
-    print(f"Đã xóa {deleted}/{len(files_to_delete)} ảnh exact-duplicate.")
 else:
-    print("Không có ảnh exact-duplicate cần xóa.")
+    print("Không có ảnh exact-duplicate.")
+
+# [OPTIONAL] Uncomment để xóa ảnh duplicate khỏi disk (giữ lại 1 ảnh đầu tiên mỗi nhóm)
+# if files_to_delete:
+#     for f in files_to_delete:
+#         if os.path.exists(f):
+#             os.remove(f)
+#     print(f"Đã xóa {len(files_to_delete)} ảnh duplicate.")
 
 # %% [markdown]
 # ### Near-duplicate detection (Hamming distance $\leq$ 4)
