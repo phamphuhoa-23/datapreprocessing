@@ -90,8 +90,14 @@ def _find_image_root() -> Path:
 _IMG_ROOT = _find_image_root()
 TRAIN_DIR = str(_IMG_ROOT / 'train')
 TEST_DIR  = str(_IMG_ROOT / 'test')
-print(f"TRAIN_DIR = {TRAIN_DIR}")
-print(f"TEST_DIR  = {TEST_DIR}")
+
+# OUTPUT_DIR: lưu processed outputs (duplicate_paths.csv, figures)
+OUTPUT_DIR = str(_IMG_ROOT.parent / 'processed')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+print(f"TRAIN_DIR  = {TRAIN_DIR}")
+print(f"TEST_DIR   = {TEST_DIR}")
+print(f"OUTPUT_DIR = {OUTPUT_DIR}")
 
 classes = sorted(os.listdir(TRAIN_DIR))
 print(f"Số lớp: {len(classes)}")
@@ -589,14 +595,23 @@ if exact_dupes:
 #   - Tránh **data leakage** khi train model
 
 # %%
-# [OPTIONAL] Uncomment để xóa ảnh duplicate (giữ lại 1 ảnh đầu tiên mỗi nhóm)
-# if files_to_delete:
-#     for f in files_to_delete:
-#         if os.path.exists(f):
-#             os.remove(f)
-#     print(f"Đã xóa {len(files_to_delete)} ảnh duplicate.")
-# else:
-#     print("Không có ảnh cần xóa.")
+# Lưu danh sách duplicate ra CSV trước (để kiểm tra trước khi xóa)
+import json as _json
+if files_to_delete:
+    dup_csv_path = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
+    pd.DataFrame({'path': files_to_delete}).to_csv(dup_csv_path, index=False)
+    print(f"Đã lưu danh sách {len(files_to_delete)} ảnh duplicate → {dup_csv_path}")
+
+# Xóa ảnh duplicate (giữ lại 1 ảnh đầu tiên mỗi nhóm)
+if files_to_delete:
+    deleted = 0
+    for f in files_to_delete:
+        if os.path.exists(f):
+            os.remove(f)
+            deleted += 1
+    print(f"Đã xóa {deleted}/{len(files_to_delete)} ảnh exact-duplicate.")
+else:
+    print("Không có ảnh exact-duplicate cần xóa.")
 
 # %% [markdown]
 # ### Near-duplicate detection (Hamming distance $\leq$ 4)
@@ -606,18 +621,30 @@ if exact_dupes:
 # Ngưỡng $d \leq 4$ là ngưỡng thực nghiệm phổ biến cho ảnh gần trùng lặp.
 
 # %%
-np.random.seed(42)
-sample_idx = np.random.choice(len(hash_list), min(2000, len(hash_list)), replace=False)
-sample_hashes = [hash_list[i] for i in sample_idx]
+# Near-dup chạy TOÀN BỘ dataset nhưng so sánh TRONG TỪNG LỚP
+# Lý do: so sánh cross-class toàn bộ = O(27000²/2) = 364M cặp → không thực tế.
+# So sánh trong lớp = O(600²/2 × 45 lớp) = ~8M cặp → chạy được (<30s).
+# Ngưỡng d≤4 là tiêu chuẩn thực nghiệm (6% bit khác nhau trên 64-bit hash).
 
-near_dupes = []
-for i in range(len(sample_hashes)):
-    for j in range(i+1, len(sample_hashes)):
-        dist = sample_hashes[i][0] - sample_hashes[j][0]
-        if dist <= 4:
-            near_dupes.append((sample_hashes[i], sample_hashes[j], dist))
+NEAR_DUP_THRESHOLD = 4
+near_dupes = []  # list of (entry_a, entry_b, distance)
 
-print(f"Near-duplicates (sample 2000, threshold=4): {len(near_dupes)} cặp")
+# Nhóm hash_list theo lớp
+hash_by_class = {}
+for entry in hash_list:
+    cls = entry[1]
+    if cls not in hash_by_class:
+        hash_by_class[cls] = []
+    hash_by_class[cls].append(entry)
+
+for cls, entries in tqdm(hash_by_class.items(), desc="Near-dup per class"):
+    for i in range(len(entries)):
+        for j in range(i + 1, len(entries)):
+            dist = entries[i][0] - entries[j][0]
+            if 0 < dist <= NEAR_DUP_THRESHOLD:  # 0 = exact dup (đã xử lý ở trên)
+                near_dupes.append((entries[i], entries[j], dist))
+
+print(f"Near-duplicates (TOÀN BỘ dataset, within-class, threshold={NEAR_DUP_THRESHOLD}): {len(near_dupes)} cặp")
 
 if near_dupes:
     fig, axes = plt.subplots(min(3, len(near_dupes)), 2, figsize=(6, 3*min(3, len(near_dupes))))
