@@ -417,14 +417,14 @@ for cs_name, evr in pca_results.items():
 # ### Ablation: k-NN accuracy theo color space
 
 # %%
-# k-NN accuracy theo color space (resize 128x128 — kích thước đã chọn từ ablation trên)
+# k-NN accuracy theo color space (dùng best_size từ resize ablation trên)
 cs_knn_samples = load_sample(n_per_class=50)
 
 cs_knn_results = {}
 for cs_name, convert_fn in COLOR_SPACES.items():
     X, y = [], []
     for img, cls in cs_knn_samples:
-        converted = convert_fn(cv2.resize(img, (128, 128)))
+        converted = convert_fn(cv2.resize(img, (best_size, best_size)))
         if converted.ndim == 2:
             converted = converted[:, :, np.newaxis]
         X.append(converted.reshape(-1).astype(np.float32) / 255.0)
@@ -590,7 +590,7 @@ norm_knn_fold_scores = {}  # lưu fold scores để Wilcoxon
 for method_name, norm_fn in NORM_METHODS.items():
     X, y = [], []
     for img, cls in norm_knn_samples:
-        resized = cv2.resize(img, (64, 64))
+        resized = cv2.resize(img, (best_size, best_size))
         normed = norm_fn(resized)
         X.append(normed.reshape(-1))
         y.append(cls)
@@ -873,7 +873,7 @@ aug_knn_samples = load_sample(n_per_class=30)
 # Baseline: ảnh gốc resize 128×128, normalize [0,1]
 X_base_aug, y_base_aug = [], []
 for img, cls in aug_knn_samples:
-    resized = cv2.resize(img, (128, 128))
+    resized = cv2.resize(img, (best_size, best_size))
     X_base_aug.append(resized.reshape(-1).astype(np.float32) / 255.0)
     y_base_aug.append(cls)
 X_base_aug = np.array(X_base_aug)
@@ -893,7 +893,7 @@ for aug_name, aug_fn in AUGMENTATIONS.items():
     X_aug_k, y_aug_k = [], []
     np.random.seed(42)
     for img, cls in aug_knn_samples:
-        resized = cv2.resize(img, (128, 128))
+        resized = cv2.resize(img, (best_size, best_size))
         augmented = aug_fn(resized)
         X_aug_k.append(augmented.reshape(-1).astype(np.float32) / 255.0)
         y_aug_k.append(cls)
@@ -1042,7 +1042,7 @@ aug_knn_samples = load_sample(n_per_class=30)
 # Original features
 X_orig_knn, y_orig_knn = [], []
 for img, cls in aug_knn_samples:
-    resized = cv2.resize(img, (64, 64))
+    resized = cv2.resize(img, (best_size, best_size))
     X_orig_knn.append(resized.reshape(-1).astype(np.float32) / 255.0)
     y_orig_knn.append(cls)
 
@@ -1051,7 +1051,7 @@ X_aug_knn, y_aug_knn = [], []
 np.random.seed(42)
 aug_fns = list(AUGMENTATIONS.values())
 for img, cls in aug_knn_samples:
-    resized = cv2.resize(img, (64, 64))
+    resized = cv2.resize(img, (best_size, best_size))
     # Giữ ảnh gốc
     X_aug_knn.append(resized.reshape(-1).astype(np.float32) / 255.0)
     y_aug_knn.append(cls)
@@ -1059,7 +1059,7 @@ for img, cls in aug_knn_samples:
     aug_img = img.copy()
     for fn in np.random.choice(aug_fns, 2, replace=False):
         aug_img = fn(aug_img)
-    aug_resized = cv2.resize(aug_img, (64, 64))
+    aug_resized = cv2.resize(aug_img, (best_size, best_size))
     X_aug_knn.append(aug_resized.reshape(-1).astype(np.float32) / 255.0)
     y_aug_knn.append(cls)
 
