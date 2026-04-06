@@ -125,8 +125,26 @@ for cls in SAMPLE_CLASSES:
 # ---
 # ## 1. Resize - Ablation Study (SSIM / PSNR)
 #
-# So sánh 3 kích thước resize (64x64, 128x128, 224x224) với ảnh gốc 256x256.
-# Mỗi ảnh được resize xuống rồi resize lên lại 256x256 để đo mất mát thông tin qua **SSIM** và **PSNR**.
+# **Lý thuyết:**
+#
+# Resize giảm chiều không gian ảnh từ $H_{\text{orig}} \times W_{\text{orig}}$ về kích thước nhỏ hơn.
+# Đo mất mát thông tin bằng cách **resize xuống rồi resize lên lại** cự gốc, sau đó tính 2 metrics:
+#
+# **SSIM (Structural Similarity Index Measure)** — đo sự tương đồng cấu trúc gitta 2 ảnh:
+#
+# $$\text{SSIM}(x,y) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2+\mu_y^2+C_1)(\sigma_x^2+\sigma_y^2+C_2)}$$
+#
+# - $\mu_x, \mu_y$: mean của patch $x, y$; $\sigma_x^2, \sigma_y^2$: variance; $\sigma_{xy}$: covariance
+# - $C_1 = (k_1 L)^2,\ C_2 = (k_2 L)^2$ với $k_1=0.01,\ k_2=0.03,\ L=255$ (hằng số ổn định)
+# - $\text{SSIM} \in [-1, 1]$; giá trị 1 = hai ảnh giống hệt nhau
+#
+# **PSNR (Peak Signal-to-Noise Ratio)** — đo tỷ lệ tín hiệu/nhiễu (dB):
+#
+# $$\text{PSNR} = 10\log_{10}\!\left(\frac{255^2}{\text{MSE}}\right), \quad
+# \text{MSE} = \frac{1}{HW}\sum_{i,j}(I_{ij}-\hat{I}_{ij})^2$$
+#
+# - PSNR cao hơn ⇒ chất lượng tốt hơn ($> 30$ dB thuờng chấp nhận được)
+# - SSIM nhạy hơn PSNR với các lỗi cấu trúc (texture loss, blurring)
 #
 # - $H_0$: Chất lượng ảnh (SSIM) không khác biệt giữa 3 kích thước resize
 # - $H_1$: Ít nhất 1 kích thước cho SSIM khác biệt
@@ -315,10 +333,27 @@ print(f"\nANOVA: F={f_val:.2f}, p={p_val:.2e}, η²={eta2_resize:.3f}")
 # ---
 # ## 2. Color Space Conversion — Ablation Study (PCA Explained Variance)
 #
-# So sánh 4 không gian màu: **RGB, Grayscale, HSV, LAB**.
-# Với mỗi không gian, tính **explained variance** theo PCA (k=50 components).
-# k-NN accuracy xác định không gian nào bảo toàn thông tin phân loại tốt nhất.
+# **Lý thuyết:**
 #
+# Không gian màu xuyết quá thông tin ảnh theo cách khác nhau,
+# ảnh hưởng trực tiếp đến hiệu quả phân tích và phân loại:
+#
+# | Không gian | Cách biểu diễn | Ưu điểm | Nhược điểm |
+# |---|---|---|---|
+# | **RGB** | 3 kênh $R, G, B \in [0,255]$ | Trực quan, tương thích pretrained | Bị tương quan chéo giữa kênh |
+# | **Grayscale** | $Y = 0.299R + 0.587G + 0.114B$ | 1/3 dung lượng, đơn giản | Mất toàn bộ thông tin màu |
+# | **HSV** | Hue $H$, Saturation $S$, Value $V$ | Tách biệt màu sắc và độ sáng | $H$ là giá trị còn vòng (circular) |
+# | **CIE Lab** | $L^*$ (lightness), $a^*$ (green–red), $b^*$ (blue–yellow) | Perceptually uniform; tách tốt $L$ vs chrominance | Tính toán phức tạp hơn |
+#
+# **Grayscale conversion:**
+# $$Y = 0.299\,R + 0.587\,G + 0.114\,B$$
+#
+# Trọng số của ITU-R BT.601 phản ánh độ nhạy của mắt người:
+# mắt nhạy nhất với xanh lá ($G$), kém nhất với xanh dương ($B$).
+#
+# **PCA explained variance** được dùng để so sánh **information density**:
+# không gian màu đạt 95% variance với ít components hơn = nén được tốt hơn.
+# k-NN accuracy xác nhận không gian nào bảo toàn thông tin **phân loại** tốt nhất.
 
 # %%
 COLOR_SPACES = {
@@ -425,13 +460,28 @@ for cs_name, (mean_acc, std_acc) in cs_knn_results.items():
 # ---
 # ## 3. Normalization - Ablation Study (KS test)
 #
-# So sánh 4 phương pháp chuẩn hóa pixel:
-# 1. **Min-Max [0, 1]**
-# 2. **Min-Max [-1, 1]**
-# 3. **Z-score toàn tập** (mean/std tính trên toàn bộ ảnh)
-# 4. **Z-score per-channel** (mean/std tính riêng từng kênh R, G, B)
+# **Lý thuyết:**
 #
-# Dùng **KS test** so sánh phân phối pixel **trước vs sau** chuẩn hóa.
+# Chuẩn hóa đưa pixel về cùng thạng đo, cải thiện tốc độ hội tụ và độ ổn định khi train:
+#
+# | Phương pháp | Công thức | Miền output | Ghi chú |
+# |---|---|---|---|
+# | **Min-Max $[0,1]$** | $x' = x / 255$ | $[0,1]$ | Giữ nguyên hình dạng phân phối |
+# | **Min-Max $[-1,1]$** | $x' = x/127.5 - 1$ | $[-1,1]$ | Phù hợp với activation tanh |
+# | **Z-score global** | $x' = (x - \mu_{\text{all}}) / \sigma_{\text{all}}$ | $\mathbb{R}$ | $\mu, \sigma$ tính trên toàn dataset |
+# | **Z-score per-channel** | $x'_c = (x_c - \mu_c) / \sigma_c,\ c \in \{R,G,B\}$ | $\mathbb{R}$ | Tựng kênh có mean 0, std 1 riêng |
+#
+# **Ý nghĩa per-channel normalization:**
+# Mỗi kênh có phân phối khác nhau; chuẩn hóa riêng từng kênh loại bỏ
+# **bias do chiếu sáng** (kênh G thường sáng hơn kênh B).
+# Tuy nhiên, nó phá vỡ **tương quan tương đối** giữa R, G, B — có thể gây hại cho biểu diễn màu sắc.
+#
+# **KS test (Kolmogorov-Smirnov)** kiểm tra sự thay đổi phân phối trước/sau chuẩn hóa:
+#
+# $$D = \sup_x \left|F_1(x) - F_2(x)\right|$$
+#
+# $p \approx 0$ là **MONG MUỐN**: chứng tỏ distribution shift (mục đích của chuẩn hóa).
+# K-NN accuracy mới là chỉ số đánh giá chất lượng chuẩn hóa.
 #
 # - $H_0$: Phân phối pixel trước và sau chuẩn hóa không khác biệt
 # - $H_1$: Phân phối pixel thay đổi sau chuẩn hóa
@@ -598,11 +648,25 @@ print(f"⇒ Chọn {best_norm_method}: accuracy={norm_knn_results[best_norm_meth
 # ---
 # ## 4. Data Augmentation — Ablation Study (t-SNE)
 #
-# Pipeline augmentation gồm **6 phép biến đổi** (≥5 theo yêu cầu):
-# Lật ngang · Lật dọc · Xoay · Cắt ngẫu nhiên · Nhiễu Gaussian · Điều chỉnh độ sáng/tương phản.
-# Đánh giá tác động qua:
-# - **t-SNE visualization**: phân bố feature space trước/sau augment
-# - **Per-technique k-NN ablation**: mỗi augmentation chạy riêng biệt + baseline (original only)
+# **Lý thuyết:**
+#
+# **Data augmentation** tạo ra các biến thể hợp lệ của ảnh gốc bằng cách áp dụng các
+# phép biến đổi **label-preserving** (không thay đổi nhãn).
+# Mục tiêu: tăng **diversity** tập train, giảm overfitting, cải thiện tính robust của model.
+#
+# | Phép biến đổi | Mô tả toán học | Label-preserving |
+# |---|---|---|
+# | **H-Flip** | $I'(x,y) = I(W-1-x,\ y)$ | ✅ (cảnh viễn thám đối xứng) |
+# | **V-Flip** | $I'(x,y) = I(x,\ H-1-y)$ | ✅ |
+# | **Rotation** | Ma trận động lực $\mathbf{M}(\theta)$, điện tích điền affine | ✅ (góc nhỏ $|\theta| < 30^\circ$) |
+# | **Random Crop** | Cắt tà $\text{scale} \in [0.7, 1.0]$, resize lại | ✅ |
+# | **Gaussian Noise** | $I'_{ij} = I_{ij} + \epsilon_{ij}$, $\epsilon \sim \mathcal{N}(0, \sigma^2)$ | ✅ |
+# | **Brightness/Contrast** | $I' = \alpha I + \beta$, $\alpha \approx 1$, $\beta \approx 0$ | ✅ |
+#
+# **Tác động được đánh giá bằng:**
+# - **k-NN ablation per-technique**: mỗi augmentation chạy riêng biệt so với baseline (original only)
+# - **t-SNE visualization**: biểu diễn feature distribution trước/sau augment
+#   (t-SNE giảm chiều từ 128×128×3 xuống 2D, bảo toàn local structure)
 
 # %%
 def augment_hflip(img):

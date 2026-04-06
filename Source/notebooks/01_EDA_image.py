@@ -101,6 +101,22 @@ print(f"Số lớp: {len(classes)}")
 # ## 1. Pixel Distribution
 #
 # ### 1.1 Thống kê pixel trung bình per-image
+#
+# **Lý thuyết:**
+#
+# Ảnh RGB gồm 3 kênh cường độ $R, G, B \in [0, 255]$.
+# Mỗi pixel là một vector $(r, g, b)$ biểu diễn mức sáng của các màu đỏ, xanh lá, xanh dương.
+#
+# Với một ảnh kích thước $H \times W$:
+#
+# $$\bar{c} = \frac{1}{HW}\sum_{i=1}^{H}\sum_{j=1}^{W} c_{ij}, \quad c \in \{R, G, B\}$$
+#
+# $$\sigma_c = \sqrt{\frac{1}{HW}\sum_{i,j}(c_{ij} - \bar{c})^2}$$
+#
+# Phân tích **per-image mean** (trung bình toàn bộ pixel của 1 ảnh) giúp so sánh đặc trưng
+# màu sắc tổng thể giữa các lớp mà không bị ảnh hưởng bởi vị trí không gian.
+# Phân tích **per-channel** phân biệt sự đóng góp của từng thành phần màu —
+# ví dụ lớp `forest` kỳ vọng $\bar{G} \gg \bar{R}$, lớp `sea_ice` kỳ vọng cả 3 kênh cao.
 
 # %%
 # Tính pixel stats cho toàn bộ 45 lớp (dùng toàn bộ ảnh mỗi lớp)
@@ -161,6 +177,23 @@ plt.show()
 
 # %% [markdown]
 # ### 1.2 Phân bố pixel (Histogram + KDE) theo từng kênh
+#
+# **Lý thuyết:**
+#
+# **Histogram** đếm tần suất giá trị rơi vào từng bin để xấp xỉ phân phối thực nghiệm.
+#
+# **Kernel Density Estimation (KDE)** làm mượt histogram bằng cách đặt một hàm kernel $K$ tại mỗi
+# điểm quan sát, rồi cộng lại:
+#
+# $$\hat{f}(x) = \frac{1}{nh}\sum_{i=1}^{n} K\!\left(\frac{x - x_i}{h}\right)$$
+#
+# với $h$ là **bandwidth** (quyết định độ mượt). Bandwidth Silverman $h = 1.06 \hat{\sigma} n^{-1/5}$
+# là ước lượng tự động tối ưu nếu phân phối gần Gaussian.
+#
+# Phân tích KDE per-channel giúp xác định:
+# - Phân phối **unimodal** (một đỉnh) hay multimodal (nhiều lớp pha trộn)
+# - Độ **lệch** (skewness) — đuôi trái/phải dài hơn
+# - Vùng tập trung giá trị pixel ($\mu \pm \sigma$)
 
 # %%
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
@@ -335,6 +368,25 @@ print(f"Tổng hợp Eta²:  R={eta2_r:.3f},  G={eta2_g:.3f},  B={eta2_b:.3f}")
 # ---
 # ## 2. Tổng quan Dataset (Class Imbalance)
 #
+# **Lý thuyết:**
+#
+# **Class imbalance** xảy ra khi các lớp có số lượng mẫu chênh lệch lớn.
+# Thông thường dùng **imbalance ratio**:
+#
+# $$\rho = \frac{\max_k N_k}{\min_k N_k}$$
+#
+# Nếu $\rho \geq 3$ thì dataset bị coi là mất cân bằng ($3\times$ rule).
+# Với dataset ảnh viễn thám NWPU-RESISC45, ta kiểm định phân phối lớp đồng đều bằng
+# **kiểm định chi-square (Pearson)**:
+#
+# $$\chi^2 = \sum_{k=1}^{K} \frac{(O_k - E_k)^2}{E_k} \sim \chi^2(K-1)$$
+#
+# - $O_k$: số ảnh thực tế của lớp $k$
+# - $E_k = N_\text{total}/K$: số ảnh kỳ vọng nếu phân phối đồng đều
+# - $H_0$: phân phối đồng đều\ — $p \geq 0.05$ → không bác bỏ $H_0$ → dataset cân bằng
+#
+# Dataset cân bằng $\Rightarrow$ không cần oversampling/undersampling trước khi train.
+#
 # ### 2.1 Phân bố số lượng ảnh theo lớp
 
 # %%
@@ -440,6 +492,28 @@ plt.show()
 # %% [markdown]
 # ---
 # ## 3. Duplicate Detection (pHash)
+#
+# **Lý thuyết:**
+#
+# **pHash (Perceptual Hash)** là fingerprint 64-bit của ảnh, bền vững với các biến đổi nhỏ
+# như thay đổi độ sáng, resize, nén JPEG. Quy trình tính:
+#
+# 1. Resize ảnh về $32 \times 32$ grayscale
+# 2. Áp dụng **DCT-2D** (Discrete Cosine Transform): biến đổi tín hiệu sang miền tần số
+# 3. Lấy khối $8 \times 8$ góc trên-trái (64 hệ số tần số thấp, mang thông tin cấu trúc chính)
+# 4. So sánh từng hệ số với **median** của 64 hệ số: $1$ nếu $\geq$ median, $0$ nếu $<$ median
+# 5. Kết quả: chuỗi 64 bit duy nhất đặc trưng cho nội dung ảnh
+#
+# **Phát hiện trùng lặp** bằng **Hamming distance**:
+#
+# $$d_H(h_1, h_2) = \text{popcount}(h_1 \oplus h_2) = \sum_{i=1}^{64} (h_{1,i} \neq h_{2,i})$$
+#
+# - $d_H = 0$: **exact duplicate** — ảnh giống hệt nhau về nội dung
+# - $d_H \leq 4$: **near-duplicate** — ngưỡng thực nghiệm phổ biến (~6% bit khác nhau)
+# - $d_H > 4$: ảnh khác nhau
+#
+# Phát hiện và loại bỏ duplicate tránh **data leakage** (ảnh trùng trong cả train và test
+# khiến metric đánh giá bị thổi phồng).
 
 # %%
 hash_dict = {}
@@ -566,7 +640,31 @@ if near_dupes:
 # ---
 # ## 4. Contrast & Brightness Analysis
 #
-# Tính **brightness** (mean L-channel) và **contrast** (std L-channel) cho mỗi ảnh.
+# **Lý thuyết:**
+#
+# **Độ sáng (Brightness)** đo lượng ánh sáng trung bình của ảnh.
+# Sử dụng kênh **L** trong không gian màu CIE Lab (perceptually uniform), $L \in [0, 100]$:
+#
+# $$\text{Brightness} = \bar{L} = \frac{1}{HW}\sum_{i,j} L_{ij}$$
+#
+# **Độ tương phản (Contrast)** đo sự biến thiên cường độ trong ảnh.
+# Dùng **RMS (Root Mean Square) contrast**:
+#
+# $$\text{Contrast} = \sigma_L = \sqrt{\frac{1}{HW}\sum_{i,j}(L_{ij} - \bar{L})^2}$$
+#
+# Ngoài ra còn có **Michelson contrast** (cho mẫu tuần hoàn):
+# $C_M = (L_{\max} - L_{\min})/(L_{\max} + L_{\min})$
+#
+# Phân tích độ sáng/tương phản **per class** giúp phát hiện:
+# - Lớp **sáng** ($\bar{L} > 70$): `cloud`, `snowberg`, `sea_ice`
+# - Lớp **tối** ($\bar{L} < 40$): `forest`, `chaparral`
+# - Lớp **tương phản cao** (lớn $\sigma_L$): cảnh có ranh giới rõ như `harbor`, `stadium`
+# - Lớp **tương phản thấp**: cảnh đơn sắc như `desert`, `cloud`
+#
+# Những thông tin này sẽ hỗ trợ quyết định chiến lược **normalization** ở notebook 02.
+
+# %%
+brightness_data = []
 
 # %%
 brightness_data = []

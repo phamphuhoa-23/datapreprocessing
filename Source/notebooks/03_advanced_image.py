@@ -101,21 +101,40 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 # ---
 # ## 1. [Nâng cao] PCA đặc trưng ảnh
 #
-# **Lựa chọn kích thước ảnh cho PCA:** Mặc dù notebook 02 chọn 224×224 làm kích thước
-# cuối cùng để bảo toàn chất lượng ảnh tốt nhất, ở bước PCA này ta dùng **64×64** vì lý do
-# tính toán: với toàn bộ 27,000 ảnh train, mỗi ảnh 224×224 tạo vector 50,176 chiều —
-# ma trận đầu vào sẽ là 27,000 × 50,176 ≈ **5.4 GB RAM**, vượt quá khả năng xử lý thông
-# thường. Ở kích thước 64×64 (vector 4,096 chiều), ma trận chỉ tốn ~0.4 GB và PCA
-# vẫn nắm bắt được cấu trúc phân tách lớp vì đặc trưng texture/độ sáng tổng thể không
-# đòi hỏi độ phân giải cao.
+# **Lý thuyết:**
 #
-# Flatten ảnh grayscale 64×64 thành vector 4096-D, chạy PCA trên **toàn bộ 27,000 ảnh train**
-# (600 ảnh/lớp × 45 lớp) để tìm eigenimages và xem các lớp có phân tách được trên
-# không gian PCA hay không.
+# **PCA (Principal Component Analysis)** tìm các hướng **phương sai cực đại** trong dữ liệu.
+# Với ma trận dữ liệu đã center $\mathbf{X} \in \mathbb{R}^{n \times d}$ ($n$ ảnh, $d$ pixel):
 #
-# Dùng **IncrementalPCA** (batch-wise) thay vì PCA thông thường vì ma trận 27,000 × 4,096
-# (~0.4 GB float32) có thể fit RAM nhưng IncrementalPCA ổn định hơn với dataset lớn,
-# xử lý từng batch không cần load toàn bộ vào memory cùng lúc.
+# **Bước 1 — Covariance matrix:**
+#
+# $$\mathbf{C} = \frac{1}{n-1}\mathbf{X}^\top \mathbf{X} \in \mathbb{R}^{d \times d}$$
+#
+# **Bước 2 — Eigen decomposition (SVD):**
+#
+# $$\mathbf{X} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\top$$
+#
+# - $\mathbf{V} \in \mathbb{R}^{d \times d}$: eigenvectors (principal components / eigenimages)
+# - $\boldsymbol{\Sigma}$: singular values; eigenvalues $\lambda_k = \sigma_k^2 / (n-1)$
+# - Eigenimage $k$: reshape $\mathbf{v}_k$ về $64 \times 64$ → hiển thị như "khuôn mặt trung bình"
+#
+# **Bước 3 — Explained variance ratio:**
+#
+# $$\text{EVR}_k = \frac{\lambda_k}{\sum_{i=1}^{d} \lambda_i}$$
+#
+# **Bước 4 — Projection & Reconstruction:**
+#
+# $$\mathbf{z} = \mathbf{V}_k^\top (\mathbf{x} - \bar{\mathbf{x}}) \in \mathbb{R}^k, \quad
+# \hat{\mathbf{x}} = \mathbf{V}_k \mathbf{z} + \bar{\mathbf{x}}$$
+#
+# Sai số tái tạo $\|\mathbf{x} - \hat{\mathbf{x}}\|^2 = \sum_{i=k+1}^{d} \lambda_i$
+# (phần variance bị bỏ qua khi dùng $k$ components).
+#
+# **Lựa chọn kích thước ảnh:** Dùng **Grayscale 64×64** (vector 4,096 chiều) thay vì 224×224
+# vì: (1) ảnh 224×224 tạo ma trận 27,000 × 50,176 ≈ 5.4 GB RAM; (2) PCA phân tích cấu trúc
+# hình học tổng thể — không đòi hỏi độ phân giải cao; (3) Grayscale bỏ nhiễu màu sắc,
+# giúp eigenimages biểu diễn rõ hơn đặc trưng texture/shape.
+# Dùng **IncrementalPCA** xử lý từng batch — không cần load toàn bộ vào memory cùng lúc.
 #
 # - **$H_0$:** Các lớp không phân tách được trên PC1 (PC1 mean không khác biệt giữa lớp).
 # - **$H_1$:** Ít nhất một cặp lớp phân tách được trên PC1.
