@@ -387,7 +387,9 @@ for cs_name, convert_fn in COLOR_SPACES.items():
     print(f"  PCA trên {cs_name}...")
     features = []
     for img, _ in pca_samples:
-        converted = convert_fn(img)
+        # Resize về best_size (kích thước được chọn từ resize ablation)
+        resized = cv2.resize(img, (best_size, best_size))
+        converted = convert_fn(resized)
         if converted.ndim == 2:
             converted = converted[:, :, np.newaxis]
         features.append(converted.reshape(-1).astype(np.float32))
@@ -420,14 +422,15 @@ plt.tight_layout()
 plt.show()
 
 # %%
-print("Số components cần để giữ X% variance:")
-print(f"{'Color Space':<12} {'90%':>8} {'95%':>8} {'99%':>8}")
+print("Số components cần để giữ X% variance (và tổng variance tại k=50):")
+print(f"{'Color Space':<12} {'Var@50':>10} {'90%':>8} {'95%':>8} {'99%':>8}")
 for cs_name, evr in pca_results.items():
     cum = np.cumsum(evr)
+    var_at_50 = float(cum[min(49, len(cum)-1)])
     n90 = np.argmax(cum >= 0.90) + 1 if cum[-1] >= 0.90 else f">{len(evr)}"
     n95 = np.argmax(cum >= 0.95) + 1 if cum[-1] >= 0.95 else f">{len(evr)}"
     n99 = np.argmax(cum >= 0.99) + 1 if cum[-1] >= 0.99 else f">{len(evr)}"
-    print(f"{cs_name:<12} {str(n90):>8} {str(n95):>8} {str(n99):>8}")
+    print(f"{cs_name:<12} {var_at_50:>10.3f} {str(n90):>8} {str(n95):>8} {str(n99):>8}")
 
 # %% [markdown]
 # ### Ablation: k-NN accuracy theo color space
@@ -753,72 +756,59 @@ plt.show()
 # %% [markdown]
 # ### t-SNE: Feature space trước/sau augmentation
 #
-# Chạy t-SNE với số lớp tăng dần (5, 10, 15, 20, 25, 30, 35, 40, 45) để quan sát
-# feature space thay đổi khi thêm lớp.
+# Pipeline augmentation áp dụng **2 phép ngẫu nhiên trong số 6 phép** (H-Flip, V-Flip,
+# Rotation, Random Crop, Gaussian Noise, Brightness/Contrast) cho mỗi ảnh.
+# Cách chọn này giúp tạo đa dạng biến thể mà không làm ảnh quá biến dạng.
+# t-SNE giảm chiều từ 32×32×3 xuống 2D để quan sát sự thay đổi phân phối đặc trưng.
 
 # %%
-# t-SNE với số lớp tăng dần
-n_class_list = [5, 10, 15, 20, 25, 30, 35, 40, 45]
-
+# t-SNE trước/sau augmentation (toàn bộ 45 lớp, 20 ảnh/lớp)
 def extract_feature(img):
     small = cv2.resize(img, (32, 32))
     return small.reshape(-1).astype(np.float32) / 255.0
 
-fig, axes = plt.subplots(len(n_class_list), 2, figsize=(14, 5 * len(n_class_list)))
+tsne_samples = load_sample(n_per_class=20)
 
-for row, n_cls in enumerate(n_class_list):
-    # Chọn n_cls lớp cách đều
-    cls_indices = np.linspace(0, len(classes) - 1, n_cls, dtype=int)
-    selected_classes = [classes[i] for i in cls_indices]
-    
-    # Load samples
-    tsne_samples = load_sample(n_per_class=20, target_classes=selected_classes)
-    
-    # Original features
-    orig_features, orig_labels = [], []
-    for img, cls in tsne_samples:
-        orig_features.append(extract_feature(img))
-        orig_labels.append(cls)
-    
-    # Augmented features (pipeline 2 phép ngẫu nhiên)
-    aug_features, aug_labels = [], []
-    np.random.seed(42)
-    aug_fns = list(AUGMENTATIONS.values())
-    for img, cls in tsne_samples:
-        aug_img = img.copy()
-        for fn in np.random.choice(aug_fns, 2, replace=False):
-            aug_img = fn(aug_img)
-        aug_features.append(extract_feature(aug_img))
-        aug_labels.append(cls)
-    
-    X_orig = np.array(orig_features)
-    X_aug = np.array(aug_features)
-    y_orig = np.array(orig_labels)
-    y_aug = np.array(aug_labels)
-    
-    # t-SNE
-    X_combined = np.vstack([X_orig, X_aug])
-    is_aug = np.array([0]*len(X_orig) + [1]*len(X_aug))
-    labels_combined = np.concatenate([y_orig, y_aug])
-    
-    tsne = TSNE(n_components=2, perplexity=min(30, len(X_orig)-1), random_state=42, max_iter=1000)
-    X_tsne = tsne.fit_transform(X_combined)
-    
-    # Plot
-    for col, (mask_val, title) in enumerate([(0, "Trước Aug"), (1, "Sau Aug")]):
-        mask = is_aug == mask_val
-        for cls in selected_classes:
-            cls_mask = (labels_combined == cls) & mask
-            axes[row][col].scatter(X_tsne[cls_mask, 0], X_tsne[cls_mask, 1], alpha=0.5, s=15, label=cls)
-        axes[row][col].set_title(f"{title} ({n_cls} lớp)", fontsize=10)
-        if n_cls <= 15:
-            axes[row][col].legend(fontsize=5, ncol=2)
-    
-    print(f"  {n_cls} lớp: done ({len(X_orig)} samples)")
+orig_features, orig_labels = [], []
+for img, cls in tsne_samples:
+    orig_features.append(extract_feature(img))
+    orig_labels.append(cls)
 
-plt.suptitle("t-SNE: Feature Space trước/sau Augmentation (số lớp tăng dần)", fontsize=14)
+aug_features, aug_labels = [], []
+np.random.seed(42)
+aug_fns = list(AUGMENTATIONS.values())
+for img, cls in tsne_samples:
+    aug_img = img.copy()
+    for fn in np.random.choice(aug_fns, 2, replace=False):
+        aug_img = fn(aug_img)
+    aug_features.append(extract_feature(aug_img))
+    aug_labels.append(cls)
+
+X_orig = np.array(orig_features)
+X_aug  = np.array(aug_features)
+y_orig = np.array(orig_labels)
+y_aug  = np.array(aug_labels)
+
+X_combined     = np.vstack([X_orig, X_aug])
+is_aug         = np.array([0]*len(X_orig) + [1]*len(X_aug))
+labels_combined = np.concatenate([y_orig, y_aug])
+
+perplexity_val = min(50, len(X_orig) - 1)
+tsne = TSNE(n_components=2, perplexity=perplexity_val, random_state=42, max_iter=1000)
+X_tsne = tsne.fit_transform(X_combined)
+
+fig, axes = plt.subplots(1, 2, figsize=(16, 7))
+for col, (mask_val, title) in enumerate([(0, "Trước Augmentation"), (1, "Sau Augmentation")]):
+    mask = is_aug == mask_val
+    for cls in classes:
+        cls_mask = (labels_combined == cls) & mask
+        axes[col].scatter(X_tsne[cls_mask, 0], X_tsne[cls_mask, 1], alpha=0.5, s=15, label=cls)
+    axes[col].set_title(f"{title} (45 lớp, n={mask.sum()})", fontsize=11)
+
+plt.suptitle(f"t-SNE: Feature Space trước/sau Augmentation (perplexity={perplexity_val})", fontsize=13)
 plt.tight_layout()
 plt.show()
+print(f"t-SNE done: {len(X_orig)} ảnh gốc + {len(X_aug)} ảnh augmented")
 
 # %% [markdown]
 # ### Kiểm định: Augmentation có tăng diversity?

@@ -361,14 +361,16 @@ print(f"Tổng hợp Eta²:  R={eta2_r:.3f},  G={eta2_g:.3f},  B={eta2_b:.3f}")
 # | G | $F=474.96$, $p \approx 0$ | $H=10592$, $p \approx 0$ | $0.437$ | Effect size LỚN |
 # | B | $F=510.74$, $p \approx 0$ | $H=11922$, $p \approx 0$ | $0.455$ | Effect size LỚN |
 #
-# - **Bác bỏ $H_0$** ở cả 3 kênh
-#   - Lớp ảnh giải thích **43-50%** variance của pixel mean
-#   - Kênh R có $\eta^2$ cao nhất ($0.500$) - kênh phân biệt lớp tốt nhất
-# - Levene test reject ($p \approx 0$) - variance không đồng nhất giữa các lớp
-#   - Kruskal-Wallis là kiểm định chính (không giả định equal variance)
-#   - ANOVA cho kết quả tương đồng
-# - Post-hoc: hầu hết các cặp lớp đại diện đều khác biệt có ý nghĩa ($p \ll 0.005$)
-#   - Ngoại trừ `freeway` vs `river` ở kênh R ($p = 0.45$) - 2 lớp này có pixel mean R gần nhau
+# - **Bác bỏ $H_0$** ở cả 3 kênh (KW: $p \approx 0$, ANOVA: $p \approx 0$).
+#   - Levene test reject → variance không đồng nhất giữa các lớp.
+#     **Kruskal-Wallis là kiểm định chính** (không giả định equal variance).
+#   - ANOVA và KW cùng reject nhưng kiểm định khác nhau:
+#     ANOVA kiểm định sự khác biệt về **mean**; KW kiểm định sự khác biệt về **phân phối rank**.
+#   - $\eta^2$ được tính trên **per-image pixel channel mean** (mỗi sample là mean của một ảnh).
+#     Lớp ảnh giải thích **43–50% variance** của pixel channel mean; kênh R cao nhất ($\eta^2 = 0.500$).
+# - Post-hoc (Mann-Whitney + Bonferroni): hầu hết các cặp lớp đại diện khác biệt có ý nghĩa ($p \ll 0.005$).
+#   - `freeway` vs `river` không khác biệt ở kênh **R** ($p_{bonf} = 0.45$),
+#     nhưng **vẫn khác biệt** ở kênh G và B → kết hợp cả 3 kênh vẫn phân biệt được 2 lớp này.
 
 # %% [markdown]
 # ---
@@ -653,6 +655,19 @@ if near_dupes:
     plt.tight_layout()
     plt.show()
 
+# %%
+# Lưu danh sách near-duplicate ra CSV (giữ ảnh đầu mỗi cặp, xóa ảnh còn lại)
+if near_dupes:
+    near_dup_delete = set()
+    for a, b, dist in near_dupes:
+        near_dup_delete.add(b[3])  # giữ a, bỏ b
+    near_dup_csv_path = os.path.join(OUTPUT_DIR, 'near_duplicate_paths.csv')
+    pd.DataFrame({'path': list(near_dup_delete)}).to_csv(near_dup_csv_path, index=False)
+    print(f"Near-duplicates: {len(near_dupes)} cặp → {len(near_dup_delete)} ảnh cần xóa")
+    print(f"Đã lưu danh sách → {near_dup_csv_path}")
+else:
+    print("Không có ảnh near-duplicate.")
+
 # %% [markdown]
 # ---
 # ## 4. Contrast & Brightness Analysis
@@ -860,13 +875,11 @@ for metric_name in ["Brightness", "Contrast"]:
 # | Brightness | $F=38.37$, $p \approx 0$ | $H=866$, $p \approx 0$ | $0.434$ |
 # | Contrast | $F=48.62$, $p \approx 0$ | $H=1072$, $p \approx 0$ | $0.492$ |
 #
-# - **Bác bỏ $H_0$** cho cả Brightness và Contrast
-#   - Contrast có $\eta^2$ cao hơn ($0.492$ vs $0.434$) - phân biệt lớp tốt hơn Brightness
-# - Scatter plot cho thấy 45 lớp phân bố rộng trên không gian Brightness $\times$ Contrast
-#   - 2 đặc trưng này có tiềm năng dùng làm feature phân biệt lớp
-# - Quy luật:
-#   - Lớp tự nhiên đồng nhất (forest, lake): contrast **thấp**
-#   - Lớp cấu trúc phức tạp (dense residential, harbor): contrast **cao**
+# - **Bác bỏ $H_0$** cho cả Brightness và Contrast (KW là kiểm định chính, Levene reject).
+#   - Contrast có $\eta^2$ nhỉnh hơn một chút ($0.492$ vs $0.434$), cả hai đều ở mức **large** (> 0.14).
+# - Scatter plot gợi ý xu hướng: lớp tự nhiên đồng nhất (forest, lake) có contrast thấp hơn
+#   lớp cấu trúc phức tạp (dense_residential, harbor) — cần post-hoc test để xác nhận từng cặp.
+# - 2 đặc trưng này có tiềm năng dùng làm feature phân biệt lớp.
 
 # %% [markdown]
 # ---

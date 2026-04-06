@@ -141,7 +141,7 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 
 # %%
 PCA_SIZE = 64
-N_COMPONENTS = 200   # số components tối đa; đủ để đạt 99% variance với ảnh 64×64
+N_COMPONENTS = 800   # đủ để xác định ngưỡng 90/95/99% variance (có thể >200 với ảnh tự nhiên)
 BATCH_SIZE  = 500    # số ảnh mỗi batch cho IncrementalPCA
 
 # Load toàn bộ ảnh train (27,000 ảnh = 600/lớp × 45 lớp)
@@ -694,29 +694,6 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
     print(f"  Eta²={eta2:.3f}  ({'lớn ≥0.14' if eta2>=0.14 else 'trung bình ≥0.06' if eta2>=0.06 else 'nhỏ'})")
     print()
 
-# %%
-# Tương quan Sobel vs Canny theo lớp
-class_stats = df_final.groupby('class').agg({'sobel': 'mean', 'canny': 'mean'}).reset_index()
-r_p, p_pear = stats.pearsonr(class_stats['sobel'], class_stats['canny'])
-r_s, p_spear = stats.spearmanr(class_stats['sobel'], class_stats['canny'])
-print(f"Tương quan Sobel vs Canny (per class means):")
-print(f"  Pearson r={r_p:.4f}, p={p_pear:.2e}")
-print(f"  Spearman ρ={r_s:.4f}, p={p_spear:.2e}")
-
-fig, ax = plt.subplots(figsize=(9, 7))
-ax.scatter(class_stats['sobel'], class_stats['canny'], s=50, alpha=0.75)
-for _, row in class_stats.iterrows():
-    ax.annotate(row['class'], (row['sobel'], row['canny']), fontsize=6, alpha=0.8)
-z = np.polyfit(class_stats['sobel'], class_stats['canny'], 1)
-xline = np.linspace(class_stats['sobel'].min(), class_stats['sobel'].max(), 100)
-ax.plot(xline, np.polyval(z, xline), 'r--', alpha=0.5, label=f'r={r_p:.3f}')
-ax.set_xlabel(f"Sobel edge density (T={BEST_T})")
-ax.set_ylabel(f"Canny edge density ({BEST_CANNY})")
-ax.set_title("Tương quan Sobel vs Canny theo lớp")
-ax.legend()
-plt.tight_layout()
-plt.show()
-
 # %% [markdown]
 # **Kết luận Edge Detection:**
 #
@@ -725,7 +702,6 @@ plt.show()
 # - **Canny:** T₂/T₁ ≈ 2–3; σ=2 làm trơn noise tốt hơn trên ảnh vệ tinh.
 # - **ANOVA + Kruskal-Wallis** (xem output): p ≈ 0, Eta² lớn → bác bỏ H₀,
 #   edge density khác biệt có ý nghĩa giữa 45 lớp.
-# - **Sobel ≈ Prewitt** (tương quan cao); Canny nhạy hơn với T₁/T₂ độc lập.
 # - Lớp edge cao nhất: cấu trúc đô thị/thực vật dày (dense_residential, chaparral).
 # - Lớp edge thấp nhất: bề mặt đồng nhất (island, runway, sea_ice).
 

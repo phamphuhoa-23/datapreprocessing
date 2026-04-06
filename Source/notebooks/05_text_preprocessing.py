@@ -284,62 +284,57 @@ print(f"\nSupported:    mean={supported_lens.mean():.1f}, median={supported_lens
 print(f"Hallucinated: mean={hallucinated_lens.mean():.1f}, median={hallucinated_lens.median():.1f}, std={hallucinated_lens.std():.1f}")
 
 # %% papermill={"duration": 2.099575, "end_time": "2026-03-25T13:06:50.575421+00:00", "exception": false, "start_time": "2026-03-25T13:06:48.475846+00:00", "status": "completed"}
-# Trực quan hóa phân phối độ dài
-fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+# Trực quan hóa phân phối độ dài (số từ, số câu, số ký tự)
+supported_chars_plot   = df[df['label'] == 0]['text_len_char']
+hallucinated_chars_plot = df[df['label'] == 1]['text_len_char']
 
-# Histogram - Số từ
+fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+
+# [0,0] Histogram - Số từ
 axes[0, 0].hist(supported_lens, bins=50, alpha=0.6, label='Supported', color='#2ecc71', edgecolor='black')
 axes[0, 0].hist(hallucinated_lens, bins=50, alpha=0.6, label='Hallucinated', color='#e74c3c', edgecolor='black')
-axes[0, 0].set_title('Phân phối độ dài (số từ)', fontsize=14)
+axes[0, 0].set_title('Phân phối độ dài (số từ)', fontsize=13)
 axes[0, 0].set_xlabel('Số từ')
 axes[0, 0].set_ylabel('Tần suất')
 axes[0, 0].legend()
 
-# KDE - Số từ
-sns.kdeplot(supported_lens, ax=axes[0, 1], label='Supported', color='#2ecc71', fill=True, alpha=0.3)
-sns.kdeplot(hallucinated_lens, ax=axes[0, 1], label='Hallucinated', color='#e74c3c', fill=True, alpha=0.3)
-axes[0, 1].set_title('KDE - Phân phối độ dài (số từ)', fontsize=14)
-axes[0, 1].set_xlabel('Số từ')
+# [0,1] Histogram - Số ký tự
+axes[0, 1].hist(supported_chars_plot, bins=50, alpha=0.6, label='Supported', color='#2ecc71', edgecolor='black')
+axes[0, 1].hist(hallucinated_chars_plot, bins=50, alpha=0.6, label='Hallucinated', color='#e74c3c', edgecolor='black')
+axes[0, 1].set_title('Phân phối độ dài (số ký tự)', fontsize=13)
+axes[0, 1].set_xlabel('Số ký tự')
+axes[0, 1].set_ylabel('Tần suất')
 axes[0, 1].legend()
 
-# Boxplot theo nhãn
+# [0,2] KDE - Số từ
+sns.kdeplot(supported_lens, ax=axes[0, 2], label='Supported', color='#2ecc71', fill=True, alpha=0.3)
+sns.kdeplot(hallucinated_lens, ax=axes[0, 2], label='Hallucinated', color='#e74c3c', fill=True, alpha=0.3)
+axes[0, 2].set_title('KDE - Phân phối độ dài (số từ)', fontsize=13)
+axes[0, 2].set_xlabel('Số từ')
+axes[0, 2].legend()
+
+# [1,0] Boxplot - Số từ
 sns.boxplot(data=df, x='label_name', y='text_len_words', palette=colors, ax=axes[1, 0])
-axes[1, 0].set_title('Boxplot độ dài (số từ) theo nhãn', fontsize=14)
+axes[1, 0].set_title('Boxplot độ dài (số từ) theo nhãn', fontsize=13)
 axes[1, 0].set_xlabel('Nhãn')
 axes[1, 0].set_ylabel('Số từ')
 
-# Violin plot - Số câu
+# [1,1] Violin - Số câu
 sns.violinplot(data=df, x='label_name', y='text_len_sents', palette=colors, ax=axes[1, 1])
-axes[1, 1].set_title('Violin plot độ dài (số câu) theo nhãn', fontsize=14)
+axes[1, 1].set_title('Violin plot độ dài (số câu) theo nhãn', fontsize=13)
 axes[1, 1].set_xlabel('Nhãn')
 axes[1, 1].set_ylabel('Số câu')
 
+# [1,2] KDE - Số ký tự
+sns.kdeplot(supported_chars_plot, ax=axes[1, 2], label='Supported', color='#2ecc71', fill=True, alpha=0.3)
+sns.kdeplot(hallucinated_chars_plot, ax=axes[1, 2], label='Hallucinated', color='#e74c3c', fill=True, alpha=0.3)
+axes[1, 2].set_title('KDE - Phân phối độ dài (số ký tự)', fontsize=13)
+axes[1, 2].set_xlabel('Số ký tự')
+axes[1, 2].legend()
+
+plt.suptitle("Phân phối độ dài văn bản: số từ, số câu, số ký tự", fontsize=15)
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / 'text_length_distribution.png', dpi=150, bbox_inches='tight')
-plt.show()
-
-# %%
-# Phân phối độ dài theo ký tự (character-level)
-supported_chars_plot = df[df['label'] == 0]['text_len_char']
-hallucinated_chars_plot = df[df['label'] == 1]['text_len_char']
-
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-axes[0].hist(supported_chars_plot, bins=50, alpha=0.6, label='Supported', color='#2ecc71', edgecolor='black')
-axes[0].hist(hallucinated_chars_plot, bins=50, alpha=0.6, label='Hallucinated', color='#e74c3c', edgecolor='black')
-axes[0].set_title('Phân phối độ dài (số ký tự)', fontsize=14)
-axes[0].set_xlabel('Số ký tự')
-axes[0].set_ylabel('Tần suất')
-axes[0].legend()
-
-sns.kdeplot(supported_chars_plot, ax=axes[1], label='Supported', color='#2ecc71', fill=True, alpha=0.3)
-sns.kdeplot(hallucinated_chars_plot, ax=axes[1], label='Hallucinated', color='#e74c3c', fill=True, alpha=0.3)
-axes[1].set_title('KDE - Phân phối độ dài (số ký tự)', fontsize=14)
-axes[1].set_xlabel('Số ký tự')
-axes[1].legend()
-
-plt.suptitle("Phân phối độ dài văn bản theo ký tự (character-length)", fontsize=13)
-plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'char_length_distribution.png', dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% papermill={"duration": 0.04639, "end_time": "2026-03-25T13:06:50.633445+00:00", "exception": false, "start_time": "2026-03-25T13:06:50.587055+00:00", "status": "completed"}
