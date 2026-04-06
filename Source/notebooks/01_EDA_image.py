@@ -603,13 +603,6 @@ if files_to_delete:
 else:
     print("Không có ảnh exact-duplicate.")
 
-# [OPTIONAL] Uncomment để xóa ảnh duplicate khỏi disk (giữ lại 1 ảnh đầu tiên mỗi nhóm)
-# if files_to_delete:
-#     for f in files_to_delete:
-#         if os.path.exists(f):
-#             os.remove(f)
-#     print(f"Đã xóa {len(files_to_delete)} ảnh duplicate.")
-
 # %% [markdown]
 # ### Near-duplicate detection (Hamming distance $\leq$ 4)
 #

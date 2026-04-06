@@ -86,19 +86,14 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"TRAIN_DIR  = {TRAIN_DIR}")
 print(f"OUTPUT_DIR = {OUTPUT_DIR}")
 
-# ── Chain check: kết quả từ 01_EDA_image ──────────────────────────────────
+# ── Chain check: đọc danh sách duplicate từ 01_EDA_image (nếu có) ──────────
 _dup_csv = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
 if os.path.exists(_dup_csv):
     import pandas as _pd_chain
-    _dup_df = _pd_chain.read_csv(_dup_csv)
-    EXCLUDED_PATHS = set(_dup_df['path'].tolist())
-    print(f"✅ [Chain 01→02] duplicate_paths.csv tìm thấy: {len(EXCLUDED_PATHS)} ảnh sẽ bị loại khi load.")
-    print(f"   (Nếu 01_EDA đã xóa file thật, glob tự không tìm thấy; nếu chưa xóa, load_sample sẽ filter)")
+    EXCLUDED_PATHS = set(_pd_chain.read_csv(_dup_csv)['path'].tolist())
+    print(f"[Chain 01→02] Loại trừ {len(EXCLUDED_PATHS)} ảnh duplicate khi load.")
 else:
     EXCLUDED_PATHS = set()
-    print("⚠️  [Chain 01→02] duplicate_paths.csv KHÔNG tìm thấy.")
-    print("   → Nên chạy 01_EDA_image trước để phát hiện và xóa ảnh trùng lặp.")
-    print("   → Tiếp tục với toàn bộ ảnh (bao gồm có thể có duplicate).")
 
 classes = sorted(os.listdir(TRAIN_DIR))
 print(f"Số lớp: {len(classes)}")
