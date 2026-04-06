@@ -81,18 +81,39 @@ def _find_image_root() -> Path:
 
 _IMG_ROOT = _find_image_root()
 TRAIN_DIR = str(_IMG_ROOT / 'train')
-print(f"TRAIN_DIR = {TRAIN_DIR}")
+OUTPUT_DIR = str(_IMG_ROOT.parent / 'processed')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+print(f"TRAIN_DIR  = {TRAIN_DIR}")
+print(f"OUTPUT_DIR = {OUTPUT_DIR}")
+
+# ── Chain check: kết quả từ 01_EDA_image ──────────────────────────────────
+_dup_csv = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
+if os.path.exists(_dup_csv):
+    import pandas as _pd_chain
+    _dup_df = _pd_chain.read_csv(_dup_csv)
+    EXCLUDED_PATHS = set(_dup_df['path'].tolist())
+    print(f"✅ [Chain 01→02] duplicate_paths.csv tìm thấy: {len(EXCLUDED_PATHS)} ảnh sẽ bị loại khi load.")
+    print(f"   (Nếu 01_EDA đã xóa file thật, glob tự không tìm thấy; nếu chưa xóa, load_sample sẽ filter)")
+else:
+    EXCLUDED_PATHS = set()
+    print("⚠️  [Chain 01→02] duplicate_paths.csv KHÔNG tìm thấy.")
+    print("   → Nên chạy 01_EDA_image trước để phát hiện và xóa ảnh trùng lặp.")
+    print("   → Tiếp tục với toàn bộ ảnh (bao gồm có thể có duplicate).")
+
 classes = sorted(os.listdir(TRAIN_DIR))
 print(f"Số lớp: {len(classes)}")
 
 
 # %%
 def load_sample(n_per_class=20, target_classes=None, seed=42):
+    """Load ảnh mẫu, tự động loại trừ EXCLUDED_PATHS (từ 01_EDA duplicate list)."""
     np.random.seed(seed)
     target = target_classes or classes
     samples = []
     for cls in target:
         paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
+        # Loại trừ ảnh đã được đánh dấu là duplicate bởi 01_EDA
+        paths = [p for p in paths if p not in EXCLUDED_PATHS]
         chosen = np.random.choice(paths, min(n_per_class, len(paths)), replace=False)
         for p in chosen:
             img = cv2.cvtColor(cv2.imread(p), cv2.COLOR_BGR2RGB)
