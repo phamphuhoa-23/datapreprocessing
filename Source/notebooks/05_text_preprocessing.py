@@ -765,7 +765,7 @@ tokenization_results
 
 # %% papermill={"duration": 1.612187, "end_time": "2026-03-25T13:07:45.176021+00:00", "exception": false, "start_time": "2026-03-25T13:07:43.563834+00:00", "status": "completed"}
 # Trực quan hóa so sánh tokenization
-fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
 # Phân phối độ dài token
 methods = ['Word-level', 'Sentence-level', 'Character-level', 'Subword (BPE)']
@@ -788,20 +788,6 @@ axes[1].set_title('Kích thước từ vựng', fontsize=14)
 axes[1].set_ylabel('Vocab size')
 for bar, v in zip(bars, vocab_sizes):
     axes[1].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 100, f'{v:,}', ha='center', fontweight='bold')
-
-# Ví dụ tokenization cho 1 câu
-example = sample_texts[0][:100]
-example_data = {
-    'Word': word_tokenize(example),
-    'Char': list(example)[:30],
-    'BPE': bpe_tokenizer.encode(example).tokens
-}
-axes[2].axis('off')
-info_text = f"Ví dụ tokenization:\n\nInput: \"{example}\"\n\n"
-for method, tokens in example_data.items():
-    info_text += f"{method}: {tokens[:15]}...\n  ({len(tokens)} tokens)\n\n"
-axes[2].text(0.05, 0.95, info_text, transform=axes[2].transAxes, verticalalignment='top',
-             fontsize=10, fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow'))
 
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / 'tokenization_comparison.png', dpi=150, bbox_inches='tight')
