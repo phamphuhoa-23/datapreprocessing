@@ -1744,6 +1744,35 @@ else:
 # | **Tầng 2 – Dựa trên mô hình** | RF importance, GB importance, RFE + CV | Đánh giá theo đóng góp trong mô hình cụ thể |
 # | **Tầng 3 – Giảm chiều** | PCA (95% variance), t-SNE, UMAP | Biến đổi/trực quan hóa không gian đặc trưng |
 # #
+# **Tầng 1 – Công thức toán:**
+# #
+# **ANOVA F-test** so sánh phương sai giữa các nhóm ($y=0$ và $y=1$):
+# #
+# $$F = \frac{\text{between-group variance}}{\text{within-group variance}}
+# = \frac{\sum_k n_k (\bar{x}_k - \bar{x})^2 / (K-1)}
+# {\sum_k \sum_i (x_{ki} - \bar{x}_k)^2 / (N-K)}$$
+# #
+# $F$ lớn $\Rightarrow$ đặc trưng phân biệt được tốt giữa các nhóm.
+# #
+# **Chi-square** kiểm tra độc lập giữa đặc trưng phân loại và target:
+# #
+# $$\chi^2 = \sum_{i,j} \frac{(O_{ij} - E_{ij})^2}{E_{ij}}, \quad
+# E_{ij} = \frac{R_i \cdot C_j}{N}$$
+# #
+# **Mutual Information** đo thông tin của $X_j$ về target $Y$:
+# #
+# $$I(X_j; Y) = \sum_{x,y} p(x,y) \log \frac{p(x,y)}{p(x)\,p(y)}$$
+# #
+# Không có giả định tuyến tính — phẩt hiện cả quan hệ phi tuyến.
+# #
+# **Tầng 2 – RFE (Recursive Feature Elimination)**:
+# Lặp: train model → xác định đặc trưng ít quan trọng nhất → loại → lặp lại.
+# Dùng 5-fold CV F1-score để chọn $k$ tốt nhất.
+# #
+# **Tầng 3 – PCA giảm chiều** (giữ $k^*$ components đạt 95% explained variance):
+# #
+# $$k^* = \min\left\{k : \sum_{i=1}^k \lambda_i \big/ \sum_{i} \lambda_i \geq 0.95\right\}$$
+# #
 # **Đánh giá cuối**: với mỗi phương pháp lọc, huấn luyện Logistic Regression và báo cáo **5-fold CV F1-score** theo số lượng đặc trưng.
 
 # %%
@@ -2111,7 +2140,28 @@ print(f"\n→ Phương pháp tốt nhất: {winner} (n={all_best[winner][0]}, F1
 # | **ADASYN** | SMOTE thích nghi – tạo nhiều mẫu hơn ở vùng khó phân loại (gần biên) | Tập trung hard cases | Nhạy cảm với noise |
 # | **Random Undersampling** | Xóa ngẫu nhiên mẫu lớp đa số | Nhanh, giảm chi phí tính toán | Mất thông tin từ lớp đa số |
 # #
-# **Đánh giá**: dùng **F1-macro** (trung bình không trọng số giữa các lớp) và **AUC-ROC** thay vì accuracy.
+# **Công thức SMOTE** (Chawla et al., 2002):
+# #
+# Nội suy giữa điểm thiểu số $\mathbf{x}_i$ và k-NN ngẫu nhiên $\mathbf{x}_{\text{nn}}$:
+# #
+# $$\mathbf{x}_{\text{syn}} = \mathbf{x}_i + \lambda\,\bigl(\mathbf{x}_{\text{nn}} - \mathbf{x}_i\bigr),
+# \quad \lambda \sim \text{Uniform}(0, 1)$$
+# #
+# **Công thức ADASYN** (He et al., 2008): số mẫu tổng hợp cho điểm $\mathbf{x}_i$ tỉ lệ với
+# tỷ lệ láng giềng khác lớp:
+# #
+# $$g_i = G \cdot \hat{r}_i, \quad
+# \hat{r}_i = \frac{\Delta_i / K}{Z}, \quad \Delta_i = \text{(số hàng xóm khác lớp trong }K\text{-NN)}$$
+# #
+# **Đánh giá chất lượng mô hình:**
+# #
+# $$\text{F1-macro} = \frac{1}{K}\sum_{k=1}^K \frac{2\,P_k\,R_k}{P_k + R_k}$$
+# #
+# $$\text{AUC-ROC} = \int_0^1 \text{TPR}\,d(\text{FPR})
+# = P(\text{score}_{+} > \text{score}_{-})$$
+# #
+# F1-macro đối xử các lớp bình đẳng mọi lớp dù số mẫu ít — phù hợp với bài toán mất cân bằng.
+# AUC-ROC không phụ thuộc ngưỡng quyết định, đo khả năng phân biệt tổng thể.
 
 # %% _uuid="aad7855b-f992-4bb3-aa09-ea1e5e129217" _cell_guid="bb3e1e6b-1fb9-4308-9012-07f85f25e340" jupyter={"outputs_hidden": false}
 from imblearn.over_sampling import SMOTE, ADASYN
