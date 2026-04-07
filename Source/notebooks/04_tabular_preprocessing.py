@@ -418,7 +418,7 @@ print(normality_df.sort_values(
 # |---|---|---|
 # | **Correlation** | Dùng **Spearman** làm mặc định | 399/400 cột không chuẩn |
 # | **Scaling** | **RobustScaler** hoặc **QuantileTransformer** | Tránh bị kéo bởi outlier |
-# | **Imputation** | **Median** (không phải Mean) | Mean nhạy cảm với lệch phải |
+# | **Imputation** | **Mean** (scalable, không OOM với 400+ cột) | MICE/Median tốt hơn RMSE nhưng Mean chọn cho scalability |
 # | **Feature engineering** | Log-transform `TransactionAmt`, các cột C/D/V | Giảm skewness trước khi đưa vào mô hình tuyến tính |
 
 # %% _uuid="98415b03-e4d1-42d2-b55e-42a4d0b1284c" _cell_guid="822a319a-e13c-4a5c-b111-86fa543b6aa2" jupyter={"outputs_hidden": false}
@@ -1101,7 +1101,7 @@ plt.show()
 # $$\text{RMSE} = \sqrt{\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}} (x_{ij} - \hat{x}_{ij})^2}$$
 # #
 # Chiến lược có RMSE thấp nhất được chọn. Tuy nhiên, với dataset lớn (~400 cột × 590k dòng),
-# **Median imputation** được ưu tiên cho production vì bền vững với outlier và tránh OOM.
+# **Mean imputation** được chọn cho production vì nhẹ nhất (RMSE=120.03) và không gây OOM với 400+ cột × 590k dòng.
 
 # %% _uuid="7afee0b4-1555-4f97-adf2-a388db84f0a0" _cell_guid="09ef0eca-9909-4760-a993-ae643f45c954" jupyter={"outputs_hidden": false}
 from sklearn.experimental import enable_iterative_imputer  # noqa
@@ -1916,13 +1916,13 @@ else:
 # #
 # **Tầng 2 – RFE (Recursive Feature Elimination)**:
 # Lặp: train model → xác định đặc trưng ít quan trọng nhất → loại → lặp lại.
-# Dùng 5-fold CV F1-score để chọn $k$ tốt nhất.
+# Dùng 3-fold CV F1-score để chọn $k$ tốt nhất (subsample 1.000 dòng để tránh OOM).
 # #
 # **Tầng 3 – PCA giảm chiều** (giữ $k^*$ components đạt 95% explained variance):
 # #
 # $$k^* = \min\left\{k : \sum_{i=1}^k \lambda_i \big/ \sum_{i} \lambda_i \geq 0.95\right\}$$
 # #
-# **Đánh giá cuối**: với mỗi phương pháp lọc, huấn luyện Logistic Regression và báo cáo **5-fold CV F1-score** theo số lượng đặc trưng.
+# **Đánh giá cuối**: với mỗi phương pháp lọc, huấn luyện Logistic Regression và báo cáo **3-fold CV F1-score** theo số lượng đặc trưng.
 
 # %%
 
@@ -2078,9 +2078,9 @@ plt.savefig(os.path.join(OUTPUT_DIR, 'fig_09_model_importance.png'),
 plt.show()
 
 # %%
-# ─── 2c. RFE với Logistic Regression (5-fold CV) ────────────────────────
+# ─── 2c. RFE với Logistic Regression (3-fold CV) ────────────────────────
 # Lý do subsample: RFE với LR có độ phức tạp O(n·d·k²) trong k vòng lặp
-# → 30k dòng × 400+ cột × 5-fold sẽ mất hàng giờ; 3000 dòng đủ ổn định
+# → 30k dòng × 400+ cột × 3-fold sẽ mất hàng giờ; 1.000 dòng đủ ổn định
 print("\n[2c] RFE với Logistic Regression (3-fold CV, subsample=1000)...")
 print("     Lý do subsample: RFE có O(n·d·k²) → 1000 dòng đủ để đánh giá phân loại.")
 
@@ -2089,7 +2089,7 @@ idx_rfe = X_fs_sample.sample(RFE_N, random_state=SEED).index
 X_rfe = X_fs_sample.loc[idx_rfe]
 y_rfe = y_fs_sample.loc[idx_rfe]
 
-cv_5fold = StratifiedKFold(n_splits=3, shuffle=True, random_state=SEED)
+cv_3fold = StratifiedKFold(n_splits=3, shuffle=True, random_state=SEED)
 N_FEATS_RFE = [5, 10]
 rfe_f1_scores = {}
 
@@ -2105,14 +2105,14 @@ for n in N_FEATS_RFE:
                                    class_weight='balanced', random_state=SEED))
     ])
     scores = cross_val_score(
-        pipe, X_rfe, y_rfe, cv=cv_5fold, scoring='f1', n_jobs=-1)
+        pipe, X_rfe, y_rfe, cv=cv_3fold, scoring='f1', n_jobs=-1)
     rfe_f1_scores[n] = round(scores.mean(), 4)
     print(
         f"  n_features={n:3d}: F1={scores.mean():.4f} +/- {scores.std():.4f}")
 
 best_rfe_n = max(rfe_f1_scores, key=rfe_f1_scores.get)
 print(
-    f"\n→ RFE tốt nhất: n_features={best_rfe_n}, F1={rfe_f1_scores[best_rfe_n]:.4f}")
+    f"\n→ RFE tốt nhất: n_features={best_rfe_n}, 3-fold CV F1={rfe_f1_scores[best_rfe_n]:.4f}")
 
 # %%
 # Bar chart: CV F1-score theo số lượng đặc trưng RFE
@@ -2126,7 +2126,7 @@ for bar, val in zip(bars, f1s):
     ax.text(bar.get_x() + bar.get_width()/2, val + 0.002, f'{val:.4f}',
             ha='center', va='bottom', fontsize=9)
 ax.set_xlabel('Số đặc trưng (n_features_to_select)')
-ax.set_ylabel('CV F1-score (mean, 5-fold)')
+ax.set_ylabel('CV F1-score (mean, 3-fold)')
 ax.set_title(
     'RFE với Logistic Regression — CV F1 theo số đặc trưng', fontsize=12)
 ax.set_ylim(0, max(f1s) * 1.15)
@@ -2236,7 +2236,7 @@ except Exception as _umap_err:
 # | Filter – Union(3) | ~40-60 | Hợp tất cả filter methods |
 # | Model – RF Top20 | 20 | Gini importance |
 # | Model – GB Top20 | 20 | Gradient Boosting importance |
-# | RFE(LR) best-n | best_rfe_n | 5-fold CV F1 tối đa |
+# | RFE(LR) best-n | best_rfe_n | 3-fold CV F1 tối đa (subsample 1.000 dòng) |
 #
 # **Chiến lược chọn cuối:** Union RF+GB top-20 (kết hợp 2 model-based biện hộ nhất),
 # bổ sung thêm đặc trưng từ top-ANOVA để đảm bảo coverage.
@@ -2259,7 +2259,7 @@ for label, cnt in fs_summary_counts.items():
     print(f"  {label:<35}: {cnt} đặc trưng")
 
 print(
-    f"\n→ RFE tốt nhất: n_features={best_rfe_n}, 5-fold CV F1={rfe_f1_scores[best_rfe_n]:.4f}")
+    f"\n→ RFE tốt nhất: n_features={best_rfe_n}, 3-fold CV F1={rfe_f1_scores[best_rfe_n]:.4f}")
 
 # Lựa chọn cuối: union RF + GB để kết hợp 2 model-based approaches
 FINAL_FEATURES = list(set(top_rf_feats) | set(top_gb_feats))
@@ -2283,7 +2283,7 @@ for n, f1 in zip(ns_rfe, f1s_rfe):
     ax.annotate(f'{f1:.3f}', (n, f1), textcoords='offset points', xytext=(0, 8),
                 ha='center', fontsize=9)
 ax.set_xlabel('Số lượng đặc trưng (k)')
-ax.set_ylabel('5-fold CV F1 score')
+ax.set_ylabel('3-fold CV F1 score')
 ax.set_title(
     'RFE – F1 Score theo Số Lượng Đặc Trưng (Logistic Regression)', fontsize=12)
 ax.legend()
