@@ -42,7 +42,11 @@
 # ## 0. Setup
 
 # %%
-import os, glob, warnings
+import json
+from pathlib import Path
+import os
+import glob
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -58,10 +62,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score
 
 warnings.filterwarnings('ignore')
-plt.rcParams.update({'figure.figsize': (12, 6), 'font.size': 11, 'figure.dpi': 100})
+plt.rcParams.update(
+    {'figure.figsize': (12, 6), 'font.size': 11, 'figure.dpi': 100})
 sns.set_style("whitegrid")
 
-from pathlib import Path
 
 def _find_image_root() -> Path:
     """Tìm thư mục Dataset/ chứa train/."""
@@ -77,7 +81,9 @@ def _find_image_root() -> Path:
     for p in candidates:
         if (p / 'train').exists() and any((p / 'train').iterdir()):
             return p
-    raise FileNotFoundError("Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào Source/Dataset/.")
+    raise FileNotFoundError(
+        "Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào Source/Dataset/.")
+
 
 _IMG_ROOT = _find_image_root()
 TRAIN_DIR = str(_IMG_ROOT / 'train')
@@ -91,7 +97,8 @@ _dup_csv = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
 if os.path.exists(_dup_csv):
     import pandas as _pd_chain
     EXCLUDED_PATHS = set(_pd_chain.read_csv(_dup_csv)['path'].tolist())
-    print(f"[Chain 01→02] Loại trừ {len(EXCLUDED_PATHS)} ảnh duplicate khi load.")
+    print(
+        f"[Chain 01→02] Loại trừ {len(EXCLUDED_PATHS)} ảnh duplicate khi load.")
 else:
     EXCLUDED_PATHS = set()
 
@@ -109,7 +116,8 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
         paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
         # Loại trừ ảnh đã được đánh dấu là duplicate bởi 01_EDA
         paths = [p for p in paths if p not in EXCLUDED_PATHS]
-        chosen = np.random.choice(paths, min(n_per_class, len(paths)), replace=False)
+        chosen = np.random.choice(paths, min(
+            n_per_class, len(paths)), replace=False)
         for p in chosen:
             img = cv2.cvtColor(cv2.imread(p), cv2.COLOR_BGR2RGB)
             samples.append((img, cls))
@@ -175,10 +183,12 @@ results_resize = []
 for img_orig, cls in tqdm(samples, desc="Resize ablation"):
     for (h, w) in RESIZE_DIMS:
         resized = cv2.resize(img_orig, (w, h), interpolation=cv2.INTER_AREA)
-        restored = cv2.resize(resized, (256, 256), interpolation=cv2.INTER_LINEAR)
+        restored = cv2.resize(resized, (256, 256),
+                              interpolation=cv2.INTER_LINEAR)
         s = ssim(img_orig, restored, channel_axis=2)
         p = psnr(img_orig, restored)
-        results_resize.append({'class': cls, 'size': f"{h}x{w}", 'ssim': s, 'psnr': p})
+        results_resize.append(
+            {'class': cls, 'size': f"{h}x{w}", 'ssim': s, 'psnr': p})
 
 df_resize = pd.DataFrame(results_resize)
 df_resize.groupby('size').agg(
@@ -202,22 +212,28 @@ plt.show()
 
 # %%
 # Đường cong SSIM và PSNR theo kích thước
-mean_ssim = df_resize.groupby('size')['ssim'].mean().reindex(['64x64', '128x128', '224x224'])
-mean_psnr = df_resize.groupby('size')['psnr'].mean().reindex(['64x64', '128x128', '224x224'])
-std_ssim = df_resize.groupby('size')['ssim'].std().reindex(['64x64', '128x128', '224x224'])
-std_psnr = df_resize.groupby('size')['psnr'].std().reindex(['64x64', '128x128', '224x224'])
+mean_ssim = df_resize.groupby('size')['ssim'].mean().reindex([
+    '64x64', '128x128', '224x224'])
+mean_psnr = df_resize.groupby('size')['psnr'].mean().reindex([
+    '64x64', '128x128', '224x224'])
+std_ssim = df_resize.groupby('size')['ssim'].std().reindex([
+    '64x64', '128x128', '224x224'])
+std_psnr = df_resize.groupby('size')['psnr'].std().reindex([
+    '64x64', '128x128', '224x224'])
 
 sizes_px = [64, 128, 224]
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
-axes[0].errorbar(sizes_px, mean_ssim.values, yerr=std_ssim.values, marker='o', capsize=5, linewidth=2)
+axes[0].errorbar(sizes_px, mean_ssim.values,
+                 yerr=std_ssim.values, marker='o', capsize=5, linewidth=2)
 axes[0].set_xlabel("Kích thước (pixel)")
 axes[0].set_ylabel("SSIM")
 axes[0].set_title("SSIM theo kích thước resize")
 axes[0].set_xticks(sizes_px)
 
-axes[1].errorbar(sizes_px, mean_psnr.values, yerr=std_psnr.values, marker='o', capsize=5, linewidth=2, color='orange')
+axes[1].errorbar(sizes_px, mean_psnr.values, yerr=std_psnr.values,
+                 marker='o', capsize=5, linewidth=2, color='orange')
 axes[1].set_xlabel("Kích thước (pixel)")
 axes[1].set_ylabel("PSNR (dB)")
 axes[1].set_title("PSNR theo kích thước resize")
@@ -242,18 +258,21 @@ for target_size in [(64, 64), (128, 128), (224, 224), (256, 256)]:
         X.append(resized.reshape(-1).astype(np.float32) / 255.0)
         y.append(cls)
     X, y = np.array(X), np.array(y)
-    
+
     knn = KNeighborsClassifier(n_neighbors=5)
     scores = cross_val_score(knn, X, y, cv=5, scoring='accuracy')
-    knn_results[f"{target_size[0]}x{target_size[1]}"] = (scores.mean(), scores.std())
-    print(f"  {target_size[0]}x{target_size[1]}: accuracy = {scores.mean():.4f} (+/- {scores.std():.4f})")
+    knn_results[f"{target_size[0]}x{target_size[1]}"] = (
+        scores.mean(), scores.std())
+    print(
+        f"  {target_size[0]}x{target_size[1]}: accuracy = {scores.mean():.4f} (+/- {scores.std():.4f})")
 
 # Plot
 fig, ax = plt.subplots(figsize=(8, 5))
 sizes_label = list(knn_results.keys())
 means = [v[0] for v in knn_results.values()]
 stds = [v[1] for v in knn_results.values()]
-ax.bar(sizes_label, means, yerr=stds, capsize=5, color=['#4C72B0', '#4C72B0', '#4C72B0', '#DD8452'])
+ax.bar(sizes_label, means, yerr=stds, capsize=5, color=[
+       '#4C72B0', '#4C72B0', '#4C72B0', '#DD8452'])
 ax.set_ylabel("k-NN Accuracy (5-fold CV)")
 ax.set_xlabel("Kích thước")
 ax.set_title("k-NN Accuracy theo kích thước resize (256x256 = gốc)")
@@ -270,7 +289,8 @@ for row, (img, cls) in enumerate([(samples[0][0], samples[0][1]), (samples[60][0
     for col, (h, w) in enumerate(RESIZE_DIMS):
         resized = cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA)
         axes[row][col+1].imshow(resized)
-        s = ssim(img, cv2.resize(resized, (256,256), interpolation=cv2.INTER_LINEAR), channel_axis=2)
+        s = ssim(img, cv2.resize(resized, (256, 256),
+                 interpolation=cv2.INTER_LINEAR), channel_axis=2)
         axes[row][col+1].set_title(f"{h}x{w}\nSSIM={s:.3f}", fontsize=9)
         axes[row][col+1].axis('off')
 plt.suptitle("So sánh chất lượng ảnh qua các kích thước resize", fontsize=13)
@@ -281,7 +301,8 @@ plt.show()
 # ### Kiểm định thống kê - Resize
 
 # %%
-groups_ssim = {s: df_resize[df_resize['size']==s]['ssim'].values for s in ['64x64', '128x128', '224x224']}
+groups_ssim = {s: df_resize[df_resize['size'] == s]
+               ['ssim'].values for s in ['64x64', '128x128', '224x224']}
 
 # Levene
 lev_s, lev_p = stats.levene(*groups_ssim.values())
@@ -306,14 +327,17 @@ alpha_bonf_resize = 0.05 / n_pairs_resize
 print(f"Post-hoc Mann-Whitney (Bonferroni α={alpha_bonf_resize:.4f}):")
 for i in range(len(sizes)):
     for j in range(i+1, len(sizes)):
-        u, p = stats.mannwhitneyu(groups_ssim[sizes[i]], groups_ssim[sizes[j]], alternative='two-sided')
+        u, p = stats.mannwhitneyu(
+            groups_ssim[sizes[i]], groups_ssim[sizes[j]], alternative='two-sided')
         p_bonf = min(p * n_pairs_resize, 1.0)
-        sig = "***" if p_bonf < 0.001 else ("**" if p_bonf < 0.01 else ("*" if p_bonf < 0.05 else "ns"))
-        print(f"  {sizes[i]} vs {sizes[j]}: U={u:.0f}, p_raw={p:.2e}, p_bonf={p_bonf:.2e} {sig}")
+        sig = "***" if p_bonf < 0.001 else ("**" if p_bonf <
+                                            0.01 else ("*" if p_bonf < 0.05 else "ns"))
+        print(
+            f"  {sizes[i]} vs {sizes[j]}: U={u:.0f}, p_raw={p:.2e}, p_bonf={p_bonf:.2e} {sig}")
 
 # Kết luận động dựa vào eta²
 best_size = sizes[np.argmax([groups_ssim[s].mean() for s in sizes])]
-print(f"\n=> η²={eta2_resize:.3f} ({'lớn ≥0.14' if eta2_resize>=0.14 else 'trung bình' if eta2_resize>=0.06 else 'nhỏ'}) — effect size {'rất lớn' if eta2_resize>=0.14 else 'trung bình'}")
+print(f"\n=> η²={eta2_resize:.3f} ({'lớn ≥0.14' if eta2_resize >= 0.14 else 'trung bình' if eta2_resize >= 0.06 else 'nhỏ'}) — effect size {'rất lớn' if eta2_resize >= 0.14 else 'trung bình'}")
 print(f"=> Kích thước cho SSIM cao nhất: {best_size}")
 
 # %%
@@ -324,7 +348,8 @@ print("-" * 50)
 for s_label in ['64x64', '128x128', '224x224', '256x256']:
     ssim_m = mean_ssim.get(s_label, 1.0) if s_label in mean_ssim.index else 1.0
     ssim_s = std_ssim.get(s_label, 0.0) if s_label in std_ssim.index else 0.0
-    psnr_m = mean_psnr.get(s_label, float('inf')) if s_label in mean_psnr.index else float('inf')
+    psnr_m = mean_psnr.get(s_label, float(
+        'inf')) if s_label in mean_psnr.index else float('inf')
     psnr_s = std_psnr.get(s_label, 0.0) if s_label in std_psnr.index else 0.0
     knn_m, knn_s = knn_results.get(s_label, (float('nan'), float('nan')))
     psnr_str = f"{psnr_m:.1f}±{psnr_s:.1f}" if not np.isinf(psnr_m) else "∞"
@@ -403,7 +428,8 @@ print(f"Done. {len(pca_results)} color spaces: {list(pca_results.keys())}")
 # %%
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 for cs_name, evr in pca_results.items():
-    axes[0].plot(range(1, len(evr)+1), evr[:50], marker='.', label=cs_name, markersize=4)
+    axes[0].plot(range(1, len(evr)+1), evr[:50],
+                 marker='.', label=cs_name, markersize=4)
 axes[0].set_xlabel("Component")
 axes[0].set_ylabel("Explained Variance Ratio")
 axes[0].set_title("Scree Plot")
@@ -411,8 +437,10 @@ axes[0].legend()
 axes[0].set_xlim(0, 30)
 
 for cs_name, evr in pca_results.items():
-    axes[1].plot(range(1, len(evr)+1), np.cumsum(evr[:50]), marker='.', label=cs_name, markersize=4)
-axes[1].axhline(0.95, color='red', linestyle='--', alpha=0.5, label='95% threshold')
+    axes[1].plot(range(1, len(evr)+1), np.cumsum(evr[:50]),
+                 marker='.', label=cs_name, markersize=4)
+axes[1].axhline(0.95, color='red', linestyle='--',
+                alpha=0.5, label='95% threshold')
 axes[1].set_xlabel("Số components")
 axes[1].set_ylabel("Cumulative Explained Variance")
 axes[1].set_title("Cumulative Explained Variance")
@@ -449,7 +477,7 @@ for cs_name, convert_fn in COLOR_SPACES.items():
         X.append(converted.reshape(-1).astype(np.float32) / 255.0)
         y.append(cls)
     X, y = np.array(X), np.array(y)
-    
+
     knn = KNeighborsClassifier(n_neighbors=5)
     scores = cross_val_score(knn, X, y, cv=5, scoring='accuracy')
     cs_knn_results[cs_name] = (scores.mean(), scores.std())
@@ -461,7 +489,8 @@ print("\n=== Tóm tắt Color Space ===")
 print(f"{'Color Space':<12} {'k-NN Mean':>12} {'k-NN Std':>10}")
 print("-" * 37)
 for cs_name, (mean_acc, std_acc) in cs_knn_results.items():
-    marker = " ← k-NN tốt nhất" if cs_name == max(cs_knn_results, key=lambda k: cs_knn_results[k][0]) else ""
+    marker = " ← k-NN tốt nhất" if cs_name == max(
+        cs_knn_results, key=lambda k: cs_knn_results[k][0]) else ""
     print(f"{cs_name:<12} {mean_acc:>12.4f} {std_acc:>10.4f}{marker}")
 
 # %% [markdown]
@@ -506,18 +535,23 @@ for cs_name, (mean_acc, std_acc) in cs_knn_results.items():
 # - $H_1$: Phân phối pixel thay đổi sau chuẩn hóa
 
 # %%
+
+
 def norm_minmax_01(img):
     """Min-Max [0, 1]"""
     return img.astype(np.float32) / 255.0
+
 
 def norm_minmax_neg11(img):
     """Min-Max [-1, 1]"""
     return img.astype(np.float32) / 127.5 - 1.0
 
+
 def norm_zscore_global(img):
     """Z-score toàn tập (mean/std trên toàn ảnh)"""
     img_f = img.astype(np.float32)
     return (img_f - img_f.mean()) / (img_f.std() + 1e-8)
+
 
 def norm_zscore_perchannel(img):
     """Z-score per-channel (mean/std riêng từng kênh)"""
@@ -527,6 +561,7 @@ def norm_zscore_perchannel(img):
         ch = img_f[:, :, c]
         result[:, :, c] = (ch - ch.mean()) / (ch.std() + 1e-8)
     return result
+
 
 NORM_METHODS = {
     'Original': lambda x: x.astype(np.float32),
@@ -538,7 +573,8 @@ NORM_METHODS = {
 
 # %%
 norm_samples = load_sample(n_per_class=20)
-print(f"Sample: {len(norm_samples)} ảnh ({len(norm_samples)//45} ảnh/lớp x 45 lớp)")
+print(
+    f"Sample: {len(norm_samples)} ảnh ({len(norm_samples)//45} ảnh/lớp x 45 lớp)")
 
 norm_pixels = {}
 for method_name, norm_fn in NORM_METHODS.items():
@@ -551,13 +587,19 @@ for method_name, norm_fn in NORM_METHODS.items():
 # %%
 # KS test: so sánh phân phối TRƯỚC vs SAU chuẩn hóa
 original_px = norm_pixels['Original']
-original_sample = np.random.choice(original_px, min(100000, len(original_px)), replace=False)
+original_sample = np.random.choice(
+    original_px, min(100000, len(original_px)), replace=False)
+
 
 def ks_effect_size(d):
     """Giải thích effect size của KS statistic D"""
-    if d < 0.2:  return "nhỏ"
-    elif d < 0.5: return "trung bình"
-    else:         return "lớn"
+    if d < 0.2:
+        return "nhỏ"
+    elif d < 0.5:
+        return "trung bình"
+    else:
+        return "lớn"
+
 
 print("KS test (Original vs mỗi phương pháp):")
 print(f"{'Method':<18} {'KS stat':>10} {'p-value':>12} {'Mean':>10} {'Std':>10} {'Effect D':>12}")
@@ -576,16 +618,20 @@ print("\nGhi chú: D<0.2=nhỏ, 0.2≤D<0.5=trung bình, D≥0.5=lớn (phân ph
 
 # %%
 # Levene test giữa các phương pháp
-norm_groups = [np.random.choice(px, 10000, replace=False) for px in norm_pixels.values()]
+norm_groups = [np.random.choice(px, 10000, replace=False)
+               for px in norm_pixels.values()]
 lev_s, lev_p = stats.levene(*norm_groups)
-print(f"Levene test (variance giữa 5 phương pháp): stat={lev_s:.2f}, p={lev_p:.2e}")
+print(
+    f"Levene test (variance giữa 5 phương pháp): stat={lev_s:.2f}, p={lev_p:.2e}")
 
 # %%
 fig, axes = plt.subplots(2, 3, figsize=(15, 8))
 for idx, (method, px) in enumerate(norm_pixels.items()):
     row, col = divmod(idx, 3)
-    px_plot = np.random.choice(px, 200000, replace=False) if len(px) > 200000 else px
-    axes[row][col].hist(px_plot, bins=100, color='steelblue', alpha=0.7, density=True, edgecolor='none')
+    px_plot = np.random.choice(
+        px, 200000, replace=False) if len(px) > 200000 else px
+    axes[row][col].hist(px_plot, bins=100, color='steelblue',
+                        alpha=0.7, density=True, edgecolor='none')
     axes[row][col].set_title(method, fontsize=11)
     axes[row][col].set_xlabel("Pixel value")
     axes[row][col].set_ylabel("Density")
@@ -594,7 +640,6 @@ if len(norm_pixels) < 6:
 plt.suptitle("Phân bố pixel sau mỗi phương pháp Normalization", fontsize=13)
 plt.tight_layout()
 plt.show()
-
 
 
 # %% [markdown]
@@ -614,7 +659,7 @@ for method_name, norm_fn in NORM_METHODS.items():
         X.append(normed.reshape(-1))
         y.append(cls)
     X, y = np.array(X), np.array(y)
-    
+
     knn = KNeighborsClassifier(n_neighbors=5)
     scores = cross_val_score(knn, X, y, cv=5, scoring='accuracy')
     norm_knn_results[method_name] = (scores.mean(), scores.std())
@@ -632,8 +677,10 @@ except ValueError:  # all zeros — identical scores
     w_norm, p_norm = 0.0, 1.0
 diff_norm = scores_best_norm - scores_orig_norm
 cohen_d_norm = diff_norm.mean() / (diff_norm.std(ddof=1) + 1e-8)
-cohen_label = 'lớn' if abs(cohen_d_norm) >= 0.8 else ('trung bình' if abs(cohen_d_norm) >= 0.5 else 'nhỏ')
-print(f"\nWilcoxon signed-rank ({best_norm_method} vs Original): W={w_norm:.1f}, p={p_norm:.4f}")
+cohen_label = 'lớn' if abs(cohen_d_norm) >= 0.8 else (
+    'trung bình' if abs(cohen_d_norm) >= 0.5 else 'nhỏ')
+print(
+    f"\nWilcoxon signed-rank ({best_norm_method} vs Original): W={w_norm:.1f}, p={p_norm:.4f}")
 print(f"Cohen's d = {cohen_d_norm:.3f} (effect size {cohen_label})")
 print(f"=> {best_norm_method} {'CẢI THIỆN CÓ Ý NGHĨA thống kê' if p_norm < 0.05 else 'KHÔNG cải thiện có ý nghĩa thống kê'} so với không chuẩn hóa (α=0.05)")
 
@@ -647,7 +694,8 @@ for nm, (m, s) in norm_knn_results.items():
     print(f"{nm:<20} {m:>12.4f} {s:>10.4f}{marker}")
 print(f"\n→ p≈0 trong KS test là MONG MUỐN: chuẩn hóa đã thay đổi phân phối (mục đích của chuẩn hóa)")
 print(f"  KS test chỉ xác nhận distribution shift, KHÔNG đánh giá chất lượng chuẩn hóa")
-print(f"⇒ Chọn {best_norm_method}: accuracy={norm_knn_results[best_norm_method][0]:.4f}, Wilcoxon p={p_norm:.4f}")
+print(
+    f"⇒ Chọn {best_norm_method}: accuracy={norm_knn_results[best_norm_method][0]:.4f}, Wilcoxon p={p_norm:.4f}")
 
 # %% [markdown]
 # **Kết luận Normalization:** (số liệu chính xác xem output bên trên)
@@ -688,19 +736,24 @@ print(f"⇒ Chọn {best_norm_method}: accuracy={norm_knn_results[best_norm_meth
 #   (t-SNE giảm chiều từ 128×128×3 xuống 2D, bảo toàn local structure)
 
 # %%
+
+
 def augment_hflip(img):
     """Lật ngang"""
     return cv2.flip(img, 1)
 
+
 def augment_vflip(img):
     """Lật dọc"""
     return cv2.flip(img, 0)
+
 
 def augment_rotate(img, angle=15):
     """Xoay ngẫu nhiên"""
     h, w = img.shape[:2]
     M = cv2.getRotationMatrix2D((w//2, h//2), angle, 1.0)
     return cv2.warpAffine(img, M, (w, h))
+
 
 def augment_crop(img, scale=0.8):
     """Cắt ngẫu nhiên"""
@@ -711,11 +764,13 @@ def augment_crop(img, scale=0.8):
     cropped = img[top:top+new_h, left:left+new_w]
     return cv2.resize(cropped, (w, h))
 
+
 def augment_gaussian_noise(img, sigma=25):
     """Thêm nhiễu Gaussian"""
     noise = np.random.normal(0, sigma, img.shape)
     noisy = img.astype(np.float32) + noise
     return np.clip(noisy, 0, 255).astype(np.uint8)
+
 
 def augment_brightness_contrast(img, brightness=30, contrast=0.2):
     """Điều chỉnh độ sáng/tương phản"""
@@ -723,6 +778,7 @@ def augment_brightness_contrast(img, brightness=30, contrast=0.2):
     img_f = img_f + np.random.uniform(-brightness, brightness)
     img_f = img_f * np.random.uniform(1-contrast, 1+contrast)
     return np.clip(img_f, 0, 255).astype(np.uint8)
+
 
 AUGMENTATIONS = {
     'H-Flip': augment_hflip,
@@ -749,7 +805,8 @@ for row, (img, cls) in enumerate(vis_sample):
         axes[row][col+1].imshow(augmented)
         axes[row][col+1].set_title(aug_name, fontsize=8)
         axes[row][col+1].axis('off')
-plt.suptitle(f"{len(AUGMENTATIONS)} phép Augmentation trên ảnh mẫu", fontsize=13)
+plt.suptitle(
+    f"{len(AUGMENTATIONS)} phép Augmentation trên ảnh mẫu", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -763,9 +820,12 @@ plt.show()
 
 # %%
 # t-SNE trước/sau augmentation (toàn bộ 45 lớp, 20 ảnh/lớp)
+
+
 def extract_feature(img):
     small = cv2.resize(img, (32, 32))
     return small.reshape(-1).astype(np.float32) / 255.0
+
 
 tsne_samples = load_sample(n_per_class=20)
 
@@ -785,16 +845,17 @@ for img, cls in tsne_samples:
     aug_labels.append(cls)
 
 X_orig = np.array(orig_features)
-X_aug  = np.array(aug_features)
+X_aug = np.array(aug_features)
 y_orig = np.array(orig_labels)
-y_aug  = np.array(aug_labels)
+y_aug = np.array(aug_labels)
 
-X_combined     = np.vstack([X_orig, X_aug])
-is_aug         = np.array([0]*len(X_orig) + [1]*len(X_aug))
+X_combined = np.vstack([X_orig, X_aug])
+is_aug = np.array([0]*len(X_orig) + [1]*len(X_aug))
 labels_combined = np.concatenate([y_orig, y_aug])
 
 perplexity_val = min(50, len(X_orig) - 1)
-tsne = TSNE(n_components=2, perplexity=perplexity_val, random_state=42, max_iter=1000)
+tsne = TSNE(n_components=2, perplexity=perplexity_val,
+            random_state=42, max_iter=1000)
 X_tsne = tsne.fit_transform(X_combined)
 
 fig, axes = plt.subplots(1, 2, figsize=(16, 7))
@@ -802,10 +863,12 @@ for col, (mask_val, title) in enumerate([(0, "Trước Augmentation"), (1, "Sau 
     mask = is_aug == mask_val
     for cls in classes:
         cls_mask = (labels_combined == cls) & mask
-        axes[col].scatter(X_tsne[cls_mask, 0], X_tsne[cls_mask, 1], alpha=0.5, s=15, label=cls)
+        axes[col].scatter(X_tsne[cls_mask, 0],
+                          X_tsne[cls_mask, 1], alpha=0.5, s=15, label=cls)
     axes[col].set_title(f"{title} (45 lớp, n={mask.sum()})", fontsize=11)
 
-plt.suptitle(f"t-SNE: Feature Space trước/sau Augmentation (perplexity={perplexity_val})", fontsize=13)
+plt.suptitle(
+    f"t-SNE: Feature Space trước/sau Augmentation (perplexity={perplexity_val})", fontsize=13)
 plt.tight_layout()
 plt.show()
 print(f"t-SNE done: {len(X_orig)} ảnh gốc + {len(X_aug)} ảnh augmented")
@@ -857,9 +920,10 @@ cohens_d = diff.mean() / (diff.std(ddof=1) + 1e-8)
 
 print(f"\nPaired t-test: t={t_stat:.3f}, p={t_p:.4f}")
 print(f"Wilcoxon: W={w_stat:.1f}, p={w_p:.4f}")
-print(f"Cohen's d = {cohens_d:.3f} ({'lớn' if abs(cohens_d)>=0.8 else 'trung bình' if abs(cohens_d)>=0.5 else 'nhỏ'})")
+print(f"Cohen's d = {cohens_d:.3f} ({'lớn' if abs(cohens_d) >= 0.8 else 'trung bình' if abs(cohens_d) >= 0.5 else 'nhỏ'})")
 print(f"Lớp có variance tăng: {sum(d > 0 for d in diff)}/{len(diff)}")
-print(f"=> Augmentation {'LÀM TĂNG' if w_p < 0.05 else 'KHÔNG làm tăng'} intra-class variance có ý nghĩa thống kê")
+print(
+    f"=> Augmentation {'LÀM TĂNG' if w_p < 0.05 else 'KHÔNG làm tăng'} intra-class variance có ý nghĩa thống kê")
 
 # %% [markdown]
 # ### Ablation: k-NN accuracy theo từng kỹ thuật augmentation (per-technique)
@@ -883,15 +947,18 @@ for img, cls in aug_knn_samples:
     X_base_aug.append(resized.reshape(-1).astype(np.float32) / 255.0)
     y_base_aug.append(cls)
 X_base_aug = np.array(X_base_aug)
-y_base_aug  = np.array(y_base_aug)
+y_base_aug = np.array(y_base_aug)
 
 knn_base_aug = KNeighborsClassifier(n_neighbors=5)
-base_aug_scores = cross_val_score(knn_base_aug, X_base_aug, y_base_aug, cv=5, scoring='accuracy')
+base_aug_scores = cross_val_score(
+    knn_base_aug, X_base_aug, y_base_aug, cv=5, scoring='accuracy')
 
-aug_knn_results      = {'Baseline (no aug)': (base_aug_scores.mean(), base_aug_scores.std())}
-aug_knn_fold_scores  = {'Baseline (no aug)': base_aug_scores}
+aug_knn_results = {'Baseline (no aug)': (
+    base_aug_scores.mean(), base_aug_scores.std())}
+aug_knn_fold_scores = {'Baseline (no aug)': base_aug_scores}
 
-print(f"Baseline (no aug): {base_aug_scores.mean():.4f} ± {base_aug_scores.std():.4f}")
+print(
+    f"Baseline (no aug): {base_aug_scores.mean():.4f} ± {base_aug_scores.std():.4f}")
 print(f"\n{'Technique':<25} {'Mean':>8} {'Std':>7} {'Wilcoxon p':>12} {'Cohen d':>10} {'Sig':>5}")
 print("-" * 68)
 
@@ -904,11 +971,12 @@ for aug_name, aug_fn in AUGMENTATIONS.items():
         X_aug_k.append(augmented.reshape(-1).astype(np.float32) / 255.0)
         y_aug_k.append(cls)
     X_aug_k = np.array(X_aug_k)
-    y_aug_k  = np.array(y_aug_k)
+    y_aug_k = np.array(y_aug_k)
 
     knn_aug = KNeighborsClassifier(n_neighbors=5)
-    aug_scores_k = cross_val_score(knn_aug, X_aug_k, y_aug_k, cv=5, scoring='accuracy')
-    aug_knn_results[aug_name]     = (aug_scores_k.mean(), aug_scores_k.std())
+    aug_scores_k = cross_val_score(
+        knn_aug, X_aug_k, y_aug_k, cv=5, scoring='accuracy')
+    aug_knn_results[aug_name] = (aug_scores_k.mean(), aug_scores_k.std())
     aug_knn_fold_scores[aug_name] = aug_scores_k
 
     try:
@@ -924,30 +992,35 @@ for aug_name, aug_fn in AUGMENTATIONS.items():
 best_aug = max([k for k in aug_knn_results if k != 'Baseline (no aug)'],
                key=lambda k: aug_knn_results[k][0])
 print(f"\n→ Best augmentation technique: {best_aug}")
-print(f"  k-NN accuracy = {aug_knn_results[best_aug][0]:.4f} ± {aug_knn_results[best_aug][1]:.4f}")
+print(
+    f"  k-NN accuracy = {aug_knn_results[best_aug][0]:.4f} ± {aug_knn_results[best_aug][1]:.4f}")
 
 # %%
 # Biểu đồ: per-augmentation accuracy
 fig, ax = plt.subplots(figsize=(12, 5))
 names_aug = list(aug_knn_results.keys())
 means_aug = [aug_knn_results[n][0] for n in names_aug]
-stds_aug  = [aug_knn_results[n][1] for n in names_aug]
-colors_aug = ['lightgray'] + ['tomato' if n == best_aug else 'steelblue' for n in names_aug[1:]]
+stds_aug = [aug_knn_results[n][1] for n in names_aug]
+colors_aug = ['lightgray'] + ['tomato' if n ==
+                              best_aug else 'steelblue' for n in names_aug[1:]]
 bars_aug = ax.bar(names_aug, means_aug, yerr=stds_aug, color=colors_aug, capsize=4,
                   edgecolor='white', alpha=0.85)
-ax.axhline(base_aug_scores.mean(), color='gray', linestyle='--', alpha=0.5, label='Baseline')
+ax.axhline(base_aug_scores.mean(), color='gray',
+           linestyle='--', alpha=0.5, label='Baseline')
 for bar, v in zip(bars_aug, means_aug):
     ax.text(bar.get_x() + bar.get_width() / 2, v + 0.003, f'{v:.3f}',
             ha='center', fontsize=8)
 ax.set_ylabel('5-fold CV Accuracy (k-NN, k=5)')
-ax.set_title('Per-Augmentation k-NN Ablation (128×128, chuẩn hóa [0,1])', fontsize=12)
+ax.set_title(
+    'Per-Augmentation k-NN Ablation (128×128, chuẩn hóa [0,1])', fontsize=12)
 ax.tick_params(axis='x', rotation=20)
 ax.legend()
 ax.grid(axis='y', alpha=0.3)
 plt.tight_layout()
 save_dir_aug = str(Path(_IMG_ROOT).parent / 'processed')
 os.makedirs(save_dir_aug, exist_ok=True)
-plt.savefig(os.path.join(save_dir_aug, 'fig_aug_knn_ablation.png'), dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(save_dir_aug, 'fig_aug_knn_ablation.png'),
+            dpi=100, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -955,36 +1028,36 @@ plt.show()
 # ## Tổng hợp Pipeline & Lưu kết quả
 
 # %%
-import json
 
 # Tổng kết các lựa chọn pipeline
 PIPELINE_CHOICES_IMG = {
     'step1_resize': {
-        'chosen_size'   : int(best_size),
-        'method'        : 'bilinear (cv2.resize)',
-        'metric'        : 'SSIM vs original 256×256',
-        'justification' : f'best_size={best_size} đạt SSIM cao nhất (ablation 64/128/224×224); ANOVA p<0.05'
+        'chosen_size': int(best_size),
+        'method': 'bilinear (cv2.resize)',
+        'metric': 'SSIM vs original 256×256',
+        'justification': f'best_size={best_size} đạt SSIM cao nhất (ablation 64/128/224×224); ANOVA p<0.05'
     },
     'step2_color_space': {
-        'chosen'        : 'RGB (baseline)',
-        'metric'        : 'PCA explained variance + k-NN accuracy',
-        'justification' : 'RGB đủ tốt cho k-NN; HSV/Lab cho PCA variance tốt hơn nhưng pipeline cost cao hơn'
+        'chosen': 'RGB (baseline)',
+        'metric': 'PCA explained variance + k-NN accuracy',
+        'justification': 'RGB đủ tốt cho k-NN; HSV/Lab cho PCA variance tốt hơn nhưng pipeline cost cao hơn'
     },
     'step3_normalization': {
-        'chosen_method' : str(best_norm_method),
-        'metric'        : '5-fold k-NN accuracy',
-        'justification' : f'{best_norm_method} đạt accuracy cao nhất; Wilcoxon vs Original'
+        'chosen_method': str(best_norm_method),
+        'metric': '5-fold k-NN accuracy',
+        'justification': f'{best_norm_method} đạt accuracy cao nhất; Wilcoxon vs Original'
     },
     'step4_augmentation': {
         'chosen_technique': str(best_aug),
-        'metric'          : '5-fold k-NN accuracy per-technique',
-        'justification'   : f'{best_aug} tăng accuracy nhiều nhất so với baseline'
+        'metric': '5-fold k-NN accuracy per-technique',
+        'justification': f'{best_aug} tăng accuracy nhiều nhất so với baseline'
     }
 }
 
 print("=== TÓM TẮT PIPELINE TIỀN XỬ LÝ ẢNH ===")
 for step, info in PIPELINE_CHOICES_IMG.items():
-    chosen = info.get('chosen_size') or info.get('chosen') or info.get('chosen_method') or info.get('chosen_technique')
+    chosen = info.get('chosen_size') or info.get('chosen') or info.get(
+        'chosen_method') or info.get('chosen_technique')
     print(f"  {step}: {chosen}")
 
 PROCESSED_DIR_IMG = str(Path(_IMG_ROOT).parent / 'processed')
@@ -999,9 +1072,11 @@ print("=== HOÀN THÀNH TIỀN XỬ LÝ ẢNH ===")
 # Với mỗi aug_fn: dataset = {original} + {augmented_by_this_fn_only}
 aug_ablation_samples = load_sample(n_per_class=30)
 
+
 def extract_feature(img):
     small = cv2.resize(img, (32, 32))
     return small.reshape(-1).astype(np.float32) / 255.0
+
 
 # Baseline: original only
 X_base, y_base = [], []
@@ -1009,7 +1084,8 @@ for img, cls in aug_ablation_samples:
     X_base.append(extract_feature(img))
     y_base.append(cls)
 X_base, y_base = np.array(X_base), np.array(y_base)
-scores_base = cross_val_score(KNeighborsClassifier(5), X_base, y_base, cv=5, scoring='accuracy')
+scores_base = cross_val_score(KNeighborsClassifier(
+    5), X_base, y_base, cv=5, scoring='accuracy')
 print(f"{'Phương pháp':<25} {'Mean Acc':>10} {'Std':>8} {'Δ vs Base':>12} {'Wilcoxon p':>12}")
 print("-" * 70)
 print(f"{'Original (baseline)':<25} {scores_base.mean():>10.4f} {scores_base.std():>8.4f} {'':>12} {'':>12}")
@@ -1023,7 +1099,8 @@ for aug_name, aug_fn in AUGMENTATIONS.items():
         X_aug.append(extract_feature(aug_fn(img)))  # augmented by this fn
         y_aug.extend([cls, cls])
     X_aug, y_aug = np.array(X_aug), np.array(y_aug)
-    scores_aug_single = cross_val_score(KNeighborsClassifier(5), X_aug, y_aug, cv=5, scoring='accuracy')
+    scores_aug_single = cross_val_score(KNeighborsClassifier(
+        5), X_aug, y_aug, cv=5, scoring='accuracy')
     aug_knn_fold_scores[aug_name] = scores_aug_single
     delta = scores_aug_single.mean() - scores_base.mean()
     try:
@@ -1033,10 +1110,14 @@ for aug_name, aug_fn in AUGMENTATIONS.items():
     sig = "*" if p_wil < 0.05 else "ns"
     print(f"{aug_name:<25} {scores_aug_single.mean():>10.4f} {scores_aug_single.std():>8.4f} {delta:>+12.4f} {p_wil:>11.4f}{sig}")
 
-best_aug = max(AUGMENTATIONS.keys(), key=lambda k: aug_knn_fold_scores[k].mean())
-worst_aug = min(AUGMENTATIONS.keys(), key=lambda k: aug_knn_fold_scores[k].mean())
-print(f"\n=> Kỹ thuật tốt nhất: {best_aug} ({aug_knn_fold_scores[best_aug].mean():.4f})")
-print(f"=> Kỹ thuật kém nhất: {worst_aug} ({aug_knn_fold_scores[worst_aug].mean():.4f})")
+best_aug = max(AUGMENTATIONS.keys(),
+               key=lambda k: aug_knn_fold_scores[k].mean())
+worst_aug = min(AUGMENTATIONS.keys(),
+                key=lambda k: aug_knn_fold_scores[k].mean())
+print(
+    f"\n=> Kỹ thuật tốt nhất: {best_aug} ({aug_knn_fold_scores[best_aug].mean():.4f})")
+print(
+    f"=> Kỹ thuật kém nhất: {worst_aug} ({aug_knn_fold_scores[worst_aug].mean():.4f})")
 
 # %% [markdown]
 # ### Ablation: k-NN accuracy trước/sau augmentation
@@ -1074,12 +1155,17 @@ X_aug_knn, y_aug_knn = np.array(X_aug_knn), np.array(y_aug_knn)
 
 knn = KNeighborsClassifier(n_neighbors=5)
 
-scores_orig = cross_val_score(knn, X_orig_knn, y_orig_knn, cv=5, scoring='accuracy')
-scores_aug = cross_val_score(knn, X_aug_knn, y_aug_knn, cv=5, scoring='accuracy')
+scores_orig = cross_val_score(
+    knn, X_orig_knn, y_orig_knn, cv=5, scoring='accuracy')
+scores_aug = cross_val_score(
+    knn, X_aug_knn, y_aug_knn, cv=5, scoring='accuracy')
 
-print(f"Trước augmentation: {scores_orig.mean():.4f} (+/- {scores_orig.std():.4f})  [{len(X_orig_knn)} samples]")
-print(f"Sau augmentation:   {scores_aug.mean():.4f} (+/- {scores_aug.std():.4f})  [{len(X_aug_knn)} samples]")
-print(f"Thay đổi: {(scores_aug.mean() - scores_orig.mean()) / scores_orig.mean() * 100:+.1f}%")
+print(
+    f"Trước augmentation: {scores_orig.mean():.4f} (+/- {scores_orig.std():.4f})  [{len(X_orig_knn)} samples]")
+print(
+    f"Sau augmentation:   {scores_aug.mean():.4f} (+/- {scores_aug.std():.4f})  [{len(X_aug_knn)} samples]")
+print(
+    f"Thay đổi: {(scores_aug.mean() - scores_orig.mean()) / scores_orig.mean() * 100:+.1f}%")
 
 # %%
 # === Tóm tắt động kết quả Augmentation ===
@@ -1087,11 +1173,15 @@ n_increased = sum(d > 0 for d in diff)
 print(f"\n=== Tóm tắt Augmentation ===")
 print(f"Paired t-test: t={t_stat:.3f}, p={t_p:.4f}")
 print(f"Wilcoxon:      W={w_stat:.1f}, p={w_p:.4f}")
-print(f"Cohen's d:     {cohens_d:.3f} ({'lớn' if abs(cohens_d)>=0.8 else 'trung bình' if abs(cohens_d)>=0.5 else 'nhỏ'})")
+print(
+    f"Cohen's d:     {cohens_d:.3f} ({'lớn' if abs(cohens_d) >= 0.8 else 'trung bình' if abs(cohens_d) >= 0.5 else 'nhỏ'})")
 print(f"Lớp tăng variance: {n_increased}/{len(diff)}")
-print(f"k-NN Trước aug: {scores_orig.mean():.4f} +/- {scores_orig.std():.4f} [{len(X_orig_knn)} samples]")
-print(f"k-NN Sau aug:   {scores_aug.mean():.4f} +/- {scores_aug.std():.4f} [{len(X_aug_knn)} samples]")
-print(f"=> Augmentation {'LÀM TĂNG intra-class variance' if w_p < 0.05 else 'KHÔNG làm tăng'} có ý nghĩa (Wilcoxon p={w_p:.4f})")
+print(
+    f"k-NN Trước aug: {scores_orig.mean():.4f} +/- {scores_orig.std():.4f} [{len(X_orig_knn)} samples]")
+print(
+    f"k-NN Sau aug:   {scores_aug.mean():.4f} +/- {scores_aug.std():.4f} [{len(X_aug_knn)} samples]")
+print(
+    f"=> Augmentation {'LÀM TĂNG intra-class variance' if w_p < 0.05 else 'KHÔNG làm tăng'} có ý nghĩa (Wilcoxon p={w_p:.4f})")
 
 # %% [markdown]
 # **Kết luận Augmentation:** (số liệu chính xác xem output bên trên)

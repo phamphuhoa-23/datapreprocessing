@@ -39,7 +39,13 @@
 # ## 0. Setup
 
 # %%
-import os, glob, warnings
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.cluster import KMeans
+from sklearn.metrics import adjusted_rand_score
+from pathlib import Path
+import os
+import glob
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -55,10 +61,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score
 
 warnings.filterwarnings('ignore')
-plt.rcParams.update({'figure.figsize': (12, 6), 'font.size': 11, 'figure.dpi': 100})
+plt.rcParams.update(
+    {'figure.figsize': (12, 6), 'font.size': 11, 'figure.dpi': 100})
 sns.set_style("whitegrid")
 
-from pathlib import Path
 
 def _find_image_root() -> Path:
     """Tìm thư mục Dataset/ chứa train/."""
@@ -74,7 +80,9 @@ def _find_image_root() -> Path:
     for p in candidates:
         if (p / 'train').exists() and any((p / 'train').iterdir()):
             return p
-    raise FileNotFoundError("Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào Source/Dataset/.")
+    raise FileNotFoundError(
+        "Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào Source/Dataset/.")
+
 
 _IMG_ROOT = _find_image_root()
 TRAIN_DIR = str(_IMG_ROOT / 'train')
@@ -90,7 +98,8 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
     samples = []
     for cls in target:
         paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
-        chosen = np.random.choice(paths, min(n_per_class, len(paths)), replace=False)
+        chosen = np.random.choice(paths, min(
+            n_per_class, len(paths)), replace=False)
         for p in chosen:
             img = cv2.cvtColor(cv2.imread(p), cv2.COLOR_BGR2RGB)
             samples.append((img, cls))
@@ -141,8 +150,9 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 
 # %%
 PCA_SIZE = 64
-N_COMPONENTS = 800   # đủ để xác định ngưỡng 90/95/99% variance (có thể >200 với ảnh tự nhiên)
-BATCH_SIZE  = 500    # số ảnh mỗi batch cho IncrementalPCA
+# đủ để xác định ngưỡng 90/95/99% variance (có thể >200 với ảnh tự nhiên)
+N_COMPONENTS = 800
+BATCH_SIZE = 500    # số ảnh mỗi batch cho IncrementalPCA
 
 # Load toàn bộ ảnh train (27,000 ảnh = 600/lớp × 45 lớp)
 pca_data, pca_labels = [], []
@@ -168,9 +178,12 @@ for start in tqdm(range(0, len(X_pca), BATCH_SIZE), desc="Fitting IncrementalPCA
 X_pca_transformed = ipca.transform(X_pca)
 
 cum_var = np.cumsum(ipca.explained_variance_ratio_)
-n90 = int(np.argmax(cum_var >= 0.90) + 1) if cum_var[-1] >= 0.90 else f">{N_COMPONENTS}"
-n95 = int(np.argmax(cum_var >= 0.95) + 1) if cum_var[-1] >= 0.95 else f">{N_COMPONENTS}"
-n99 = int(np.argmax(cum_var >= 0.99) + 1) if cum_var[-1] >= 0.99 else f">{N_COMPONENTS}"
+n90 = int(np.argmax(cum_var >= 0.90) +
+          1) if cum_var[-1] >= 0.90 else f">{N_COMPONENTS}"
+n95 = int(np.argmax(cum_var >= 0.95) +
+          1) if cum_var[-1] >= 0.95 else f">{N_COMPONENTS}"
+n99 = int(np.argmax(cum_var >= 0.99) +
+          1) if cum_var[-1] >= 0.99 else f">{N_COMPONENTS}"
 
 print(f"Components để giải thích 90% variance: {n90}")
 print(f"Components để giải thích 95% variance: {n95}")
@@ -182,15 +195,20 @@ print(f"Components để giải thích 99% variance: {n99}")
 # %%
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-axes[0].bar(range(1, 31), ipca.explained_variance_ratio_[:30], color='#4C72B0', alpha=0.8)
+axes[0].bar(range(1, 31), ipca.explained_variance_ratio_[
+            :30], color='#4C72B0', alpha=0.8)
 axes[0].set_xlabel("Component")
 axes[0].set_ylabel("Explained Variance Ratio")
-axes[0].set_title("Scree Plot (top 30 trong tổng " + str(N_COMPONENTS) + " components)")
+axes[0].set_title("Scree Plot (top 30 trong tổng " +
+                  str(N_COMPONENTS) + " components)")
 
 axes[1].plot(range(1, len(cum_var)+1), cum_var, color='#4C72B0', linewidth=2)
-axes[1].axhline(0.99, color='purple', linestyle='--', alpha=0.6, label=f'99% (n={n99})')
-axes[1].axhline(0.95, color='red',    linestyle='--', alpha=0.6, label=f'95% (n={n95})')
-axes[1].axhline(0.90, color='orange', linestyle='--', alpha=0.6, label=f'90% (n={n90})')
+axes[1].axhline(0.99, color='purple', linestyle='--',
+                alpha=0.6, label=f'99% (n={n99})')
+axes[1].axhline(0.95, color='red',    linestyle='--',
+                alpha=0.6, label=f'95% (n={n95})')
+axes[1].axhline(0.90, color='orange', linestyle='--',
+                alpha=0.6, label=f'90% (n={n90})')
 for n_thresh, color in [(n90, 'orange'), (n95, 'red'), (n99, 'purple')]:
     if isinstance(n_thresh, int):
         axes[1].axvline(n_thresh, color=color, linestyle=':', alpha=0.5)
@@ -209,9 +227,11 @@ fig, axes = plt.subplots(4, 5, figsize=(16, 13))
 for idx, ax in enumerate(axes.ravel()):
     eigenimg = ipca.components_[idx].reshape(PCA_SIZE, PCA_SIZE)
     ax.imshow(eigenimg, cmap='gray')
-    ax.set_title(f"PC{idx+1} ({ipca.explained_variance_ratio_[idx]*100:.1f}%)", fontsize=8)
+    ax.set_title(
+        f"PC{idx+1} ({ipca.explained_variance_ratio_[idx]*100:.1f}%)", fontsize=8)
     ax.axis('off')
-plt.suptitle("Top 20 Eigenimages (IncrementalPCA, 27,000 ảnh 64×64)", fontsize=13)
+plt.suptitle(
+    "Top 20 Eigenimages (IncrementalPCA, 27,000 ảnh 64×64)", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -230,8 +250,6 @@ plt.show()
 
 # %%
 # Dùng toàn bộ 45 lớp, mỗi điểm là 1 ảnh (27,000 điểm tổng)
-from sklearn.metrics import adjusted_rand_score
-from sklearn.cluster import KMeans
 
 colors_45 = plt.cm.nipy_spectral(np.linspace(0, 0.9, len(classes)))
 
@@ -266,7 +284,6 @@ else:
 # ### 3D PCA Projection — toàn bộ 45 lớp
 
 # %%
-from mpl_toolkits.mplot3d import Axes3D
 
 fig = plt.figure(figsize=(14, 10))
 ax = fig.add_subplot(111, projection='3d')
@@ -296,7 +313,6 @@ plt.show()
 # Perplexity=30, subsample 5,000 ảnh (t-SNE có độ phức tạp O(n²), 27,000 điểm quá chậm).
 
 # %%
-from sklearn.manifold import TSNE
 
 # Subsample đồng đều (nhất quán mỗi lớp: ~111 ảnh/lớp × 45 = 5,000)
 np.random.seed(42)
@@ -305,8 +321,10 @@ tsne_idx = np.random.choice(len(X_pca), N_TSNE, replace=False)
 X_tsne_input = X_pca_transformed[tsne_idx, :50]
 y_tsne = y_pca[tsne_idx]
 
-print(f"Running t-SNE trên {N_TSNE} điểm (50 PCA components, perplexity=30)...")
-tsne_model = TSNE(n_components=2, random_state=42, perplexity=30, max_iter=1000)
+print(
+    f"Running t-SNE trên {N_TSNE} điểm (50 PCA components, perplexity=30)...")
+tsne_model = TSNE(n_components=2, random_state=42,
+                  perplexity=30, max_iter=1000)
 X_tsne = tsne_model.fit_transform(X_tsne_input)
 print("Done.")
 
@@ -356,8 +374,10 @@ print(f"\nANOVA: F={f_val:.2f}, p={p_val:.2e}")
 print(f"Kruskal-Wallis: H={h_val:.2f}, p={kw_p:.2e}")
 
 # Eta²
-ss_between = sum(len(g) * (g.mean() - X_pca_transformed[:, 0].mean())**2 for g in groups_pc1)
-ss_total = sum((x - X_pca_transformed[:, 0].mean())**2 for x in X_pca_transformed[:, 0])
+ss_between = sum(
+    len(g) * (g.mean() - X_pca_transformed[:, 0].mean())**2 for g in groups_pc1)
+ss_total = sum((x - X_pca_transformed[:, 0].mean())
+               ** 2 for x in X_pca_transformed[:, 0])
 eta_sq = ss_between / ss_total
 print(f"\nEta² = {eta_sq:.3f}")
 
@@ -393,7 +413,8 @@ print(f"\nEta² = {eta_sq:.3f}")
 # %%
 # Helper kernels và functions
 _PREWITT_X = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=np.float32)
-_PREWITT_Y = np.array([[-1,-1,-1], [ 0, 0, 0], [ 1, 1, 1]], dtype=np.float32)
+_PREWITT_Y = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=np.float32)
+
 
 def sobel_density(img_gray, T):
     """Edge density Sobel với ngưỡng T"""
@@ -401,11 +422,13 @@ def sobel_density(img_gray, T):
     sy = cv2.Sobel(img_gray, cv2.CV_64F, 0, 1, ksize=3)
     return (np.sqrt(sx**2 + sy**2) > T).mean()
 
+
 def prewitt_density(img_gray, T):
     """Edge density Prewitt với ngưỡng T"""
     px = cv2.filter2D(img_gray.astype(np.float32), -1, _PREWITT_X)
     py = cv2.filter2D(img_gray.astype(np.float32), -1, _PREWITT_Y)
     return (np.sqrt(px**2 + py**2) > T).mean()
+
 
 def canny_density(img_gray, sigma, T1, T2):
     """Edge density Canny với Gaussian sigma + T1/T2"""
@@ -416,9 +439,11 @@ def canny_density(img_gray, sigma, T1, T2):
         blurred = img_gray
     return cv2.Canny(blurred, T1, T2).mean() / 255.0
 
+
 def norm_edge_vis(arr):
     m = arr.max()
     return np.clip(arr / m * 255, 0, 255).astype(np.uint8) if m > 0 else np.zeros_like(arr, dtype=np.uint8)
+
 
 EDGE_SAMPLE = 30
 
@@ -434,7 +459,8 @@ quick_density = {}
 for cls in classes:
     paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))[:5]
     np.random.seed(42)
-    vals = [sobel_density(cv2.imread(p, cv2.IMREAD_GRAYSCALE), T=50) for p in paths]
+    vals = [sobel_density(cv2.imread(p, cv2.IMREAD_GRAYSCALE), T=50)
+            for p in paths]
     quick_density[cls] = np.mean(vals)
 
 sorted_by_density = sorted(quick_density, key=quick_density.get)
@@ -471,7 +497,8 @@ for row, (img, cls) in enumerate(demo_samples):
         axes[row][ci + 1].set_xlabel(f"density={d:.3f}", fontsize=7)
         axes[row][ci + 1].axis('off')
 
-plt.suptitle("Ảnh hưởng của ngưỡng T lên Sobel edge map (T nhỏ → nhiều cạnh hơn)", fontsize=12)
+plt.suptitle(
+    "Ảnh hưởng của ngưỡng T lên Sobel edge map (T nhỏ → nhiều cạnh hơn)", fontsize=12)
 plt.tight_layout()
 plt.show()
 
@@ -488,12 +515,13 @@ ablation_data = []
 for cls in tqdm(classes, desc="Sobel/Prewitt ablation"):
     paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
     np.random.seed(42)
-    chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
+    chosen = np.random.choice(paths, min(
+        EDGE_SAMPLE, len(paths)), replace=False)
     for p in chosen:
         img_g = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
         row_data = {'class': cls}
         for T in T_VALUES:
-            row_data[f'sobel_T{T}']   = sobel_density(img_g, T)
+            row_data[f'sobel_T{T}'] = sobel_density(img_g, T)
             row_data[f'prewitt_T{T}'] = prewitt_density(img_g, T)
         ablation_data.append(row_data)
 
@@ -501,18 +529,21 @@ df_ablation = pd.DataFrame(ablation_data)
 print("Sobel và Prewitt density trung bình theo T:")
 print(f"{'T':>5} {'Sobel':>10} {'Prewitt':>10}")
 for T in T_VALUES:
-    print(f"{T:>5} {df_ablation[f'sobel_T{T}'].mean():>10.4f} {df_ablation[f'prewitt_T{T}'].mean():>10.4f}")
+    print(f"{T:>5} {df_ablation[f'sobel_T{T}'].mean():>10.4f} {
+          df_ablation[f'prewitt_T{T}'].mean():>10.4f}")
 
 # %%
 # Đường cong edge density trung bình theo T (Sobel vs Prewitt)
-mean_sobel   = [df_ablation[f'sobel_T{T}'].mean()   for T in T_VALUES]
+mean_sobel = [df_ablation[f'sobel_T{T}'].mean() for T in T_VALUES]
 mean_prewitt = [df_ablation[f'prewitt_T{T}'].mean() for T in T_VALUES]
-std_sobel    = [df_ablation[f'sobel_T{T}'].std()    for T in T_VALUES]
-std_prewitt  = [df_ablation[f'prewitt_T{T}'].std()  for T in T_VALUES]
+std_sobel = [df_ablation[f'sobel_T{T}'].std() for T in T_VALUES]
+std_prewitt = [df_ablation[f'prewitt_T{T}'].std() for T in T_VALUES]
 
 fig, ax = plt.subplots(figsize=(8, 5))
-ax.errorbar(T_VALUES, mean_sobel,   yerr=std_sobel,   marker='o', capsize=5, label='Sobel',   linewidth=2)
-ax.errorbar(T_VALUES, mean_prewitt, yerr=std_prewitt, marker='s', capsize=5, label='Prewitt', linewidth=2)
+ax.errorbar(T_VALUES, mean_sobel,   yerr=std_sobel,
+            marker='o', capsize=5, label='Sobel',   linewidth=2)
+ax.errorbar(T_VALUES, mean_prewitt, yerr=std_prewitt,
+            marker='s', capsize=5, label='Prewitt', linewidth=2)
 ax.set_xlabel("Ngưỡng T")
 ax.set_ylabel("Edge density trung bình")
 ax.set_title("Ablation ngưỡng T — Sobel vs Prewitt (45 lớp)")
@@ -524,15 +555,19 @@ plt.show()
 # %%
 # Boxplot Sobel theo T — thấy phân phối thay đổi theo T
 df_ablation_long = df_ablation.melt(id_vars=['class'],
-    value_vars=[f'sobel_T{T}' for T in T_VALUES],
-    var_name='T_label', value_name='density')
-df_ablation_long['T'] = df_ablation_long['T_label'].str.extract(r'T(\d+)').astype(int)
+                                    value_vars=[
+                                        f'sobel_T{T}' for T in T_VALUES],
+                                    var_name='T_label', value_name='density')
+df_ablation_long['T'] = df_ablation_long['T_label'].str.extract(
+    r'T(\d+)').astype(int)
 
 fig, ax = plt.subplots(figsize=(10, 5))
-sns.boxplot(data=df_ablation_long, x='T', y='density', ax=ax, palette='Blues_d')
+sns.boxplot(data=df_ablation_long, x='T',
+            y='density', ax=ax, palette='Blues_d')
 ax.set_xlabel("Ngưỡng T")
 ax.set_ylabel("Sobel edge density")
-ax.set_title("Phân bố Sobel edge density theo ngưỡng T (toàn bộ 45 lớp × 30 ảnh)")
+ax.set_title(
+    "Phân bố Sobel edge density theo ngưỡng T (toàn bộ 45 lớp × 30 ảnh)")
 plt.tight_layout()
 plt.show()
 
@@ -541,7 +576,8 @@ print("\nANOVA eta² theo T (Sobel) — T nào phân biệt lớp tốt nhất:"
 best_T_eta2 = {}
 for T in T_VALUES:
     col = f'sobel_T{T}'
-    grps = [df_ablation[df_ablation['class'] == c][col].values for c in classes]
+    grps = [df_ablation[df_ablation['class'] == c]
+            [col].values for c in classes]
     f_val, _ = stats.f_oneway(*grps)
     ss_b = sum(len(g) * (g.mean() - df_ablation[col].mean())**2 for g in grps)
     ss_t = ((df_ablation[col] - df_ablation[col].mean())**2).sum()
@@ -569,13 +605,15 @@ canny_data = []
 for cls in tqdm(classes, desc="Canny ablation"):
     paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
     np.random.seed(42)
-    chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
+    chosen = np.random.choice(paths, min(
+        EDGE_SAMPLE, len(paths)), replace=False)
     for p in chosen:
         img_g = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
         row_data = {'class': cls}
         for cfg in CANNY_CONFIGS:
             key = f"s{cfg['sigma']}_T{cfg['T1']}_{cfg['T2']}"
-            row_data[key] = canny_density(img_g, cfg['sigma'], cfg['T1'], cfg['T2'])
+            row_data[key] = canny_density(
+                img_g, cfg['sigma'], cfg['T1'], cfg['T2'])
         canny_data.append(row_data)
 
 df_canny = pd.DataFrame(canny_data)
@@ -584,15 +622,17 @@ canny_cols = [f"s{c['sigma']}_T{c['T1']}_{c['T2']}" for c in CANNY_CONFIGS]
 print("Canny edge density trung bình theo cấu hình:")
 print(f"{'Config':<22} {'Mean':>8} {'Std':>8}")
 for col in canny_cols:
-    print(f"  {col:<22} {df_canny[col].mean():>8.4f} {df_canny[col].std():>8.4f}")
+    print(
+        f"  {col:<22} {df_canny[col].mean():>8.4f} {df_canny[col].std():>8.4f}")
 
 # %%
 # Boxplot so sánh 4 Canny configs
 df_canny_long = df_canny.melt(id_vars=['class'], value_vars=canny_cols,
-                               var_name='config', value_name='density')
+                              var_name='config', value_name='density')
 
 fig, ax = plt.subplots(figsize=(10, 5))
-sns.boxplot(data=df_canny_long, x='config', y='density', ax=ax, palette='Oranges_d')
+sns.boxplot(data=df_canny_long, x='config',
+            y='density', ax=ax, palette='Oranges_d')
 ax.set_xlabel("Cấu hình (sigma_T1_T2)")
 ax.set_ylabel("Canny edge density")
 ax.set_title("Ablation Canny: so sánh 4 cấu hình (sigma, T₁, T₂)")
@@ -613,7 +653,8 @@ for col in canny_cols:
     print(f"  {col:<22}: F={f_val:.1f}, η²={eta2:.3f}")
 
 BEST_CANNY = max(best_canny_eta2, key=best_canny_eta2.get)
-print(f"\n→ Cấu hình tốt nhất: {BEST_CANNY} (η²={best_canny_eta2[BEST_CANNY]:.3f})")
+print(
+    f"\n→ Cấu hình tốt nhất: {BEST_CANNY} (η²={best_canny_eta2[BEST_CANNY]:.3f})")
 
 # %% [markdown]
 # ### 2.4 Edge Density theo lớp — T tối ưu
@@ -626,10 +667,12 @@ edge_final = []
 for cls in tqdm(classes, desc="Edge density final"):
     paths = glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg"))
     np.random.seed(42)
-    chosen = np.random.choice(paths, min(EDGE_SAMPLE, len(paths)), replace=False)
+    chosen = np.random.choice(paths, min(
+        EDGE_SAMPLE, len(paths)), replace=False)
     best_cfg = {c['sigma']: c for c in CANNY_CONFIGS
                 if f"s{c['sigma']}_T{c['T1']}_{c['T2']}" == BEST_CANNY}
-    best_cfg_item = [c for c in CANNY_CONFIGS if f"s{c['sigma']}_T{c['T1']}_{c['T2']}" == BEST_CANNY][0]
+    best_cfg_item = [
+        c for c in CANNY_CONFIGS if f"s{c['sigma']}_T{c['T1']}_{c['T2']}" == BEST_CANNY][0]
     for p in chosen:
         img_g = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
         edge_final.append({
@@ -641,8 +684,8 @@ for cls in tqdm(classes, desc="Edge density final"):
         })
 
 df_final = pd.DataFrame(edge_final)
-class_sobel_final  = df_final.groupby('class')['sobel'].mean().sort_values()
-class_canny_final  = df_final.groupby('class')['canny'].mean().sort_values()
+class_sobel_final = df_final.groupby('class')['sobel'].mean().sort_values()
+class_canny_final = df_final.groupby('class')['canny'].mean().sort_values()
 class_prewitt_final = df_final.groupby('class')['prewitt'].mean().sort_values()
 
 print(f"Sobel   (T={BEST_T}): mean={df_final['sobel'].mean():.4f}")
@@ -657,19 +700,24 @@ for cls, val in class_sobel_final.head(5).items():
 
 # %%
 # Boxplot top + bottom classes theo Sobel
-top_bottom = list(class_sobel_final.index[:7]) + list(class_sobel_final.index[-7:])
+top_bottom = list(
+    class_sobel_final.index[:7]) + list(class_sobel_final.index[-7:])
 df_sub = df_final[df_final['class'].isin(top_bottom)]
-order_sub = class_sobel_final[class_sobel_final.index.isin(top_bottom)].index.tolist()
+order_sub = class_sobel_final[class_sobel_final.index.isin(
+    top_bottom)].index.tolist()
 
 fig, axes = plt.subplots(1, 3, figsize=(20, 5))
 for ax, col, title in zip(axes,
-                           ['sobel', 'prewitt', 'canny'],
-                           [f'Sobel (T={BEST_T})', f'Prewitt (T={BEST_T})', f'Canny ({BEST_CANNY})']):
-    sns.boxplot(data=df_sub, x='class', y=col, order=order_sub, ax=ax, palette='RdYlGn_r')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right', fontsize=8)
+                          ['sobel', 'prewitt', 'canny'],
+                          [f'Sobel (T={BEST_T})', f'Prewitt (T={BEST_T})', f'Canny ({BEST_CANNY})']):
+    sns.boxplot(data=df_sub, x='class', y=col,
+                order=order_sub, ax=ax, palette='RdYlGn_r')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45,
+                       ha='right', fontsize=8)
     ax.set_title(f"{title} (7 thấp + 7 cao)")
     ax.set_ylabel("Edge Density")
-plt.suptitle("Edge Density theo lớp — 3 bộ lọc với tham số tốt nhất", fontsize=13)
+plt.suptitle(
+    "Edge Density theo lớp — 3 bộ lọc với tham số tốt nhất", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -678,12 +726,12 @@ plt.show()
 
 # %%
 for col, label in [('sobel', f'Sobel T={BEST_T}'),
-                    ('prewitt', f'Prewitt T={BEST_T}'),
-                    ('canny', f'Canny {BEST_CANNY}')]:
+                   ('prewitt', f'Prewitt T={BEST_T}'),
+                   ('canny', f'Canny {BEST_CANNY}')]:
     grps = [df_final[df_final['class'] == c][col].values for c in classes]
     lev_s, lev_p = stats.levene(*grps)
     f_val, p_anova = stats.f_oneway(*grps)
-    h_val, p_kw    = stats.kruskal(*grps)
+    h_val, p_kw = stats.kruskal(*grps)
     ss_b = sum(len(g) * (g.mean() - df_final[col].mean())**2 for g in grps)
     ss_t = ((df_final[col] - df_final[col].mean())**2).sum()
     eta2 = ss_b / ss_t
@@ -691,7 +739,8 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
     print(f"  Levene:   stat={lev_s:.2f}, p={lev_p:.2e}")
     print(f"  ANOVA:    F={f_val:.2f}, p={p_anova:.2e}")
     print(f"  Kruskal:  H={h_val:.2f}, p={p_kw:.2e}")
-    print(f"  Eta²={eta2:.3f}  ({'lớn ≥0.14' if eta2>=0.14 else 'trung bình ≥0.06' if eta2>=0.06 else 'nhỏ'})")
+    print(
+        f"  Eta²={eta2:.3f}  ({'lớn ≥0.14' if eta2 >= 0.14 else 'trung bình ≥0.06' if eta2 >= 0.06 else 'nhỏ'})")
     print()
 
 # %% [markdown]

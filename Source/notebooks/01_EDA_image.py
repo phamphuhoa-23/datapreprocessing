@@ -49,7 +49,10 @@
 # ## 0. Setup
 
 # %%
-import os, glob, warnings
+from pathlib import Path
+import os
+import glob
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -69,7 +72,6 @@ plt.rcParams.update({
 })
 sns.set_style("whitegrid")
 
-from pathlib import Path
 
 def _find_image_root() -> Path:
     """Tìm thư mục Dataset/ chứa train/ và test/."""
@@ -85,11 +87,13 @@ def _find_image_root() -> Path:
     for p in candidates:
         if (p / 'train').exists() and any((p / 'train').iterdir()):
             return p
-    raise FileNotFoundError("Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào data/image/train/.")
+    raise FileNotFoundError(
+        "Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào data/image/train/.")
+
 
 _IMG_ROOT = _find_image_root()
 TRAIN_DIR = str(_IMG_ROOT / 'train')
-TEST_DIR  = str(_IMG_ROOT / 'test')
+TEST_DIR = str(_IMG_ROOT / 'test')
 
 # OUTPUT_DIR: lưu processed outputs (duplicate_paths.csv, figures)
 OUTPUT_DIR = str(_IMG_ROOT.parent / 'processed')
@@ -135,9 +139,9 @@ for cls in tqdm(classes, desc="Pixel stats"):
     r_vals, g_vals, b_vals = [], [], []
     for p in imgs:
         img = cv2.cvtColor(cv2.imread(p), cv2.COLOR_BGR2RGB)
-        r_vals.append(img[:,:,0].mean())
-        g_vals.append(img[:,:,1].mean())
-        b_vals.append(img[:,:,2].mean())
+        r_vals.append(img[:, :, 0].mean())
+        g_vals.append(img[:, :, 1].mean())
+        b_vals.append(img[:, :, 2].mean())
 
     class_pixel_stats[cls] = {
         'r_mean': np.mean(r_vals), 'g_mean': np.mean(g_vals), 'b_mean': np.mean(b_vals),
@@ -150,9 +154,12 @@ for cls in tqdm(classes, desc="Pixel stats"):
     all_means_g.extend(g_vals)
     all_means_b.extend(b_vals)
 
-print(f"Tổng ảnh đã scan: {len(all_means_r):,} ({len(all_means_r)//len(classes)} ảnh/lớp)")
-print(f"Pixel Mean: R={np.mean(all_means_r):.1f}, G={np.mean(all_means_g):.1f}, B={np.mean(all_means_b):.1f}")
-print(f"Pixel Std:  R={np.std(all_means_r):.1f}, G={np.std(all_means_g):.1f}, B={np.std(all_means_b):.1f}")
+print(
+    f"Tổng ảnh đã scan: {len(all_means_r):,} ({len(all_means_r)//len(classes)} ảnh/lớp)")
+print(
+    f"Pixel Mean: R={np.mean(all_means_r):.1f}, G={np.mean(all_means_g):.1f}, B={np.mean(all_means_b):.1f}")
+print(
+    f"Pixel Std:  R={np.std(all_means_r):.1f}, G={np.std(all_means_g):.1f}, B={np.std(all_means_b):.1f}")
 
 # %%
 # Tổng hợp pixel stats dạng bảng + biểu đồ
@@ -170,14 +177,17 @@ display(df_pixel_stats)
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 for ax, (name, vals, color) in zip(axes, [
-    ('R', all_means_r, '#e74c3c'), ('G', all_means_g, '#2ecc71'), ('B', all_means_b, '#3498db')
+    ('R', all_means_r, '#e74c3c'), ('G', all_means_g,
+                                    '#2ecc71'), ('B', all_means_b, '#3498db')
 ]):
     ax.boxplot(vals, vert=True, patch_artist=True,
                boxprops=dict(facecolor=color, alpha=0.4),
                medianprops=dict(color='black', linewidth=2))
-    ax.set_title(f"Kênh {name} (mean={np.mean(vals):.1f}, std={np.std(vals):.1f})")
+    ax.set_title(
+        f"Kênh {name} (mean={np.mean(vals):.1f}, std={np.std(vals):.1f})")
     ax.set_ylabel("Mean pixel value")
-plt.suptitle("Boxplot pixel mean per-image theo kênh (toàn bộ 27,000 ảnh)", fontsize=13)
+plt.suptitle(
+    "Boxplot pixel mean per-image theo kênh (toàn bộ 27,000 ảnh)", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -204,19 +214,24 @@ plt.show()
 # %%
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 for ax, (name, vals, color) in zip(axes, [
-    ('R', all_means_r, '#e74c3c'), ('G', all_means_g, '#2ecc71'), ('B', all_means_b, '#3498db')
+    ('R', all_means_r, '#e74c3c'), ('G', all_means_g,
+                                    '#2ecc71'), ('B', all_means_b, '#3498db')
 ]):
-    ax.hist(vals, bins=50, color=color, alpha=0.5, edgecolor='white', density=True, label='Histogram')
+    ax.hist(vals, bins=50, color=color, alpha=0.5,
+            edgecolor='white', density=True, label='Histogram')
     kde = gaussian_kde(vals)
     x_range = np.linspace(min(vals), max(vals), 200)
     ax.plot(x_range, kde(x_range), color=color, linewidth=2, label='KDE')
-    ax.axvline(np.mean(vals), color='black', linestyle='--', linewidth=1, label=f'Mean={np.mean(vals):.1f}')
-    ax.axvline(np.median(vals), color='gray', linestyle=':', linewidth=1, label=f'Median={np.median(vals):.1f}')
+    ax.axvline(np.mean(vals), color='black', linestyle='--',
+               linewidth=1, label=f'Mean={np.mean(vals):.1f}')
+    ax.axvline(np.median(vals), color='gray', linestyle=':',
+               linewidth=1, label=f'Median={np.median(vals):.1f}')
     ax.set_title(f"Kênh {name}")
     ax.set_xlabel("Mean pixel value")
     ax.set_ylabel("Density")
     ax.legend(fontsize=8)
-plt.suptitle("Phân bố pixel trung bình theo kênh (per-image, toàn bộ 45 lớp)", fontsize=13)
+plt.suptitle(
+    "Phân bố pixel trung bình theo kênh (per-image, toàn bộ 45 lớp)", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -289,7 +304,7 @@ for ch_idx, ch_name in enumerate(['R', 'G', 'B']):
         vals = []
         for p in imgs:
             img = cv2.cvtColor(cv2.imread(p), cv2.COLOR_BGR2RGB)
-            vals.append(img[:,:,ch_idx].ravel())
+            vals.append(img[:, :, ch_idx].ravel())
         all_px = np.concatenate(vals)
         axes[ch_idx].hist(all_px, bins=64, alpha=0.4, density=True, label=cls)
     axes[ch_idx].set_title(f"Kênh {ch_name}")
@@ -337,16 +352,21 @@ for ch_name in ['R', 'G', 'B']:
     print(f"Levene: stat={lev_s:.2f}, p={lev_p:.2e}")
     print(f"ANOVA:  F={f_val:.2f}, p={p_anova:.2e}")
     print(f"Kruskal-Wallis: H={h_val:.2f}, p={p_kw:.2e}")
-    print(f"Eta² = {eta2[ch_name]:.3f}  ({'lớn' if eta2[ch_name] >= 0.14 else 'trung bình' if eta2[ch_name] >= 0.06 else 'nhỏ'})")
+    print(
+        f"Eta² = {eta2[ch_name]:.3f}  ({'lớn' if eta2[ch_name] >= 0.14 else 'trung bình' if eta2[ch_name] >= 0.06 else 'nhỏ'})")
 
-    print(f"\nPost-hoc Mann-Whitney (5 lớp đại diện, Bonferroni a={0.05/10:.4f}):")
+    print(
+        f"\nPost-hoc Mann-Whitney (5 lớp đại diện, Bonferroni a={0.05/10:.4f}):")
     for i in range(len(compare_classes)):
         for j in range(i + 1, len(compare_classes)):
             c1, c2 = compare_classes[i], compare_classes[j]
-            u, p = stats.mannwhitneyu(per_class_means[ch_name][c1], per_class_means[ch_name][c2], alternative='two-sided')
+            u, p = stats.mannwhitneyu(
+                per_class_means[ch_name][c1], per_class_means[ch_name][c2], alternative='two-sided')
             p_bonf = min(p * 10, 1.0)
-            sig = "***" if p_bonf < 0.001 else ("**" if p_bonf < 0.01 else ("*" if p_bonf < 0.05 else "ns"))
-            print(f"  {c1} vs {c2}: U={u:.0f}, p={p:.2e}, p_bonf={p_bonf:.2e} {sig}")
+            sig = "***" if p_bonf < 0.001 else (
+                "**" if p_bonf < 0.01 else ("*" if p_bonf < 0.05 else "ns"))
+            print(
+                f"  {c1} vs {c2}: U={u:.0f}, p={p:.2e}, p_bonf={p_bonf:.2e} {sig}")
     print()
 
 eta2_r, eta2_g, eta2_b = eta2['R'], eta2['G'], eta2['B']
@@ -411,9 +431,12 @@ df_counts = pd.DataFrame({
 })
 df_counts['total'] = df_counts['train'] + df_counts['test']
 
-print(f"Tổng ảnh: {df_counts['total'].sum():,} (train: {df_counts['train'].sum():,}, test: {df_counts['test'].sum():,})")
-print(f"Ảnh/lớp (train): min={df_counts['train'].min()}, max={df_counts['train'].max()}, mean={df_counts['train'].mean():.0f}")
-print(f"Ảnh/lớp (test):  min={df_counts['test'].min()}, max={df_counts['test'].max()}, mean={df_counts['test'].mean():.0f}")
+print(
+    f"Tổng ảnh: {df_counts['total'].sum():,} (train: {df_counts['train'].sum():,}, test: {df_counts['test'].sum():,})")
+print(
+    f"Ảnh/lớp (train): min={df_counts['train'].min()}, max={df_counts['train'].max()}, mean={df_counts['train'].mean():.0f}")
+print(
+    f"Ảnh/lớp (test):  min={df_counts['test'].min()}, max={df_counts['test'].max()}, mean={df_counts['test'].mean():.0f}")
 
 # %%
 # Pie chart: phân bố train và test theo lớp
@@ -421,8 +444,9 @@ colors = [plt.cm.tab20c(i / len(classes)) for i in range(len(classes))]
 fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
 for ax, split, counts_col in zip(axes,
-                                  ['Train (27,000 ảnh ‒ 600/lớp)', 'Test (4,500 ảnh ‒ 100/lớp)'],
-                                  ['train', 'test']):
+                                 ['Train (27,000 ảnh ‒ 600/lớp)',
+                                  'Test (4,500 ảnh ‒ 100/lớp)'],
+                                 ['train', 'test']):
     wedges, texts = ax.pie(
         df_counts[counts_col],
         labels=classes,
@@ -444,8 +468,10 @@ plt.show()
 # %%
 imbalance_ratio = df_counts['train'].max() / df_counts['train'].min()
 print(f"Imbalance ratio: {imbalance_ratio:.2f}")
-print(f"Train/lớp: {df_counts['train'].iloc[0]}, Test/lớp: {df_counts['test'].iloc[0]}")
-print(f"Tỉ lệ train:test = {df_counts['train'].iloc[0] // df_counts['test'].iloc[0]}:1")
+print(
+    f"Train/lớp: {df_counts['train'].iloc[0]}, Test/lớp: {df_counts['test'].iloc[0]}")
+print(
+    f"Tỉ lệ train:test = {df_counts['train'].iloc[0] // df_counts['test'].iloc[0]}:1")
 
 # Chi-square test for uniform class distribution
 # H0: phân phối lớp đồng đều (mỗi lớp = 1/45 tổng)
@@ -461,7 +487,8 @@ else:
 # Kiểm tra ngưỡng 3x
 ratio_3x = df_counts['train'].max() / df_counts['train'].min()
 if ratio_3x >= 3.0:
-    over = df_counts[df_counts['train'] >= 3 * df_counts['train'].min()]['class'].tolist()
+    over = df_counts[df_counts['train'] >= 3 *
+                     df_counts['train'].min()]['class'].tolist()
     print(f"Có {len(over)} lớp vượt ngưỡng 3x: {over}")
 else:
     print(f"Không có lớp nào vượt ngưỡng 3x (ratio = {ratio_3x:.2f})")
@@ -601,7 +628,8 @@ if exact_dupes:
 if files_to_delete:
     dup_csv_path = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
     pd.DataFrame({'path': files_to_delete}).to_csv(dup_csv_path, index=False)
-    print(f"Đã lưu danh sách {len(files_to_delete)} ảnh duplicate → {dup_csv_path}")
+    print(
+        f"Đã lưu danh sách {len(files_to_delete)} ảnh duplicate → {dup_csv_path}")
 else:
     print("Không có ảnh exact-duplicate.")
 
@@ -633,13 +661,16 @@ for cls, entries in tqdm(hash_by_class.items(), desc="Near-dup per class"):
     for i in range(len(entries)):
         for j in range(i + 1, len(entries)):
             dist = entries[i][0] - entries[j][0]
-            if 0 < dist <= NEAR_DUP_THRESHOLD:  # 0 = exact dup (đã xử lý ở trên)
+            # 0 = exact dup (đã xử lý ở trên)
+            if 0 < dist <= NEAR_DUP_THRESHOLD:
                 near_dupes.append((entries[i], entries[j], dist))
 
-print(f"Near-duplicates (TOÀN BỘ dataset, within-class, threshold={NEAR_DUP_THRESHOLD}): {len(near_dupes)} cặp")
+print(
+    f"Near-duplicates (TOÀN BỘ dataset, within-class, threshold={NEAR_DUP_THRESHOLD}): {len(near_dupes)} cặp")
 
 if near_dupes:
-    fig, axes = plt.subplots(min(3, len(near_dupes)), 2, figsize=(6, 3*min(3, len(near_dupes))))
+    fig, axes = plt.subplots(min(3, len(near_dupes)),
+                             2, figsize=(6, 3*min(3, len(near_dupes))))
     if len(near_dupes) == 1:
         axes = [axes]
     for idx, (a, b, dist) in enumerate(near_dupes[:3]):
@@ -662,8 +693,10 @@ if near_dupes:
     for a, b, dist in near_dupes:
         near_dup_delete.add(b[3])  # giữ a, bỏ b
     near_dup_csv_path = os.path.join(OUTPUT_DIR, 'near_duplicate_paths.csv')
-    pd.DataFrame({'path': list(near_dup_delete)}).to_csv(near_dup_csv_path, index=False)
-    print(f"Near-duplicates: {len(near_dupes)} cặp → {len(near_dup_delete)} ảnh cần xóa")
+    pd.DataFrame({'path': list(near_dup_delete)}).to_csv(
+        near_dup_csv_path, index=False)
+    print(
+        f"Near-duplicates: {len(near_dupes)} cặp → {len(near_dup_delete)} ảnh cần xóa")
     print(f"Đã lưu danh sách → {near_dup_csv_path}")
 else:
     print("Không có ảnh near-duplicate.")
@@ -704,13 +737,16 @@ for cls in tqdm(classes, desc="Brightness/Contrast"):
     for p in glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg")):
         img = cv2.imread(p)
         lab = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
-        L = lab[:,:,0].astype(float)
-        brightness_data.append({'class': cls, 'brightness': L.mean(), 'contrast': L.std()})
+        L = lab[:, :, 0].astype(float)
+        brightness_data.append(
+            {'class': cls, 'brightness': L.mean(), 'contrast': L.std()})
 
 df_bc = pd.DataFrame(brightness_data)
 print(f"Tổng ảnh: {len(df_bc):,}")
-print(f"Brightness: mean={df_bc['brightness'].mean():.1f}, std={df_bc['brightness'].std():.1f}")
-print(f"Contrast:   mean={df_bc['contrast'].mean():.1f}, std={df_bc['contrast'].std():.1f}")
+print(
+    f"Brightness: mean={df_bc['brightness'].mean():.1f}, std={df_bc['brightness'].std():.1f}")
+print(
+    f"Contrast:   mean={df_bc['contrast'].mean():.1f}, std={df_bc['contrast'].std():.1f}")
 
 # %%
 # Bảng thống kê + Histogram/KDE + Boxplot cho Brightness & Contrast
@@ -732,12 +768,15 @@ fig, axes = plt.subplots(2, 2, figsize=(14, 8))
 for col, (metric, color) in enumerate([('brightness', '#f39c12'), ('contrast', '#8e44ad')]):
     ax = axes[0][col]
     vals = df_bc[metric].values
-    ax.hist(vals, bins=60, color=color, alpha=0.5, edgecolor='white', density=True, label='Histogram')
+    ax.hist(vals, bins=60, color=color, alpha=0.5,
+            edgecolor='white', density=True, label='Histogram')
     kde = gaussian_kde(vals)
     x_range = np.linspace(vals.min(), vals.max(), 200)
     ax.plot(x_range, kde(x_range), color=color, linewidth=2, label='KDE')
-    ax.axvline(np.mean(vals), color='black', linestyle='--', linewidth=1, label=f'Mean={np.mean(vals):.1f}')
-    ax.axvline(np.median(vals), color='gray', linestyle=':', linewidth=1, label=f'Median={np.median(vals):.1f}')
+    ax.axvline(np.mean(vals), color='black', linestyle='--',
+               linewidth=1, label=f'Mean={np.mean(vals):.1f}')
+    ax.axvline(np.median(vals), color='gray', linestyle=':',
+               linewidth=1, label=f'Median={np.median(vals):.1f}')
     ax.set_title(f"{metric.capitalize()} (L-channel)")
     ax.set_xlabel(metric.capitalize())
     ax.set_ylabel("Density")
@@ -752,7 +791,8 @@ for col, (metric, color) in enumerate([('brightness', '#f39c12'), ('contrast', '
     ax.set_title(f"{metric.capitalize()} - Boxplot")
     ax.set_ylabel(metric.capitalize())
 
-plt.suptitle("Phân bố Brightness & Contrast (L-channel, toàn bộ 27,000 ảnh)", fontsize=13)
+plt.suptitle(
+    "Phân bố Brightness & Contrast (L-channel, toàn bộ 27,000 ảnh)", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -773,12 +813,14 @@ print(df_bc_per_class.to_string())
 # Boxplot Brightness & Contrast toàn bộ 45 lớp (thứ tự theo alphabet)
 fig, axes = plt.subplots(2, 1, figsize=(20, 10))
 
-sns.boxplot(data=df_bc, x='class', y='brightness', ax=axes[0], palette='coolwarm')
+sns.boxplot(data=df_bc, x='class', y='brightness',
+            ax=axes[0], palette='coolwarm')
 axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=90, fontsize=7)
 axes[0].set_title("Brightness (mean L-channel) theo lớp")
 axes[0].set_xlabel("")
 
-sns.boxplot(data=df_bc, x='class', y='contrast', ax=axes[1], palette='coolwarm')
+sns.boxplot(data=df_bc, x='class', y='contrast',
+            ax=axes[1], palette='coolwarm')
 axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=90, fontsize=7)
 axes[1].set_title("Contrast (std L-channel) theo lớp")
 axes[1].set_xlabel("")
@@ -791,7 +833,8 @@ plt.show()
 
 # %%
 class_brightness = df_bc.groupby('class')['brightness'].mean().sort_values()
-top_bottom = list(class_brightness.index[:5]) + list(class_brightness.index[-5:])
+top_bottom = list(class_brightness.index[:5]) + \
+    list(class_brightness.index[-5:])
 
 print("5 tối nhất:", list(class_brightness.index[:5]))
 print("5 sáng nhất:", list(class_brightness.index[-5:]))
@@ -799,17 +842,23 @@ print("5 sáng nhất:", list(class_brightness.index[-5:]))
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
 df_sub = df_bc[df_bc['class'].isin(top_bottom)]
-order = class_brightness[class_brightness.index.isin(top_bottom)].index.tolist()
-sns.boxplot(data=df_sub, x='class', y='brightness', order=order, ax=axes[0], palette='coolwarm')
-axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45, ha='right', fontsize=8)
+order = class_brightness[class_brightness.index.isin(
+    top_bottom)].index.tolist()
+sns.boxplot(data=df_sub, x='class', y='brightness',
+            order=order, ax=axes[0], palette='coolwarm')
+axes[0].set_xticklabels(axes[0].get_xticklabels(),
+                        rotation=45, ha='right', fontsize=8)
 axes[0].set_title("Brightness (5 tối nhất + 5 sáng nhất)")
 
 class_contrast = df_bc.groupby('class')['contrast'].mean().sort_values()
 top_bottom_c = list(class_contrast.index[:5]) + list(class_contrast.index[-5:])
 df_sub_c = df_bc[df_bc['class'].isin(top_bottom_c)]
-order_c = class_contrast[class_contrast.index.isin(top_bottom_c)].index.tolist()
-sns.boxplot(data=df_sub_c, x='class', y='contrast', order=order_c, ax=axes[1], palette='coolwarm')
-axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45, ha='right', fontsize=8)
+order_c = class_contrast[class_contrast.index.isin(
+    top_bottom_c)].index.tolist()
+sns.boxplot(data=df_sub_c, x='class', y='contrast',
+            order=order_c, ax=axes[1], palette='coolwarm')
+axes[1].set_xticklabels(axes[1].get_xticklabels(),
+                        rotation=45, ha='right', fontsize=8)
 axes[1].set_title("Contrast (5 thấp nhất + 5 cao nhất)")
 
 plt.tight_layout()
@@ -820,12 +869,14 @@ plt.show()
 
 # %%
 fig, ax = plt.subplots(figsize=(12, 8))
-class_bc_stats = df_bc.groupby('class').agg({'brightness': 'mean', 'contrast': 'mean'}).reset_index()
+class_bc_stats = df_bc.groupby('class').agg(
+    {'brightness': 'mean', 'contrast': 'mean'}).reset_index()
 
 cmap = plt.cm.get_cmap('tab20', 20)
 cmap2 = plt.cm.get_cmap('tab20b', 20)
 cmap3 = plt.cm.get_cmap('tab20c', 10)
-colors = [cmap(i) for i in range(20)] + [cmap2(i) for i in range(20)] + [cmap3(i) for i in range(5)]
+colors = [cmap(i) for i in range(20)] + [cmap2(i)
+                                         for i in range(20)] + [cmap3(i) for i in range(5)]
 
 for idx, (_, row) in enumerate(class_bc_stats.iterrows()):
     ax.scatter(row['brightness'], row['contrast'], c=[colors[idx]], s=70, alpha=0.85,
@@ -848,7 +899,7 @@ plt.show()
 # %%
 for metric_name in ["Brightness", "Contrast"]:
     col = metric_name.lower()
-    metric_groups = [df_bc[df_bc['class']==c][col].values for c in classes]
+    metric_groups = [df_bc[df_bc['class'] == c][col].values for c in classes]
 
     lev_s, lev_p = stats.levene(*metric_groups)
     f_val, p_val = stats.f_oneway(*metric_groups)
