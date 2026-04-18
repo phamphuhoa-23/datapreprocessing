@@ -11,6 +11,8 @@ Source/notebooks/data/
 data/tabular/raw/
 data/tabular/processed/
 data/tabular/output/
+Source/data/raw/tabular/
+Source/data/raw/text/
 
 # Text dataset raw and processed
 data/text/raw/

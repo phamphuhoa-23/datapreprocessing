@@ -111,17 +111,26 @@ def _find_tabular_root() -> str:
     if IS_KAGGLE:
         return '/kaggle/input/ieee-fraud-detection'
     candidates = [
+        # Cấu trúc chuẩn: Source/data/raw/tabular/
+        Path.cwd().parent / 'data' / 'raw' / 'tabular',
+        Path.cwd() / 'data' / 'raw' / 'tabular',
+        Path.cwd().parent.parent / 'data' / 'raw' / 'tabular',
+        # Legacy fallback
         Path.cwd() / 'data' / 'tabular' / 'raw',
         Path.cwd().parent / 'data' / 'tabular' / 'raw',
         Path.cwd().parent.parent / 'data' / 'tabular' / 'raw',
         Path.cwd() / 'Source' / 'Dataset',
     ]
+    try:
+        candidates.insert(0, Path(__file__).resolve().parent.parent / 'data' / 'raw' / 'tabular')
+    except NameError:
+        pass
     for p in candidates:
         if (p / 'train_transaction.csv').exists():
             return str(p)
     raise FileNotFoundError(
         "Không tìm thấy train_transaction.csv!\n"
-        "Giải nén ieee-fraud-detection.zip vào data/tabular/raw/"
+        "Giải nén ieee-fraud-detection.zip vào Source/data/raw/tabular/"
     )
 
 
@@ -130,10 +139,12 @@ DATA_DIR = _find_tabular_root()
 if IS_KAGGLE:
     OUTPUT_DIR = '/kaggle/working'
 else:
-    _out = Path.cwd() / 'output'
-    if not _out.exists():
-        _out = Path(DATA_DIR).parent / 'output'
-    OUTPUT_DIR = str(_out)
+    try:
+        _SOURCE_DIR = Path(__file__).resolve().parent.parent
+    except NameError:
+        _cwd = Path.cwd()
+        _SOURCE_DIR = _cwd.parent if (_cwd.parent / 'data').is_dir() else _cwd
+    OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"{'[Kaggle]' if IS_KAGGLE else '[Local]'} DATA_DIR   = {DATA_DIR}")
@@ -2448,7 +2459,7 @@ plt.show()
 # %%
 
 # Thư mục processed
-PROCESSED_DIR = os.path.join(os.path.dirname(OUTPUT_DIR), 'processed')
+PROCESSED_DIR = OUTPUT_DIR  # All processed outputs go to Source/data/processed/
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 
 # Feature matrix cuối (chỉ FINAL_FEATURES tồn tại trong train & test)

@@ -68,8 +68,13 @@ sns.set_style("whitegrid")
 
 
 def _find_image_root() -> Path:
-    """Tìm thư mục Dataset/ chứa train/."""
+    """Tìm thư mục data/raw/image/ chứa train/."""
     candidates = [
+        # Cấu trúc chuẩn: Source/data/raw/image/
+        Path.cwd().parent / 'data' / 'raw' / 'image',
+        Path.cwd() / 'data' / 'raw' / 'image',
+        Path.cwd().parent.parent / 'data' / 'raw' / 'image',
+        # Legacy fallback
         Path.cwd() / 'Dataset',
         Path.cwd().parent / 'Dataset',
         Path.cwd() / 'Source' / 'Dataset',
@@ -78,16 +83,26 @@ def _find_image_root() -> Path:
         Path.cwd().parent / 'DataMining-Lab1' / 'Dataset',
         Path.cwd().parent.parent / 'Source' / 'Dataset',
     ]
+    try:
+        candidates.insert(0, Path(__file__).resolve().parent.parent / 'data' / 'raw' / 'image')
+    except NameError:
+        pass
     for p in candidates:
         if (p / 'train').exists() and any((p / 'train').iterdir()):
             return p
     raise FileNotFoundError(
-        "Không tìm thấy Dataset/train/. Đặt ảnh NWPU-RESISC45 vào Source/Dataset/.")
+        "Không tìm thấy data/raw/image/train/. Đặt ảnh NWPU-RESISC45 vào Source/data/raw/image/.")
 
 
 _IMG_ROOT = _find_image_root()
 TRAIN_DIR = str(_IMG_ROOT / 'train')
-OUTPUT_DIR = str(_IMG_ROOT.parent / 'processed')
+# OUTPUT_DIR: Source/data/processed/
+try:
+    _SOURCE_DIR = Path(__file__).resolve().parent.parent
+except NameError:
+    _cwd = Path.cwd()
+    _SOURCE_DIR = _cwd.parent if (_cwd.parent / 'data').is_dir() else _cwd
+OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"TRAIN_DIR  = {TRAIN_DIR}")
 print(f"OUTPUT_DIR = {OUTPUT_DIR}")
