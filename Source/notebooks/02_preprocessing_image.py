@@ -174,7 +174,7 @@ for cls in SAMPLE_CLASSES:
 # - $H_1$: Ít nhất 1 kích thước cho SSIM khác biệt
 
 # %%
-RESIZE_DIMS = [(64, 64), (128, 128), (224, 224)]
+RESIZE_DIMS = [(32, 32), (64, 64), (128, 128), (224, 224)]
 samples = load_sample(n_per_class=30, target_classes=SAMPLE_CLASSES)
 print(f"Sample: {len(samples)} ảnh từ {len(SAMPLE_CLASSES)} lớp")
 
@@ -199,12 +199,12 @@ df_resize.groupby('size').agg(
 # %%
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 sns.boxplot(data=df_resize, x='size', y='ssim', ax=axes[0], palette='Blues_d',
-            order=['64x64', '128x128', '224x224'])
+            order=['32x32', '64x64', '128x128', '224x224'])
 axes[0].set_title("SSIM theo kích thước resize")
 axes[0].set_ylabel("SSIM")
 
 sns.boxplot(data=df_resize, x='size', y='psnr', ax=axes[1], palette='Oranges_d',
-            order=['64x64', '128x128', '224x224'])
+            order=['32x32', '64x64', '128x128', '224x224'])
 axes[1].set_title("PSNR theo kích thước resize (dB)")
 axes[1].set_ylabel("PSNR (dB)")
 plt.tight_layout()
@@ -213,15 +213,15 @@ plt.show()
 # %%
 # Đường cong SSIM và PSNR theo kích thước
 mean_ssim = df_resize.groupby('size')['ssim'].mean().reindex([
-    '64x64', '128x128', '224x224'])
+    '32x32', '64x64', '128x128', '224x224'])
 mean_psnr = df_resize.groupby('size')['psnr'].mean().reindex([
-    '64x64', '128x128', '224x224'])
+    '32x32', '64x64', '128x128', '224x224'])
 std_ssim = df_resize.groupby('size')['ssim'].std().reindex([
-    '64x64', '128x128', '224x224'])
+    '32x32', '64x64', '128x128', '224x224'])
 std_psnr = df_resize.groupby('size')['psnr'].std().reindex([
-    '64x64', '128x128', '224x224'])
+    '32x32', '64x64', '128x128', '224x224'])
 
-sizes_px = [64, 128, 224]
+sizes_px = [32, 64, 128, 224]
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
@@ -489,9 +489,10 @@ print("\n=== Tóm tắt Color Space ===")
 print(f"{'Color Space':<12} {'k-NN Mean':>12} {'k-NN Std':>10}")
 print("-" * 37)
 for cs_name, (mean_acc, std_acc) in cs_knn_results.items():
+    baseline_tag = " (baseline)" if cs_name == 'RGB' else ""
     marker = " ← k-NN tốt nhất" if cs_name == max(
         cs_knn_results, key=lambda k: cs_knn_results[k][0]) else ""
-    print(f"{cs_name:<12} {mean_acc:>12.4f} {std_acc:>10.4f}{marker}")
+    print(f"{(cs_name + baseline_tag):<23} {mean_acc:>12.4f} {std_acc:>10.4f}{marker}")
 
 # %% [markdown]
 # **Kết luận Color Space:** (số liệu chính xác xem output bên trên)
@@ -623,6 +624,12 @@ norm_groups = [np.random.choice(px, 10000, replace=False)
 lev_s, lev_p = stats.levene(*norm_groups)
 print(
     f"Levene test (variance giữa 5 phương pháp): stat={lev_s:.2f}, p={lev_p:.2e}")
+
+# %% [markdown]
+# **Nhận xét Levene test:** Nếu $p < 0.05$ → bác bỏ $H_0$ (phương sai giữa các phương pháp KHÔNG đồng nhất).
+# Đây là **kết quả mong đợi**: mỗi chuẩn hóa thay đổi scale/spread theo cách khác nhau —
+# Min-Max giới hạn range cố định $[0,1]$ hay $[-1,1]$, còn Z-score tạo phân phối có
+# variance $\approx 1$. Variance khác nhau giữa các phương pháp là tính năng thiết kế, không phải lỗi.
 
 # %%
 fig, axes = plt.subplots(2, 3, figsize=(15, 8))
@@ -926,149 +933,16 @@ print(
     f"=> Augmentation {'LÀM TĂNG' if w_p < 0.05 else 'KHÔNG làm tăng'} intra-class variance có ý nghĩa thống kê")
 
 # %% [markdown]
-# ### Ablation: k-NN accuracy theo từng kỹ thuật augmentation (per-technique)
-#
-# Mỗi kỹ thuật augmentation được đánh giá **độc lập** so với baseline (không augmentation):
-# - Load cùng tập ảnh baseline
-# - Áp dụng DUY NHẤT 1 kỹ thuật augmentation → tập X_aug
-# - Chạy 5-fold CV k-NN trên X_aug
-# - Wilcoxon signed-rank vs baseline fold scores
-#
-# Tránh sai lầm phổ biến: KHÔNG stack tất cả augmentation vào 1 lần run.
-
-# %%
-# Per-augmentation k-NN ablation: đánh giá từng kỹ thuật riêng biệt
-aug_knn_samples = load_sample(n_per_class=30)
-
-# Baseline: ảnh gốc resize 128×128, normalize [0,1]
-X_base_aug, y_base_aug = [], []
-for img, cls in aug_knn_samples:
-    resized = cv2.resize(img, (best_size, best_size))
-    X_base_aug.append(resized.reshape(-1).astype(np.float32) / 255.0)
-    y_base_aug.append(cls)
-X_base_aug = np.array(X_base_aug)
-y_base_aug = np.array(y_base_aug)
-
-knn_base_aug = KNeighborsClassifier(n_neighbors=5)
-base_aug_scores = cross_val_score(
-    knn_base_aug, X_base_aug, y_base_aug, cv=5, scoring='accuracy')
-
-aug_knn_results = {'Baseline (no aug)': (
-    base_aug_scores.mean(), base_aug_scores.std())}
-aug_knn_fold_scores = {'Baseline (no aug)': base_aug_scores}
-
-print(
-    f"Baseline (no aug): {base_aug_scores.mean():.4f} ± {base_aug_scores.std():.4f}")
-print(f"\n{'Technique':<25} {'Mean':>8} {'Std':>7} {'Wilcoxon p':>12} {'Cohen d':>10} {'Sig':>5}")
-print("-" * 68)
-
-for aug_name, aug_fn in AUGMENTATIONS.items():
-    X_aug_k, y_aug_k = [], []
-    np.random.seed(42)
-    for img, cls in aug_knn_samples:
-        resized = cv2.resize(img, (best_size, best_size))
-        augmented = aug_fn(resized)
-        X_aug_k.append(augmented.reshape(-1).astype(np.float32) / 255.0)
-        y_aug_k.append(cls)
-    X_aug_k = np.array(X_aug_k)
-    y_aug_k = np.array(y_aug_k)
-
-    knn_aug = KNeighborsClassifier(n_neighbors=5)
-    aug_scores_k = cross_val_score(
-        knn_aug, X_aug_k, y_aug_k, cv=5, scoring='accuracy')
-    aug_knn_results[aug_name] = (aug_scores_k.mean(), aug_scores_k.std())
-    aug_knn_fold_scores[aug_name] = aug_scores_k
-
-    try:
-        w_stat_a, w_p_a = stats.wilcoxon(aug_scores_k, base_aug_scores)
-    except ValueError:
-        w_stat_a, w_p_a = 0.0, 1.0
-    d_diff_a = aug_scores_k - base_aug_scores
-    d_a = d_diff_a.mean() / (d_diff_a.std(ddof=1) + 1e-8)
-    sig_a = "✓" if w_p_a < 0.05 else "ns"
-    print(f"{aug_name:<25} {aug_scores_k.mean():>8.4f} {aug_scores_k.std():>7.4f} "
-          f"{w_p_a:>12.4f} {d_a:>10.3f} {sig_a:>5}")
-
-best_aug = max([k for k in aug_knn_results if k != 'Baseline (no aug)'],
-               key=lambda k: aug_knn_results[k][0])
-print(f"\n→ Best augmentation technique: {best_aug}")
-print(
-    f"  k-NN accuracy = {aug_knn_results[best_aug][0]:.4f} ± {aug_knn_results[best_aug][1]:.4f}")
-
-# %%
-# Biểu đồ: per-augmentation accuracy
-fig, ax = plt.subplots(figsize=(12, 5))
-names_aug = list(aug_knn_results.keys())
-means_aug = [aug_knn_results[n][0] for n in names_aug]
-stds_aug = [aug_knn_results[n][1] for n in names_aug]
-colors_aug = ['lightgray'] + ['tomato' if n ==
-                              best_aug else 'steelblue' for n in names_aug[1:]]
-bars_aug = ax.bar(names_aug, means_aug, yerr=stds_aug, color=colors_aug, capsize=4,
-                  edgecolor='white', alpha=0.85)
-ax.axhline(base_aug_scores.mean(), color='gray',
-           linestyle='--', alpha=0.5, label='Baseline')
-for bar, v in zip(bars_aug, means_aug):
-    ax.text(bar.get_x() + bar.get_width() / 2, v + 0.003, f'{v:.3f}',
-            ha='center', fontsize=8)
-ax.set_ylabel('5-fold CV Accuracy (k-NN, k=5)')
-ax.set_title(
-    'Per-Augmentation k-NN Ablation (128×128, chuẩn hóa [0,1])', fontsize=12)
-ax.tick_params(axis='x', rotation=20)
-ax.legend()
-ax.grid(axis='y', alpha=0.3)
-plt.tight_layout()
-save_dir_aug = str(Path(_IMG_ROOT).parent / 'processed')
-os.makedirs(save_dir_aug, exist_ok=True)
-plt.savefig(os.path.join(save_dir_aug, 'fig_aug_knn_ablation.png'),
-            dpi=100, bbox_inches='tight')
-plt.show()
-
-# %% [markdown]
 # ---
 # ## Tổng hợp Pipeline & Lưu kết quả
 
+# %% [markdown]
+# ### Ablation: k-NN accuracy theo từng kỹ thuật augmentation (per-technique)
+#
+# Mỗi kỹ thuật được đánh giá **độc lập** với dataset = ảnh gốc + augmented_by_fn
+# (gấp đôi số mẫu mỗi ablation). Đây là thiết kế đúng: không stack tất cả aug cùng lúc.
+
 # %%
-
-# Tổng kết các lựa chọn pipeline
-PIPELINE_CHOICES_IMG = {
-    'step1_resize': {
-        'chosen_size': int(best_size),
-        'method': 'bilinear (cv2.resize)',
-        'metric': 'SSIM vs original 256×256',
-        'justification': f'best_size={best_size} đạt SSIM cao nhất (ablation 64/128/224×224); ANOVA p<0.05'
-    },
-    'step2_color_space': {
-        'chosen': 'RGB (baseline)',
-        'metric': 'PCA explained variance + k-NN accuracy',
-        'justification': 'RGB đủ tốt cho k-NN; HSV/Lab cho PCA variance tốt hơn nhưng pipeline cost cao hơn'
-    },
-    'step3_normalization': {
-        'chosen_method': str(best_norm_method),
-        'metric': '5-fold k-NN accuracy',
-        'justification': f'{best_norm_method} đạt accuracy cao nhất; Wilcoxon vs Original'
-    },
-    'step4_augmentation': {
-        'chosen_technique': str(best_aug),
-        'metric': '5-fold k-NN accuracy per-technique',
-        'justification': f'{best_aug} tăng accuracy nhiều nhất so với baseline'
-    }
-}
-
-print("=== TÓM TẮT PIPELINE TIỀN XỬ LÝ ẢNH ===")
-for step, info in PIPELINE_CHOICES_IMG.items():
-    chosen = info.get('chosen_size') or info.get('chosen') or info.get(
-        'chosen_method') or info.get('chosen_technique')
-    print(f"  {step}: {chosen}")
-
-PROCESSED_DIR_IMG = str(Path(_IMG_ROOT).parent / 'processed')
-os.makedirs(PROCESSED_DIR_IMG, exist_ok=True)
-
-with open(os.path.join(PROCESSED_DIR_IMG, 'pipeline_choices_image.json'), 'w', encoding='utf-8') as f:
-    json.dump(PIPELINE_CHOICES_IMG, f, ensure_ascii=False, indent=2)
-
-print(f"\n✅ Đã lưu pipeline_choices_image.json → {PROCESSED_DIR_IMG}")
-print("=== HOÀN THÀNH TIỀN XỬ LÝ ẢNH ===")
-
 # Với mỗi aug_fn: dataset = {original} + {augmented_by_this_fn_only}
 aug_ablation_samples = load_sample(n_per_class=30)
 
@@ -1118,6 +992,52 @@ print(
     f"\n=> Kỹ thuật tốt nhất: {best_aug} ({aug_knn_fold_scores[best_aug].mean():.4f})")
 print(
     f"=> Kỹ thuật kém nhất: {worst_aug} ({aug_knn_fold_scores[worst_aug].mean():.4f})")
+
+# %% [markdown]
+# ---
+# ## Tổng hợp Pipeline & Lưu kết quả
+
+# %%
+
+# Tổng kết các lựa chọn pipeline
+PIPELINE_CHOICES_IMG = {
+    'step1_resize': {
+        'chosen_size': int(best_size),
+        'method': 'bilinear (cv2.resize)',
+        'metric': 'SSIM vs original 256×256',
+        'justification': f'best_size={best_size} đạt SSIM cao nhất (ablation 64/128/224×224); ANOVA p<0.05'
+    },
+    'step2_color_space': {
+        'chosen': 'RGB (baseline)',
+        'metric': 'PCA explained variance + k-NN accuracy',
+        'justification': 'RGB đủ tốt cho k-NN; HSV/Lab cho PCA variance tốt hơn nhưng pipeline cost cao hơn'
+    },
+    'step3_normalization': {
+        'chosen_method': str(best_norm_method),
+        'metric': '5-fold k-NN accuracy',
+        'justification': f'{best_norm_method} đạt accuracy cao nhất; Wilcoxon vs Original'
+    },
+    'step4_augmentation': {
+        'chosen_technique': str(best_aug),
+        'metric': '5-fold k-NN accuracy per-technique (original + augmented_by_fn)',
+        'justification': f'{best_aug} tăng accuracy nhiều nhất so với baseline'
+    }
+}
+
+print("=== TÓM TẮT PIPELINE TIỀN XỬ LÝ ẢNH ===")
+for step, info in PIPELINE_CHOICES_IMG.items():
+    chosen = info.get('chosen_size') or info.get('chosen') or info.get(
+        'chosen_method') or info.get('chosen_technique')
+    print(f"  {step}: {chosen}")
+
+PROCESSED_DIR_IMG = str(Path(_IMG_ROOT).parent / 'processed')
+os.makedirs(PROCESSED_DIR_IMG, exist_ok=True)
+
+with open(os.path.join(PROCESSED_DIR_IMG, 'pipeline_choices_image.json'), 'w', encoding='utf-8') as f:
+    json.dump(PIPELINE_CHOICES_IMG, f, ensure_ascii=False, indent=2)
+
+print(f"\n✅ Đã lưu pipeline_choices_image.json → {PROCESSED_DIR_IMG}")
+print("=== HOÀN THÀNH TIỀN XỬ LÝ ẢNH ===")
 
 # %% [markdown]
 # ### Ablation: k-NN accuracy trước/sau augmentation

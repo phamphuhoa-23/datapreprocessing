@@ -638,7 +638,14 @@ else:
 #
 # **Lý thuyết:** pHash tạo binary fingerprint 64-bit.
 # Hamming distance $d(h_1, h_2) = \text{popcount}(h_1 \oplus h_2)$: số bit khác nhau giữa 2 hash.
-# Ngưỡng $d \leq 4$ là ngưỡng thực nghiệm phổ biến cho ảnh gần trùng lặp.
+# Ngưỡng $d \leq 4$ là ngưỡng thực nghiệm phổ biến cho ảnh gần trùng lặp: $4/64 \approx 6\%$ bit
+# khác nhau trên 64-bit hash.
+#
+# **Tại sao $d \leq 4$ phù hợp với ảnh 256×256?**
+# pHash dùng khối DCT $8 \times 8$ (64 hệ số tần số thấp) để tóm tắt cấu trúc ảnh —
+# các phép biến đổi nhỏ như resize nhẹ, nén JPEG hay thay đổi độ sáng nhẹ chỉ làm thay đổi
+# $\leq 4$ bit; biến đổi cấu trúc thực sự (nội dung khác nhau) thường thay $> 10$ bit.
+# Do đó $d \leq 4$ bắt được ảnh gần trùng mà không gây false positive trên ảnh thực sự khác nhau.
 
 # %%
 # Near-dup chạy TOÀN BỘ dataset nhưng so sánh TRONG TỪNG LỚP

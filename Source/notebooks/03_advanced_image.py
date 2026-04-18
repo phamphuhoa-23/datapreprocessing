@@ -188,6 +188,8 @@ n99 = int(np.argmax(cum_var >= 0.99) +
 print(f"Components để giải thích 90% variance: {n90}")
 print(f"Components để giải thích 95% variance: {n95}")
 print(f"Components để giải thích 99% variance: {n99}")
+if cum_var[-1] < 0.99:
+    print(f"WARNING: cum_var tối đa chỉ đạt {cum_var[-1]*100:.1f}% — tăng N_COMPONENTS để xác định n99 chính xác")
 
 # %% [markdown]
 # ### Scree Plot & Cumulative Variance
@@ -333,11 +335,38 @@ for cls, color in zip(classes, colors_45):
     mask = y_tsne == cls
     ax.scatter(X_tsne[mask, 0], X_tsne[mask, 1],
                c=[color], label=cls, alpha=0.6, s=12)
-ax.set_title(f"t-SNE 2D — toàn bộ 45 lớp (subsample {N_TSNE} ảnh, input: 50 PCA components)",
+ax.set_title(f"t-SNE 2D — toàn bộ 45 lớp (subsample {N_TSNE} ảnh, perplexity=30, input: 50 PCA components)",
              fontsize=12)
 ax.set_xlabel("t-SNE 1")
 ax.set_ylabel("t-SNE 2")
 ax.legend(fontsize=6, loc='best', ncol=5, markerscale=2)
+plt.tight_layout()
+plt.show()
+
+# %% [markdown]
+# ### t-SNE Perplexity=50 — so sánh với Perplexity=30
+#
+# Perplexity=30 là giá trị mặc định, phù hợp khi sample size ~100–500/cụm.
+# Với subsample 5,000 ảnh (111 ảnh/lớp × 45 lớp), cụm có thể bị dính nếu perplexity quá nhỏ.
+# Thử perplexity=50 để kiểm tra: cluster có tách ra tốt hơn không?
+
+# %%
+print(f"Running t-SNE với perplexity=50 (so sánh với p=30)...")
+tsne_50 = TSNE(n_components=2, random_state=42, perplexity=50, max_iter=1000)
+X_tsne_50 = tsne_50.fit_transform(X_tsne_input)
+print("Done.")
+
+fig, axes_tsne = plt.subplots(1, 2, figsize=(22, 9))
+for ax_t, X_t, perp in zip(axes_tsne, [X_tsne, X_tsne_50], [30, 50]):
+    for cls, color in zip(classes, colors_45):
+        mask = y_tsne == cls
+        ax_t.scatter(X_t[mask, 0], X_t[mask, 1],
+                     c=[color], label=cls, alpha=0.6, s=10)
+    ax_t.set_title(f"t-SNE perplexity={perp} ({N_TSNE} ảnh, 50 PCA dims)", fontsize=11)
+    ax_t.set_xlabel("t-SNE 1")
+    ax_t.set_ylabel("t-SNE 2")
+    ax_t.legend(fontsize=5, loc='best', ncol=5, markerscale=2)
+plt.suptitle("So sánh t-SNE Perplexity=30 vs Perplexity=50", fontsize=13)
 plt.tight_layout()
 plt.show()
 
@@ -403,7 +432,7 @@ print(f"\nEta² = {eta_sq:.3f}")
 #
 # - **Sobel/Prewitt:** `edge_density = mean(M > T)` — T điều chỉnh độ nhạy phát hiện cạnh,
 #   quan trọng hơn kernel_size vì kernel_size chỉ ảnh hưởng đến độ mịn.
-#   Theo Marr & Hildreth (1980): T nên được xác định bằng ablation thực nghiệm.
+#   Theo thực nghiệm, T nên được xác định bằng ablation (không có công thức lý thuyết cố định).
 # - **Canny:** T₂/T₁ ≈ 2–3 (Canny 1986). σ=1 chuẩn, σ=2 cho ảnh nhiễu.
 #   T₁, T₂ là siêu tham số chính — tăng T₁/T₂ → cạnh yếu bị loại bỏ.
 #
@@ -748,6 +777,9 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
 #
 # - **Ngưỡng T là siêu tham số chính:** T tăng → density giảm mạnh;
 #   tỷ lệ xếp hạng lớp ổn định qua các T → cho phép so sánh lớp.
+# - **Prewitt vs Sobel:** cho kết quả edge density gần nhau vì cả hai dùng kernel 3×3;
+#   Sobel dùng trọng số trung tâm lớn hơn (2) so với Prewitt (1), nên nhạy hơn một chút
+#   với cạnh dọc/ngang, nhưng khác biệt không đáng kể ở ngưỡng T tương đương.
 # - **Canny:** T₂/T₁ ≈ 2–3; σ=2 làm trơn noise tốt hơn trên ảnh vệ tinh.
 # - **ANOVA + Kruskal-Wallis** (xem output): p ≈ 0, Eta² lớn → bác bỏ H₀,
 #   edge density khác biệt có ý nghĩa giữa 45 lớp.
