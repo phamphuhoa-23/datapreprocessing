@@ -434,10 +434,7 @@ plt.show()
 # | **Pearson** | $r = \frac{\sum(x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum(x_i-\bar{x})^2 \cdot \sum(y_i-\bar{y})^2}}$ | Tuyến tính, phân phối chuẩn | Dữ liệu chuẩn, quan hệ tuyến tính |
 # | **Spearman** | $r_s = 1 - \frac{6\sum d_i^2}{n(n^2-1)}$ | Đơn điệu, phi tham số | Dữ liệu lệch, có outlier |
 # #
-# > **Lựa chọn phương pháp:** Kết quả D'Agostino-Pearson test ở bước trên cho thấy **399/400**
-# > cột số không tuân theo phân phối chuẩn. Vì vậy **Spearman** được chọn làm phương pháp
-# > mặc định thay vì Pearson – Spearman hoạt động trên rank thay vì giá trị thô nên
-# > không bị ảnh hưởng bởi outlier và phân phối lệch.
+# **Lựa chọn phương pháp:** D'Agostino-Pearson test cho thấy **399/400** cột số không tuân theo phân phối chuẩn. Vì vậy **Spearman** được chọn thay vì Pearson – Spearman hoạt động trên rank nên không bị ảnh hưởng bởi outlier và phân phối lệch.
 # #
 # **Phát hiện đa cộng tuyến** ($|r_s| > 0.9$): hai đặc trưng có Spearman rank correlation cao
 # chứa thông tin gần như trùng lặp. Giải pháp: loại một trong hai cột hoặc dùng PCA để kết hợp.
@@ -529,7 +526,7 @@ else:
 # Pearson cho thấy C4 và C14 tương quan dương cực mạnh (~0.94), trong khi Spearman (dựa trên rank) lại cho thấy tương quan âm yếu (−0.25). Mâu thuẫn này là dấu hiệu rõ ràng của outlier cực đoan: một vài giá trị ngoại lệ lớn bất thường đã kéo hệ số Pearson lên cao giả tạo, trong khi Spearman — không bị ảnh hưởng bởi giá trị tuyệt đối — phản ánh đúng hơn xu hướng thực sự của phần lớn dữ liệu.
 #
 # **Kết luận:**
-# > Dữ liệu IEEE-CIS Fraud Detection chứa nhiều outlier nghiêm trọng (đặc biệt ở các cột nhóm **C**). Pearson không phù hợp vì nhạy cảm với outlier và giả định phân phối chuẩn. Spearman được ưu tiên cho phân tích tương quan trong toàn bộ notebook này.
+# Dữ liệu IEEE-CIS Fraud Detection chứa nhiều outlier nghiêm trọng (đặc biệt ở các cột nhóm **C**). Pearson không phù hợp vì nhạy cảm với outlier và giả định phân phối chuẩn. Spearman được ưu tiên cho phân tích tương quan trong toàn bộ notebook này.
 
 # %% _cell_guid="2a9e1000-4c99-48c3-819e-f1de5d078ff4" _uuid="c7aafb4f-8b90-4b50-9bd7-2a63b480572c" jupyter={"outputs_hidden": false}
 # Phát hiện đa cộng tuyến mạnh |r_s| > 0.9 (dùng Spearman)
@@ -567,7 +564,7 @@ if len(high_corr_df) > 0:
 # - Nhóm **C** (count features) là các biến đếm hành vi giao dịch của Vesta, nên việc chúng tương quan cao là có thể lý giải được về mặt nghiệp vụ
 #
 # **Đề xuất xử lý:**
-# > Khi huấn luyện mô hình tuyến tính (Logistic Regression), nên loại bỏ bớt các cột trong cụm, ưu tiên giữ lại cột có missing rate thấp hơn và variance cao hơn. Với mô hình tree-based (Random Forest, XGBoost), đa cộng tuyến ít ảnh hưởng hơn và có thể giữ nguyên.
+# Khi huấn luyện mô hình tuyến tính (Logistic Regression), nên loại bỏ bớt các cột trong cụm, ưu tiên giữ lại cột có missing rate thấp hơn và variance cao hơn. Với mô hình tree-based (Random Forest, XGBoost), đa cộng tuyến ít ảnh hưởng hơn và có thể giữ nguyên.
 
 # %% [markdown] _cell_guid="57acf54e-ea12-4ec0-bf11-5fdd2cac3e94" _uuid="33213665-284a-498d-a77a-c582660b47dc" jupyter={"outputs_hidden": false}
 # ### c) Phân tích giá trị thiếu – missingno + Little's MCAR test
@@ -998,7 +995,7 @@ print(result_df.to_string(index=False))
 #
 # **Kết luận chung:**
 #
-# > Cơ chế missing là **MAR hoặc MNAR**, không phải MCAR. Do đó không nên dùng listwise deletion hay mean impute thuần túy. Chiến lược đề xuất: thêm **indicator `is_missing`** cho từng nhóm (hoặc từng cột ở D và addr/dist), kết hợp impute có điều kiện (median theo `ProductCD` / `card4` / device type) để mô hình khai thác được tín hiệu từ chính sự vắng mặt của dữ liệu.
+# Cơ chế missing là **MAR hoặc MNAR**, không phải MCAR. Do đó không nên dùng listwise deletion hay mean impute thuần túy. Chiến lược đề xuất: thêm **indicator `is_missing`** cho từng nhóm (hoặc từng cột ở D và addr/dist), kết hợp impute có điều kiện (median theo `ProductCD` / `card4` / device type) để mô hình khai thác được tín hiệu từ chính sự vắng mặt của dữ liệu.
 
 # %% [markdown]
 # #### Phân tích tương quan Missing Indicator vs isFraud
@@ -1046,7 +1043,7 @@ print(miss_indicator_df.head(15).to_string())
 # - Tương quan dương (addr1, addr2): `is_missing = 1` $\rightarrow$ *nhiều* fraud hơn. Giao dịch **không có địa chỉ** có tỉ lệ fraud cao hơn — hợp lý vì kẻ gian thường không cung cấp đầy đủ thông tin địa chỉ.
 #
 # **Kết luận:**
-# > 134 cột này có cơ chế missing **MAR/MNAR informative** — việc thiếu bản thân nó đã là tín hiệu dự báo fraud. Cần tạo feature `is_missing` cho các cột này trước khi impute, thay vì chỉ điền giá trị và bỏ qua thông tin về sự vắng mặt.
+# 134 cột này có cơ chế missing **MAR/MNAR informative** — việc thiếu bản thân nó đã là tín hiệu dự báo fraud. Cần tạo feature `is_missing` cho các cột này trước khi impute, thay vì chỉ điền giá trị và bỏ qua thông tin về sự vắng mặt.
 
 # %% [markdown] _cell_guid="025d6087-490e-41ba-bb64-94d7d79973a5" _uuid="403b8620-c266-4906-be6e-fea5ece803ee" jupyter={"outputs_hidden": false}
 # #### D1–D15: phân phối và tương quan missing với Fraud
@@ -1146,7 +1143,7 @@ plt.show()
 # - **id_06:** Tương tự id_05, Fraud trải về phía âm trong khi Normal tập trung ở 0
 #
 # **Kết luận:**
-# > `id_01`, `id_04`, `id_05`, `id_06` có phân phối khác biệt rõ giữa Fraud và Normal — là các feature có giá trị. `id_03` tín hiệu yếu hơn. Tất cả đều có phân phối lệch mạnh và nhiều giá trị âm bất thường $\rightarrow$ cần RobustScaler hoặc log-transform sau khi xử lý missing.
+# `id_01`, `id_04`, `id_05`, `id_06` có phân phối khác biệt rõ giữa Fraud và Normal — là các feature có giá trị. `id_03` tín hiệu yếu hơn. Tất cả đều có phân phối lệch mạnh và nhiều giá trị âm bất thường $\rightarrow$ cần RobustScaler hoặc log-transform sau khi xử lý missing.
 
 # %% [markdown] _cell_guid="7f47be29-faca-47f4-976a-d0362dd43085" _uuid="9e0653aa-3a0a-4601-943f-9e8b97644403" jupyter={"outputs_hidden": false}
 # ---
@@ -1305,7 +1302,7 @@ if len(per_col_rmse) >= 3:
 #
 # **Kết luận:**
 #
-# > Với ràng buộc production (590k × 400+ cột), **Mean được chọn làm chiến lược imputation chính**. MICE và kNN-10 tốt hơn 19–23 RMSE nhưng không khả thi về bộ nhớ và thời gian. Mean vượt trội Mode có ý nghĩa thống kê, và tuy không phân biệt được với Median ở mức Bonferroni, vẫn nhất quán tốt hơn trên mọi lần đo (RMSE thấp hơn ~3.6%).
+# Với dataset 590k × 400+ cột, **Mean được chọn làm chiến lược imputation chính**. MICE và kNN-10 cho RMSE tốt hơn 19–23 điểm nhưng không khả thi về bộ nhớ và thời gian. Mean vượt trội Mode có ý nghĩa thống kê, và tuy không phân biệt được với Median ở mức Bonferroni, vẫn nhất quán tốt hơn trên mọi lần đo (RMSE thấp hơn ~3.6%).
 #
 
 # %%
@@ -1673,7 +1670,7 @@ for name, rate in outlier_rates.items():
 # | Multivariate | LOF\_k20 hoặc IF\_c0.05 | Tỉ lệ $\sim$5–8% hợp lý, không quá aggressive |
 #
 # **Kết luận:**
-# > IQR $1.5\times$ không phù hợp trực tiếp với dataset có phân phối lệch mạnh — tỉ lệ 54% cho thấy ngưỡng quá thấp. Nếu dùng IQR, cần tăng hệ số (ví dụ $3\times IQR$) hoặc áp dụng IQR clipping (cap giá trị thay vì xóa dòng). Z-score ($\sim$10%) và LOF ($\sim$8%) cho tỉ lệ hợp lý hơn. Multivariate methods (LOF, IF) hữu ích để phân tích pattern bất thường phức tạp, nhưng cần thận trọng khi xóa dòng vì có thể loại nhầm các giao dịch fraud thực sự — đây là lớp thiểu số cần bảo toàn.
+# IQR $1.5\times$ không phù hợp trực tiếp với dataset có phân phối lệch mạnh — tỉ lệ 54% cho thấy ngưỡng quá thấp. Nếu dùng IQR, cần tăng hệ số (ví dụ $3\times IQR$) hoặc áp dụng IQR clipping (cap giá trị thay vì xóa dòng). Z-score ($\sim$10%) và LOF ($\sim$8%) cho tỉ lệ hợp lý hơn. Multivariate methods (LOF, IF) hữu ích để phân tích pattern bất thường phức tạp, nhưng cần thận trọng khi xóa dòng vì có thể loại nhầm các giao dịch fraud thực sự — đây là lớp thiểu số cần bảo toàn.
 #
 
 # %% _cell_guid="9a2f8be1-082b-4403-874a-e1641a2767f1" _uuid="2ec6ba58-996c-42b4-8e72-ef5060d984d7" jupyter={"outputs_hidden": false}
@@ -1726,7 +1723,7 @@ plt.show()
 # - DBSCAN vs tất cả: Jaccard $\leq$ 0.04 — gần như độc lập hoàn toàn
 #
 # **Kết luận:**
-# > Các phương pháp phát hiện những tập outlier khác nhau, không có sự đồng thuận giữa univariate và multivariate. Đây là bằng chứng cho thấy outlier trong dataset này là đa dạng về bản chất — một số bất thường theo từng chiều (IQR bắt được), một số bất thường trong không gian đa chiều (LOF/IF bắt được). Không nên chỉ dùng một phương pháp duy nhất.
+# Các phương pháp phát hiện những tập outlier khác nhau, không có sự đồng thuận giữa univariate và multivariate. Outlier trong dataset này đa dạng về bản chất — một số bất thường theo từng chiều (IQR bắt được), một số bất thường trong không gian đa chiều (LOF/IF bắt được). Không nên chỉ dùng một phương pháp duy nhất.
 
 # %% _cell_guid="2dd6b460-51d2-4cda-a55c-506e6ab4f9fd" _uuid="e573a9af-f1fb-4a95-b503-b955f44a9f36" jupyter={"outputs_hidden": false}
 # Đánh giá tác động loại bỏ ngoại lai qua KS test
@@ -1791,7 +1788,7 @@ print(f"\n-> Ngoại lai được xác nhận bởi cả IQR + IF: "
 # Chỉ 14 dòng được cả hai phương pháp đồng thuận là outlier — đây là tập **bảo thủ và đáng tin cậy nhất** để loại bỏ. Giao của hai phương pháp giảm nguy cơ loại nhầm giao dịch fraud thực sự (vốn chỉ chiếm 3.5%).
 #
 # **Kết luận:**
-# > Tất cả phương pháp đều an toàn với phân phối TransactionAmt. Nên dùng **IQR clipping** (không xóa dòng) cho production vì scalable và ổn định. Tập 14 dòng giao IQR ∩ IF có thể xem xét loại bỏ nếu cần, nhưng với dataset mất cân bằng nặng, ưu tiên giữ lại và clip thay vì xóa.
+# Tất cả phương pháp đều an toàn với phân phối TransactionAmt. Nên dùng **IQR clipping** (không xóa dòng) vì scalable và ổn định. Tập 14 dòng giao IQR ∩ IF có thể xem xét loại bỏ nếu cần, nhưng với dataset mất cân bằng nặng, ưu tiên giữ lại và clip thay vì xóa.
 
 # %%
 def apply_iqr_clip(df, cols, factor=1.5):
@@ -1895,7 +1892,7 @@ print(levene_df.to_string())
 # Dataset IEEE-CIS có các cột với phân phối **cực kỳ khác nhau**: cột $C$ (count, tập trung ở 0), cột $D$ (timedelta, lệch phải), `TransactionAmt` (lệch phải với outlier cực đoan). Với $n \approx 590{,}000$ dòng, Levene's test có power cực cao $\rightarrow$ bất kỳ sự khác biệt phương sai nhỏ nào cũng bị bác bỏ ở $p < 0.05$. Đây là hiện tượng **overpowered test** thường gặp với sample size lớn.
 #
 # **Kết luận:**
-# > Levene's test không phải tiêu chí phù hợp để chọn scaler cho dataset này vì: (1) bản chất các cột quá khác nhau để đạt homoscedasticity, và (2) $n$ quá lớn khiến test overpowered. Mục tiêu thực tế của scaling là **đưa các cột về cùng magnitude** để mô hình không bị bias, không phải đồng nhất phương sai. Dù vậy, xếp hạng tương đối cho thấy **Quantile-Normal** cho kết quả đồng nhất nhất, còn **Robust Scaler** đứng thứ hai và có ưu điểm scalable hơn, robust với outlier — phù hợp làm lựa chọn chính cho production.
+# Levene's test không phải tiêu chí phù hợp để chọn scaler cho dataset này vì: (1) bản chất các cột quá khác nhau để đạt homoscedasticity, và (2) $n$ quá lớn khiến test overpowered. Mục tiêu thực tế của scaling là **đưa các cột về cùng magnitude** để mô hình không bị bias, không phải đồng nhất phương sai. Xếp hạng tương đối cho thấy **Quantile-Normal** cho kết quả đồng nhất nhất, còn **Robust Scaler** đứng thứ hai và có ưu điểm scalable hơn, robust với outlier.
 #
 
 # %% _cell_guid="fbe6218d-2c40-40c4-a9b5-cc4cf11c5db8" _uuid="d738db4c-6279-40de-8ed6-27b12dc7b2e5" jupyter={"outputs_hidden": false}
@@ -1995,7 +1992,7 @@ for name, df_scaled in scaled_dfs_large.items():
 # 3. **Min-Max nhạy với outlier** — một giá trị cực đoan sẽ nén toàn bộ phần còn lại vào dải hẹp.
 # 4. **Z-score giả định phân phối chuẩn** — đã xác nhận không phù hợp (D'Agostino-Pearson bác bỏ ở hầu hết các cột).
 #
-# > **Robust Scaler được chọn** làm scaler chính cho production pipeline. AUC ngang bằng Min-Max và Z-score ($0.6191$), nhưng vững hơn về lý thuyết với phân phối lệch phải và outlier cực đoan đặc trưng của IEEE-CIS, đồng thời cho Levene stat tốt nhất trong nhóm 3 scaler cùng AUC.
+# **Robust Scaler được chọn** làm scaler chính. AUC ngang bằng Min-Max và Z-score ($0.6191$), nhưng vững hơn về lý thuyết với phân phối lệch phải và outlier cực đoan đặc trưng của IEEE-CIS, đồng thời cho Levene stat tốt nhất trong nhóm 3 scaler cùng AUC.
 #
 
 # %% _cell_guid="10d9c6f7-d9a3-4295-bddd-710d6482a558" _uuid="f5444bfc-82d2-45bf-8859-2157f10e6aba" jupyter={"outputs_hidden": false}
@@ -2236,12 +2233,12 @@ plt.show()
 # 1. `ce.OneHotEncoder` **không drop cột** theo mặc định — giữ đủ k cột cho k category. Tổng k cột luôn = 1 cho mỗi hàng $\rightarrow$ perfect multicollinearity theo cấu trúc (dummy variable trap)
 # 2. `P_emaildomain` (59 giá trị) và `R_emaildomain` (60 giá trị) có nhiều domain trùng nhau (gmail, hotmail, yahoo...) $\rightarrow$ các cột OHE của hai feature **tương quan chéo** với nhau $\rightarrow$ near-perfect multicollinearity ngay cả khi có drop một cột
 #
-# Đây là bằng chứng định lượng rõ ràng để **loại OHE khỏi pipeline** khi xử lý high-cardinality features.
+# Kết quả VIF trên cho thấy OHE không phù hợp khi xử lý high-cardinality features.
 #
 # **Kết luận:**
-# > - **High-cardinality** (`P_emaildomain`, `R_emaildomain`, 59–60 giá trị): dùng **Target Encoding với CV** — VIF thấp nhất (7.38), mang thông tin fraud rate trực tiếp, không sinh đa cộng tuyến
-# > - **Low-cardinality** (`ProductCD`, `card4`, `card6`, 4–5 giá trị): dùng **Frequency Encoding** — VIF tương đương Target nhưng không phụ thuộc vào target, an toàn hơn khi dùng ở inference time
-# > - **OHE hoàn toàn không phù hợp** với bất kỳ cột nào có cardinality > 10 trong dataset này
+# - **High-cardinality** (`P_emaildomain`, `R_emaildomain`, 59–60 giá trị): dùng **Target Encoding với CV** — VIF thấp nhất (7.38), mang thông tin fraud rate trực tiếp, không sinh đa cộng tuyến
+# - **Low-cardinality** (`ProductCD`, `card4`, `card6`, 4–5 giá trị): dùng **Frequency Encoding** — VIF tương đương Target nhưng không phụ thuộc vào target, an toàn hơn khi dùng ở inference time
+# - **OHE hoàn toàn không phù hợp** với bất kỳ cột nào có cardinality > 10 trong dataset này
 
 # %% [markdown]
 # ### Bước 2: Áp dụng encoding lên toàn bộ train / test
@@ -2506,7 +2503,7 @@ else:
 # | id\_ ít phổ biến | Yếu | Yếu | $p > 0.05$ | Cân nhắc loại ở tầng sau |
 #
 # **Kết luận tầng 1:**
-# > Các feature được $\geq$2/3 test đồng thuận sẽ được ưu tiên: nhóm $V$ (V94, V79, V74, V52, V51, V93), encoded features (DeviceInfo\_te, id\_31\_te, id\_35\_freq), và card1/card2 (tín hiệu phi tuyến mạnh). Tầng 2 (model-based) sẽ xác nhận thêm trước khi quyết định cuối cùng.
+# Các feature được $\geq$2/3 test đồng thuận sẽ được ưu tiên: nhóm $V$ (V94, V79, V74, V52, V51, V93), encoded features (DeviceInfo\_te, id\_31\_te, id\_35\_freq), và card1/card2 (tín hiệu phi tuyến mạnh). Tầng 2 (model-based) sẽ bổ sung thêm trước khi quyết định cuối cùng.
 #
 
 # %%
@@ -2619,7 +2616,7 @@ print(gb_importance.head(15).to_string(index=False))
 # > V94, C1, C14, V308, C5, V70, V74, C11, C13
 #
 # **Kết luận:**
-# > RF và GB có mức đồng thuận cao (9/15 features trùng nhau). Hai mô hình đều đánh giá cao nhóm $V$ (đặc biệt V94, V308, V70, V74) và nhóm $C$ (C1, C14, C11, C13). Khác biệt chính: GB khai thác encoded features tốt hơn (DeviceInfo\_te, card6\_freq, id\_31\_te) trong khi RF ưu tiên nhóm $D$ (D5, D3) và nhóm V90s (V91, V90, V79). Tập **core features** đáng tin cậy nhất cho tầng tổng hợp cuối: **V94, V308, V70, V74, C1, C14, C11, C13, C5**.
+# RF và GB có mức đồng thuận cao (9/15 features trùng nhau). Hai mô hình đều đánh giá cao nhóm $V$ (đặc biệt V94, V308, V70, V74) và nhóm $C$ (C1, C14, C11, C13). Khác biệt chính: GB khai thác encoded features tốt hơn (DeviceInfo\_te, card6\_freq, id\_31\_te) trong khi RF ưu tiên nhóm $D$ (D5, D3) và nhóm V90s (V91, V90, V79). Tập **core features** đáng tin cậy nhất cho tầng tổng hợp cuối: **V94, V308, V70, V74, C1, C14, C11, C13, C5**.
 #
 
 # %%
@@ -2701,7 +2698,7 @@ print(f"\n-> RFE tốt nhất: n_features={best_rfe_n}, "
 # - $n=5$ tuy F1 thấp nhất nhưng std rất thấp (0.0134) — 5 features core này rất robust
 #
 # **Kết luận:**
-# > RFE chọn **$n=30$ features** là tối ưu (F1 = 0.7612). Việc F1 giảm ở $n=50$ cho thấy thêm features gây nhiễu thay vì cải thiện — xác nhận $n=30$ là điểm cân bằng giữa signal và noise. Tầng tổng hợp cuối sẽ kết hợp danh sách RFE với ANOVA, MI, RF, GB để ra quyết định cuối cùng.
+# RFE chọn **$n=30$ features** là tối ưu (F1 = 0.7612). F1 giảm ở $n=50$ cho thấy thêm features gây nhiễu thay vì cải thiện — $n=30$ là điểm cân bằng giữa signal và noise. Tầng tổng hợp cuối sẽ kết hợp danh sách RFE với ANOVA, MI, RF, GB để ra quyết định cuối cùng.
 #
 
 # %%
@@ -2780,10 +2777,10 @@ plt.show()
 # | Giải thích được | Không (tổ hợp tuyến tính) | Có (features gốc) |
 # | Mục đích chính | Giảm chiều, trực quan hóa | Feature selection cho training |
 #
-# Hai con số **39 PC** và **30 RFE features** khá gần nhau, gợi ý rằng chiều nội tại (intrinsic dimensionality) của dataset nằm quanh $\sim$ 30–40 chiều.
+# Hai con số **39 PC** và **30 RFE features** khá gần nhau — chiều nội tại (intrinsic dimensionality) của dataset nằm quanh $\sim$ 30–40 chiều.
 #
 # **Kết luận:**
-# > PCA xác nhận rằng 564 cột có thể nén xuống $\sim$ 39 chiều mà giữ 95% thông tin — phù hợp cho **trực quan hóa** (t-SNE/UMAP ở cell tiếp theo) và **phân tích cấu trúc dữ liệu**. Cho pipeline training, giữ kết quả feature selection tầng 1+2 (30 features từ RFE, union với ANOVA/MI/RF/GB) vì giữ được tính giải thích và discriminative power mà PCA không đảm bảo.
+# Như vậy 564 cột có thể nén xuống $\sim$ 39 chiều mà giữ 95% thông tin — phù hợp cho **trực quan hóa** (t-SNE/UMAP ở cell tiếp theo) và phân tích cấu trúc dữ liệu. Cho pipeline training, giữ kết quả feature selection tầng 1+2 (30 features từ RFE, union với ANOVA/MI/RF/GB) vì giữ được tính giải thích và discriminative power mà PCA không đảm bảo.
 #
 
 # %%
@@ -2839,7 +2836,7 @@ print("  -> t-SNE hoàn thành.")
 # Fraud và Normal **không tách biệt hoàn toàn** — hầu hết các cụm đều chứa cả hai lớp với tỉ lệ khác nhau. Tuy nhiên, có một số vùng mà một lớp chiếm ưu thế rõ rệt, cho thấy tồn tại **signal phân biệt cục bộ** mà mô hình có thể khai thác.
 #
 # **Kết luận:**
-# > t-SNE cho thấy cấu trúc **đa cụm với overlap đáng kể** giữa Fraud và Normal. Không có ranh giới tuyến tính đơn giản nào phân tách được hai lớp $\rightarrow$ xác nhận cần mô hình **phi tuyến** (tree-based, ensemble) có khả năng học ranh giới quyết định phức tạp theo từng sub-population. Các vùng overlap cao ở trung tâm gợi ý rằng một phần fraud rất khó phát hiện chỉ dựa trên features hiện có.
+# t-SNE cho thấy cấu trúc **đa cụm với overlap đáng kể** giữa Fraud và Normal. Không có ranh giới tuyến tính đơn giản nào phân tách được hai lớp — cần mô hình **phi tuyến** (tree-based, ensemble) có khả năng học ranh giới quyết định phức tạp theo từng sub-population. Các vùng overlap cao ở trung tâm cho thấy một phần fraud khó phát hiện chỉ dựa trên features hiện có.
 #
 
 # %%
@@ -2896,7 +2893,7 @@ except Exception as _umap_err:
 # UMAP cho thấy sự tách biệt **rõ ràng hơn nhiều** so với t-SNE. Cụm trái (pure Fraud) và phần dưới cụm phải (Fraud dominated) gợi ý rằng **một phần lớn fraud có pattern đặc trưng** mà mô hình có thể học được. Phần khó nhất nằm ở **vùng trên cụm phải** ($y > 12$) nơi Normal và Fraud chồng chéo.
 #
 # **Kết luận:**
-# > UMAP xác nhận rằng fraud trong dataset IEEE-CIS có **ít nhất 2 sub-population riêng biệt** (cụm trái và cụm giữa) tách biệt khỏi Normal, cùng với một phần fraud xen lẫn trong cụm phải. Cấu trúc 3 cụm rõ ràng lý giải tại sao mô hình tree-based thường đạt AUC cao — chúng có thể tạo ranh giới quyết định riêng cho từng sub-population. Feature engineering sâu hơn cần tập trung vào vùng overlap ở cụm phải để cải thiện thêm.
+# UMAP cho thấy fraud trong dataset IEEE-CIS có **ít nhất 2 sub-population riêng biệt** (cụm trái và cụm giữa) tách biệt khỏi Normal, cùng với một phần fraud xen lẫn trong cụm phải. Cấu trúc 3 cụm này có thể giải thích phần nào tại sao mô hình tree-based thường đạt AUC cao — chúng có thể tạo ranh giới quyết định riêng cho từng sub-population. Feature engineering sâu hơn nên tập trung vào vùng overlap ở cụm phải.
 #
 
 # %%
@@ -3103,7 +3100,7 @@ print(f"\n-> Phương pháp tốt nhất (F1-macro): {best_resamp}")
 # - **ADASYN:** Recall cao nhất (0.7977) nhưng Precision thấp nhất (0.1051) $\rightarrow$ F1-macro kém nhất (0.5208) — ADASYN quá aggressive
 #
 # **Kết luận:**
-# > **No Resampling cho F1-macro tốt nhất** (0.6669) nhờ Precision rất cao. Tuy nhiên, trong bài toán fraud detection, bỏ sót fraud (FN) thường tốn kém hơn cảnh báo nhầm (FP). Quyết định chọn resampling hay không phụ thuộc vào yêu cầu nghiệp vụ: nếu ưu tiên **ít false alarm** $\rightarrow$ No Resampling; nếu ưu tiên **phát hiện nhiều fraud nhất** $\rightarrow$ SMOTE hoặc Under-sampling. Với pipeline stacking ensemble (XGBoost, LightGBM), các mô hình tree-based có khả năng tự xử lý imbalance tốt hơn Logistic Regression qua `
+# No Resampling cho F1-macro tốt nhất (0.6669) nhờ Precision rất cao. Tuy nhiên, trong bài toán fraud detection, bỏ sót fraud (FN) thường tốn kém hơn cảnh báo nhầm (FP). Quyết định chọn resampling hay không phụ thuộc vào yêu cầu nghiệp vụ: nếu ưu tiên **ít false alarm** $\rightarrow$ No Resampling; nếu ưu tiên **phát hiện nhiều fraud nhất** $\rightarrow$ SMOTE hoặc Under-sampling. Với pipeline stacking ensemble (XGBoost, LightGBM), các mô hình tree-based có khả năng tự xử lý imbalance tốt hơn Logistic Regression qua `
 #
 
 # %%
