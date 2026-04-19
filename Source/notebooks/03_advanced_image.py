@@ -9,23 +9,6 @@
 #     language: python
 #     name: python3
 # ---
-# =============================================================================
-# SOURCE/notebooks/03_advanced_image.py
-# Notebook: 03 - Phân tích nâng cao: PCA & Edge Detection
-# Ngôn ngữ: Tiếng Việt (markdown) + Python (code)
-#
-# FEEDBACK từ leader (FeedbackFromLeader.pdf):
-# [ADD] PCA: thêm markdown giải thích tại sao chọn grayscale 64x64
-# [FIX] PCA class selection: dùng quantile (np.linspace) thay vì 5 PC1 thấp nhất + 5 cao nhất
-# [FIX] t-SNE: thêm giải thích tại sao dùng 50-dim PCA trước t-SNE
-# [FIX] t-SNE: điều chỉnh perplexity (hiện tại =30, thử 50/100 nếu cluster dính nhau)
-# [FIX] Đánh giá phân tách: dùng purity metric (ARI) thay vì chỉ dựa ANOVA PC1
-# [🔴 P2] Edge Detection: thiếu Prewitt + Sobel không có ngưỡng T → edge density = 0
-# [🔴 P2] Ablation ngưỡng T cho Sobel/Prewitt: T_values = [30, 50, 80, 120]
-# [🔴 P2] Ablation sigma + T1/T2 cho Canny: 4 configs
-# [FIX] Lý thuyết edge detection: cái quan trọng là ngưỡng T (không chỉ kernel size)
-# =============================================================================
-#
 
 # %% [markdown]
 # # 03 - Phân tích nâng cao: PCA & Edge Detection

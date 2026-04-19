@@ -10,25 +10,6 @@
 #     language: python
 #     name: python3
 # ---
-# =============================================================================
-# SOURCE/notebooks/02_preprocessing_image.py
-# Notebook: 02 - Tiền xử lý ảnh + Ablation Study
-# Ngôn ngữ: Tiếng Việt (markdown) + Python (code)
-#
-# FEEDBACK từ leader (FeedbackFromLeader.pdf):
-# [🔴 P1-CRITICAL] Augmentation ablation SAI YÊu CẦU:
-#   Hiện tại: apply tất cả 6 aug vào 1 ảnh cùng lúc → tập tăng gấp đôi → 1 k-NN
-#   Đúng: mỗi augmentation chạy RING BÀI k-NN ablation riêng:
-#   original xx / h-flip xx / v-flip xx / rotation xx / crop xx / noise xx / bright xx / all xx
-# [FIX] KS test p-value: thêm markdown giải thích p≈0 là phân phối THAY ĐỔI (expected)
-# [ADD] Ghi rõ RGB là baseline trong bảng color space ablation
-# [ADD] Thử LogReg bên cạnh k-NN trong ablation
-# [NOTE] Càng nhiều ảnh trong t-SNE càng tốt (>100/tập), in rõ số lượng
-# =============================================================================
-#
-#     language: python
-#     name: python3
-# ---
 
 # %% [markdown]
 # # 02 - Tiền xử lý ảnh + Ablation Study

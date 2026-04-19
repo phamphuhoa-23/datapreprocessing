@@ -10,23 +10,6 @@
 #     language: python
 #     name: python3
 # ---
-# =============================================================================
-# SOURCE/notebooks/01_EDA_image.py
-# Notebook: 01 - EDA: Khám phá dữ liệu ảnh NWPU-RESISC45
-# Ngôn ngữ: Tiếng Việt (markdown) + Python (code)
-#
-# FEEDBACK từ leader (FeedbackFromLeader.pdf):
-# [OK]  Pixel stats table (mean/std) - GIỮ LẠI, không xóa
-# [FIX] Boxplot axis labels: đừng sort theo median, fix rotation=90 fontsize=7
-# [ADD] Per-class brightness/contrast report (DataFrame + display)
-# [OPT] Near-duplicate (Hamming ≤ 4): nếu giữ thì phải có lý thuyết hamming distance
-#       nếu bỏ thì comment out toàn bộ section near-dup
-# [OPT] Boxplot pixel per-image có thể bỏ (bình thường)
-# =============================================================================
-#
-#     language: python
-#     name: python3
-# ---
 
 # %% [markdown]
 # # 01 - EDA: Khám phá dữ liệu ảnh NWPU-RESISC45
@@ -459,8 +442,8 @@ colors = [plt.cm.tab20c(i / len(classes)) for i in range(len(classes))]
 fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
 for ax, split, counts_col in zip(axes,
-                                 ['Train (27,000 ảnh ‒ 600/lớp)',
-                                  'Test (4,500 ảnh ‒ 100/lớp)'],
+                                 ['Train (27,000 anh - 600/lop)',
+                                  'Test (4,500 anh - 100/lop)'],
                                  ['train', 'test']):
     wedges, texts = ax.pie(
         df_counts[counts_col],
@@ -472,7 +455,7 @@ for ax, split, counts_col in zip(axes,
     )
     ax.set_title(split, fontsize=11)
 
-plt.suptitle("Phân bố số ảnh theo lớp — Dataset cân bằng hoàn hảo (45 lớp bằng nhau)",
+plt.suptitle("Phan bo so anh theo lop - Dataset can bang hoan hao (45 lop bang nhau)",
              fontsize=12)
 plt.tight_layout()
 plt.show()
@@ -496,7 +479,7 @@ print(f"  χ² = {chi2_stat:.4f}, p = {chi2_p:.4e}")
 if chi2_p < 0.05:
     print("  => Phân phối KHÔNG đồng đều (p < 0.05)")
 else:
-    print("  => Phân phối đồng đều (p ≥ 0.05) — dataset cân bằng tốt")
+    print("  => Phan phoi dong deu (p >= 0.05), dataset can bang tot")
 
 # %%
 # Kiểm tra ngưỡng 3x
@@ -752,9 +735,6 @@ else:
 
 # %%
 brightness_data = []
-
-# %%
-brightness_data = []
 for cls in tqdm(classes, desc="Brightness/Contrast"):
     for p in glob.glob(os.path.join(TRAIN_DIR, cls, "*.jpg")):
         img = cv2.imread(p)
@@ -829,7 +809,7 @@ df_bc_per_class = df_bc.groupby('class').agg(
     contrast_mean=('contrast', 'mean'),
     contrast_std=('contrast', 'std')
 ).round(2).sort_values('brightness_mean')
-print(df_bc_per_class.to_string())
+display(df_bc_per_class)
 
 # %%
 # Boxplot Brightness & Contrast toàn bộ 45 lớp (thứ tự theo alphabet)

@@ -7,12 +7,38 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: base
 #     language: python
 #     name: python3
 # ---
 
-# %% [markdown]
+# %% papermill={"duration": 0.02739, "end_time": "2026-04-18T08:45:23.385286+00:00", "exception": false, "start_time": "2026-04-18T08:45:23.357896+00:00", "status": "completed"}
+# =============================================================================
+# SOURCE/notebooks/05_text_preprocessing.py
+# Notebook: Phần 3 - Tiền xử lý văn bản – RAGTruth dataset
+# Ngôn ngữ: Tiếng Việt (markdown) + Python (code)
+#
+# FEEDBACK từ leader (FeedbackFromLeader.pdf - trang 7-8):
+# [🔴 P1-CRITICAL] Pipeline chuẩn hóa (§3.1): đang gộp tất cả bước vào 1 hàm
+#   Cần bảng per-step vocab change:
+#   | Bước | Vocab trước | Vocab sau | Thay đổi |
+#   | original | xx | - | - |
+#   | lowercase | - | yy | -Z% |
+#   | remove HTML | - | zz | -W% |
+#   | remove URL | ... | ... | ... |
+#   | remove punct | ... | ... | ... |
+#   | normalize ws | ... | ... | ... |
+# [🟡 P2] §2.3.2: word cloud per label - KIỂM TRA đã có chưa
+# [🟡 P2] §2.3.1: tính ký tự nhưng không vẽ - [NEW] đã vẽ trong subplot 2x2
+# [🟡 P2] §2.3.3.b MI: cần report average MI, không chỉ top-20
+#          → [NEW] ĐÃ CÓ MI mean section sau top-20
+# [🟡 P2] §3.4 Stemming: cần 5-fold CV + collision table
+#          → [NEW] ĐÃ CÓ 5-fold trong code (cần verify kết quả)
+# [🟡 P2] §3.5 Vectorization: cần impact report + statistical test
+# =============================================================================
+#
+
+# %% [markdown] papermill={"duration": 0.012804, "end_time": "2026-04-18T08:45:23.414043+00:00", "exception": false, "start_time": "2026-04-18T08:45:23.401239+00:00", "status": "completed"}
 # # PHẦN 3: TIỀN XỬ LÝ DỮ LIỆU VĂN BẢN
 # ## Dataset: RAGTruth (wandb/RAGTruth-processed)
 #
@@ -23,16 +49,23 @@
 # **Nguồn:** https://huggingface.co/datasets/wandb/RAGTruth-processed
 #
 # ---
+#
+# **Checklist đối chiếu Requirement (§2.3 + §3.1):**
+# - **§2.3.1** ≥10.000 mẫu, ≥2 nhãn — kiểm tra assert sau khi tạo `df`.
+# - **§2.3.2** Mann–Whitney; word cloud + **bảng top-50** + TTR; Zipf log–log.
+# - **§2.3.3** Chuẩn hóa + đo từ vựng; 4 kiểu token; stop+MI+NB; stem/lemma+collision+LR; BoW/TF-IDF n-gram/Word2Vec + sparsity + cosine + t-SNE + silhouette; **§2.3.3.f** MiniLM + K-Means + Linear SVM.
+# - **§3.1** Lý thuyết (markdown) → code → phân tích; thư viện gồm scipy, **statsmodels**, sklearn, …
+#
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.012372, "end_time": "2026-04-18T08:45:23.438415+00:00", "exception": false, "start_time": "2026-04-18T08:45:23.426043+00:00", "status": "completed"}
 # ## 0. Cài đặt thư viện và Import
 
-# %%
+# %% papermill={"duration": 103.471937, "end_time": "2026-04-18T08:47:06.921653+00:00", "exception": false, "start_time": "2026-04-18T08:45:23.449716+00:00", "status": "completed"}
 # Cài đặt thư viện cần thiết (%pip + đủ gói Requirement §3.1)
 # %pip install nltk spacy wordcloud gensim scikit-learn matplotlib seaborn tokenizers sentence-transformers statsmodels imbalanced-learn missingno pyarrow -q
 # !python -m spacy download en_core_web_sm -q
 
-# %%
+# %% papermill={"duration": 56.107305, "end_time": "2026-04-18T08:48:03.047100+00:00", "exception": false, "start_time": "2026-04-18T08:47:06.939795+00:00", "status": "completed"}
 import json as _json
 import scipy.sparse as sp_io
 from sklearn.model_selection import train_test_split
@@ -127,18 +160,13 @@ def _resolve_output_dir() -> Path:
     if os.environ.get('KAGGLE_KERNEL_RUN_TYPE') is not None:
         p = Path('/kaggle/working') / 'data' / 'processed'
     else:
-        try:
-            p = Path(__file__).resolve().parent.parent / 'data' / 'processed'
-        except NameError:
-            cwd = Path.cwd()
-            if (cwd / 'Source' / 'data').is_dir():
-                p = cwd / 'Source' / 'data' / 'processed'
-            elif (cwd.parent / 'data').is_dir():
-                p = cwd.parent / 'data' / 'processed'
-            elif (cwd / 'data').is_dir():
-                p = cwd / 'data' / 'processed'
-            else:
-                p = cwd.parent / 'data' / 'processed'
+        cwd = Path.cwd()
+        if (cwd / 'data').is_dir():
+            p = cwd / 'data' / 'processed'
+        elif (cwd.parent / 'data').is_dir():
+            p = cwd.parent / 'data' / 'processed'
+        else:
+            p = cwd / 'data' / 'processed'
     p.mkdir(parents=True, exist_ok=True)
     return p
 
@@ -147,44 +175,41 @@ OUTPUT_DIR = _resolve_output_dir()
 print(f'OUTPUT_DIR = {OUTPUT_DIR}')
 print('All libraries imported successfully!')
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.007642, "end_time": "2026-04-18T08:48:03.060846+00:00", "exception": false, "start_time": "2026-04-18T08:48:03.053204+00:00", "status": "completed"}
 # ## 1. Tải và Chuẩn bị Dữ liệu
 #
 # **Lưu ý:** Dataset đã được tải về local bằng `download_text_dataset.py`.
 # Nếu chưa tải, chạy: `python DataMining-Lab1/download_text_dataset.py`
 
-# %%
+# %% papermill={"duration": 8.45752, "end_time": "2026-04-18T08:48:11.524409+00:00", "exception": false, "start_time": "2026-04-18T08:48:03.066889+00:00", "status": "completed"}
 # Load dataset từ local parquet (không cần kết nối internet)
 
 
 def _find_data_root() -> Path:
-    """Tìm thư mục data/raw/text/ chứa ragtruth_full.parquet."""
+    """Tìm thư mục data/text/raw/ chứa ragtruth_full.parquet."""
     candidates = [
-        # Cấu trúc chuẩn: Source/data/raw/text/
-        Path.cwd().parent / 'data' / 'raw' / 'text',
-        Path.cwd() / 'data' / 'raw' / 'text',
-        Path.cwd().parent.parent / 'data' / 'raw' / 'text',
-        # Khi cwd = workspace root (papermill chạy từ project root)
-        Path.cwd() / 'Source' / 'data' / 'raw' / 'text',
-        # Legacy fallback
         Path.cwd() / 'data' / 'text' / 'raw',
         Path.cwd().parent / 'data' / 'text' / 'raw',
         Path.cwd().parent.parent / 'data' / 'text' / 'raw',
+    ]
+    try:
+        candidates += [
+            Path(__file__).resolve().parent.parent / 'data' / 'text' / 'raw',
+            Path(__file__).resolve().parent.parent.parent /
+            'data' / 'text' / 'raw',
+        ]
+    except NameError:
+        pass
+    candidates += [
         Path.cwd() / 'data' / 'raw',
         Path.cwd().parent / 'data' / 'raw',
     ]
-    try:
-        candidates.insert(0, Path(__file__).resolve(
-        ).parent.parent / 'data' / 'raw' / 'text')
-    except NameError:
-        pass
     for p in candidates:
         if (p / 'ragtruth_full.parquet').exists():
             return p
     raise FileNotFoundError(
         "Không tìm thấy ragtruth_full.parquet!\n"
-        "Hãy chạy: python DataMining-Lab1/download_text_dataset.py\n"
-        "Sau đó đặt file vào Source/data/raw/text/"
+        "Hãy chạy: python DataMining-Lab1/download_text_dataset.py"
     )
 
 
@@ -199,12 +224,12 @@ print(f"\nLabel ratio:")
 print(df['label_name'].value_counts(normalize=True).round(4))
 df.head(3)
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.013133, "end_time": "2026-04-18T08:48:11.553452+00:00", "exception": false, "start_time": "2026-04-18T08:48:11.540319+00:00", "status": "completed"}
 # #### Đối chiếu §2.3.1 — Quy mô dữ liệu
 #
 # Đề: **≥ 10.000 mẫu**, **≥ 2 nhãn**. Cell dưới lưu biến `N_SAMPLES`, `N_LABELS` và `assert`.
 
-# %%
+# %% papermill={"duration": 0.031711, "end_time": "2026-04-18T08:48:11.597846+00:00", "exception": false, "start_time": "2026-04-18T08:48:11.566135+00:00", "status": "completed"}
 N_SAMPLES = len(df)
 N_LABELS = df['label'].nunique()
 LABEL_NAMES = df['label_name'].unique().tolist()
@@ -216,7 +241,7 @@ assert N_LABELS >= 2
 print("=> OK")
 
 
-# %%
+# %% papermill={"duration": 1.100145, "end_time": "2026-04-18T08:48:12.711155+00:00", "exception": false, "start_time": "2026-04-18T08:48:11.611010+00:00", "status": "completed"}
 # Trực quan hóa phân phối nhãn
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
@@ -241,7 +266,7 @@ plt.savefig(OUTPUT_DIR / 'label_distribution.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 0.112427, "end_time": "2026-04-18T08:48:12.843907+00:00", "exception": false, "start_time": "2026-04-18T08:48:12.731480+00:00", "status": "completed"}
 # Thống kê mô tả cơ bản
 print("=" * 60)
 print("THỐNG KÊ MÔ TẢ CƠ BẢN")
@@ -256,7 +281,7 @@ print(f"\nThống kê độ dài text (ký tự):")
 df['text_len_char'] = df['text'].str.len()
 print(df['text_len_char'].describe().round(2))
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.015884, "end_time": "2026-04-18T08:48:12.875421+00:00", "exception": false, "start_time": "2026-04-18T08:48:12.859537+00:00", "status": "completed"}
 # ---
 # ## 2. PHÂN TÍCH THỐNG KÊ VĂN BẢN (Text EDA) [Bắt buộc]
 #
@@ -266,7 +291,7 @@ print(df['text_len_char'].describe().round(2))
 # - H0: Phân phối độ dài của hai nhóm là giống nhau
 # - H1: Phân phối độ dài của hai nhóm là khác nhau
 
-# %%
+# %% papermill={"duration": 4.147822, "end_time": "2026-04-18T08:48:17.036452+00:00", "exception": false, "start_time": "2026-04-18T08:48:12.888630+00:00", "status": "completed"}
 # Tính độ dài theo số từ
 df['text_len_words'] = df['text'].apply(lambda x: len(x.split()))
 # Tính độ dài theo số câu
@@ -282,7 +307,7 @@ print(
 print(
     f"Hallucinated: mean={hallucinated_lens.mean():.1f}, median={hallucinated_lens.median():.1f}, std={hallucinated_lens.std():.1f}")
 
-# %%
+# %% papermill={"duration": 5.884954, "end_time": "2026-04-18T08:48:22.938404+00:00", "exception": false, "start_time": "2026-04-18T08:48:17.053450+00:00", "status": "completed"}
 # Trực quan hóa phân phối độ dài (số từ, số câu, số ký tự)
 supported_chars_plot = df[df['label'] == 0]['text_len_char']
 hallucinated_chars_plot = df[df['label'] == 1]['text_len_char']
@@ -347,7 +372,7 @@ plt.savefig(OUTPUT_DIR / 'text_length_distribution.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 0.315741, "end_time": "2026-04-18T08:48:23.282238+00:00", "exception": false, "start_time": "2026-04-18T08:48:22.966497+00:00", "status": "completed"}
 # Mann-Whitney U Test
 stat_words, p_words = mannwhitneyu(
     supported_lens, hallucinated_lens, alternative='two-sided')
@@ -405,17 +430,17 @@ for label, U, Z, p, r in [
     ('Số ký tự', stat_chars, z_chars, p_chars, r_chars),
     ('Số câu',  stat_sents, z_sents, p_sents, r_sents),
 ]:
-    sig = "sig" if p < alpha else "ns"
-    print(f"  {label:<13} {U:>12.0f} {Z:>8.3f} {p:>12.2e} {r:>12.4f}  {interpret_r(r)} - {sig}")
+    sig = "✓ sig" if p < alpha else "✗ ns"
+    print(f"  {label:<13} {U:>12.0f} {Z:>8.3f} {p:>12.2e} {r:>12.4f}  {interpret_r(r)} – {sig}")
 print("-" * 80)
-print("Effect size r: <0.1 rất nhỏ | 0.1-0.3 nhỏ | 0.3-0.5 trung bình | >0.5 lớn")
+print("Effect size r: <0.1 rất nhỏ | 0.1–0.3 nhỏ | 0.3–0.5 trung bình | >0.5 lớn")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.018101, "end_time": "2026-04-18T08:48:23.317609+00:00", "exception": false, "start_time": "2026-04-18T08:48:23.299508+00:00", "status": "completed"}
 # **Phân tích:**
-# - Kết quả thực tế: r = 0.2571 (số từ), 0.2775 (số ký tự), 0.2225 (số câu) — tất cả đều **nhỏ** (0.1–0.3), dù p < 10⁻¹⁹⁵ do n = 17,790 rất lớn.
-# - **Lưu ý quan trọng**: cỡ mẫu lớn khiến Mann-Whitney "luôn có ý nghĩa" dù khác biệt thực tế rất khiêm tốn. Effect size r ~ 0.25 cho thấy độ dài **không phải đặc trưng phân biệt mạnh** trong RAGTruth.
-# - Kết quả nhất quán trên cả 3 chỉ số (từ, ký tự, câu): Hallucinated có độ dài ngắn hơn một chút, có thể do LLM generate câu trả lời ngắn gọn hơn khi hallucinate.
-# - **Hạn chế**: r < 0.3 gợi ý độ dài chỉ nên là đặc trưng *phụ trợ*; đặc trưng ngữ nghĩa (TF-IDF, embedding) sẽ mạnh hơn đáng kể trong bài toán này.
+# - Mann-Whitney U test + **effect size r** cho bức tranh đầy đủ: p-value nhỏ KHÔNG đồng nghĩa với sự khác biệt LỚN.
+# - r < 0.1: dù có ý nghĩa thống kê (do n lớn), sự khác biệt thực tế rất nhỏ → không nên dùng độ dài làm đặc trưng chính.
+# - r ≥ 0.3: khác biệt trung bình → độ dài có thể là đặc trưng phụ trợ hữu ích.
+# - Kết quả này phù hợp với trực giác: văn bản chứa ảo giác có thể dài hơn hoặc ngắn hơn do mô hình sinh ra thêm thông tin bịa đặt.
 #
 # ---
 #
@@ -426,7 +451,7 @@ print("Effect size r: <0.1 rất nhỏ | 0.1-0.3 nhỏ | 0.3-0.5 trung bình | >
 # - **Top-50**: Phân tích từ vựng phổ biến nhất trong mỗi nhóm.
 # - **TTR (Type-Token Ratio)**: Tỉ lệ giữa số từ duy nhất (types) và tổng số từ (tokens). TTR cao → từ vựng phong phú, đa dạng.
 
-# %%
+# %% papermill={"duration": 22.082069, "end_time": "2026-04-18T08:48:45.418415+00:00", "exception": false, "start_time": "2026-04-18T08:48:23.336346+00:00", "status": "completed"}
 # Tokenize tất cả văn bản
 all_tokens = []
 supported_tokens = []
@@ -450,7 +475,7 @@ print(
 print(
     f"Số types (unique words) (Hallucinated): {len(set(hallucinated_tokens)):,}")
 
-# %%
+# %% papermill={"duration": 17.408943, "end_time": "2026-04-18T08:49:02.847088+00:00", "exception": false, "start_time": "2026-04-18T08:48:45.438145+00:00", "status": "completed"}
 # Word Cloud
 fig, axes = plt.subplots(1, 3, figsize=(24, 7))
 
@@ -479,7 +504,7 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / 'wordclouds.png', dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 0.995102, "end_time": "2026-04-18T08:49:03.884596+00:00", "exception": false, "start_time": "2026-04-18T08:49:02.889494+00:00", "status": "completed"}
 # Top-50 từ phổ biến
 all_freq = Counter(all_tokens)
 sup_freq = Counter(supported_tokens)
@@ -502,7 +527,7 @@ top50_df = pd.DataFrame({
 print("TOP-50 TỪ PHỔ BIẾN NHẤT:")
 top50_df
 
-# %%
+# %% papermill={"duration": 1.078004, "end_time": "2026-04-18T08:49:05.022074+00:00", "exception": false, "start_time": "2026-04-18T08:49:03.944070+00:00", "status": "completed"}
 # Trực quan hóa Top-20 từ phổ biến
 fig, axes = plt.subplots(1, 2, figsize=(18, 8))
 
@@ -523,7 +548,7 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / 'top20_words.png', dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 0.691645, "end_time": "2026-04-18T08:49:05.728989+00:00", "exception": false, "start_time": "2026-04-18T08:49:05.037344+00:00", "status": "completed"}
 # TTR (Type-Token Ratio)
 ttr_all = len(set(all_tokens)) / len(all_tokens)
 ttr_sup = len(set(supported_tokens)) / len(supported_tokens)
@@ -552,7 +577,7 @@ print(f"\nMann-Whitney U test cho TTR: U={stat_ttr:.2f}, p={p_ttr:.2e}")
 print(
     f"  => TTR {'KHÁC BIỆT' if p_ttr < 0.05 else 'KHÔNG khác biệt'} có ý nghĩa thống kê giữa 2 nhóm")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.015972, "end_time": "2026-04-18T08:49:05.760086+00:00", "exception": false, "start_time": "2026-04-18T08:49:05.744114+00:00", "status": "completed"}
 # **Phân tích:**
 # - Word Cloud cho thấy tổng quan các từ phổ biến nhất. Cả hai nhóm đều chia sẻ nhiều từ chung (stop words).
 # - Top-50 từ phổ biến giúp so sánh chi tiết sự khác biệt từ vựng giữa hai nhóm.
@@ -564,7 +589,7 @@ print(
 #
 # **Lý thuyết:** Định luật Zipf phát biểu rằng trong một corpus ngôn ngữ tự nhiên, tần suất của một từ tỉ lệ nghịch với hạng (rank) của nó. Cụ thể: f(r) ∝ 1/r^α, hay log(f) = -α·log(r) + C. Khi vẽ trên thang log-log, ta sẽ thấy đường thẳng nếu dữ liệu tuân theo định luật Zipf.
 
-# %%
+# %% papermill={"duration": 0.034067, "end_time": "2026-04-18T08:49:05.810893+00:00", "exception": false, "start_time": "2026-04-18T08:49:05.776826+00:00", "status": "completed"}
 # Phân tích Zipf's Law
 freq_sorted = sorted(all_freq.values(), reverse=True)
 ranks = np.arange(1, len(freq_sorted) + 1)
@@ -592,7 +617,7 @@ ols_zipf = sm.OLS(log_freqs, X_zipf).fit()
 print(f"statsmodels OLS α: {ols_zipf.params[1]:.4f} | scipy: {slope:.4f}")
 
 
-# %%
+# %% papermill={"duration": 0.857407, "end_time": "2026-04-18T08:49:06.684597+00:00", "exception": false, "start_time": "2026-04-18T08:49:05.827190+00:00", "status": "completed"}
 # Vẽ đồ thị Zipf log-log
 fig, axes = plt.subplots(1, 2, figsize=(18, 7))
 
@@ -631,12 +656,11 @@ print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
       f"{abs(_zipf_slopes['Hallucinated']):.3f} (Hallucinated)")
 
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.016601, "end_time": "2026-04-18T08:49:06.719173+00:00", "exception": false, "start_time": "2026-04-18T08:49:06.702572+00:00", "status": "completed"}
 # **Phân tích:**
-# - Kết quả cụ thể: α = **1.631** (toàn corpus), **1.505** (Supported), **1.534** (Hallucinated); R² = 0.9357.
-# - α ≈ 1.6 (xa 1.0) phản ánh corpus domain-specific (AI-generated): vocabulary tập trung hơn corpus tự nhiên, một số từ kỹ thuật lặp lại rất cao.
-# - Hai nhóm nhãn có α gần nhau (1.505 vs 1.534) → phân phối từ vựng **không khác biệt nhiều về hình dạng Zipf**, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
-# - **Lưu ý thống kê**: R² = 0.93 trên log-log plot **KHÔNG xác nhận Zipf** — nhiều phân phối power-law khác cũng cho R² cao tương tự. Kiểm định nghiêm ngặt hơn cần KS test với power-law distribution (e.g., thư viện `powerlaw` của Alstott et al.).
+# - Đồ thị log-log cho thấy quan hệ gần tuyến tính giữa rank và frequency (R² cao), nên xu hướng Zipf vẫn hiện diện rõ.
+# - Tuy nhiên hệ số \(\alpha\) ước lượng (in ở print cell phía trên, thường xa 1.0), cho thấy corpus **lệch** so với Zipf lý tưởng và thiên mạnh về một số từ rất phổ biến.
+# - Hai nhóm nhãn đều giữ xu hướng Zipf tương tự nhau, nhưng mức lệch khỏi \(\alpha\approx1\) cần được nêu rõ khi diễn giải.
 #
 # ---
 # ## 3. CÁC KỸ THUẬT TIỀN XỬ LÝ VÀ PHÂN TÍCH TÁC ĐỘNG
@@ -648,7 +672,7 @@ print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
 # (8) xóa ký tự đặc biệt, (9) chuẩn hóa khoảng trắng.
 # Với **mỗi bước**, bảng bên dưới báo cáo tỉ lệ từ vựng thay đổi và tác động đến độ dài văn bản.
 
-# %%
+# %% papermill={"duration": 68.012087, "end_time": "2026-04-18T08:50:14.748052+00:00", "exception": false, "start_time": "2026-04-18T08:49:06.735965+00:00", "status": "completed"}
 # ── Tách từng bước pipeline để đo per-step vocab change (§2.3.3a yêu cầu) ──────
 PIPELINE_STEPS = [
     ('lowercase', lambda t: t.lower()),
@@ -664,13 +688,13 @@ PIPELINE_STEPS = [
 
 
 def normalize_text(text):
-    """Pipeline chuẩn hóa văn bản - áp dụng tuần tự các bước."""
+    """Pipeline chuẩn hóa văn bản — áp dụng tuần tự các bước."""
     for _, fn in PIPELINE_STEPS:
         text = fn(text)
     return text
 
 
-# Đo per-step vocab change - §2.3.3a yêu cầu "với mỗi bước, báo cáo tỉ lệ từ vựng thay đổi"
+# Đo per-step vocab change — §2.3.3a yêu cầu "với mỗi bước, báo cáo tỉ lệ từ vựng thay đổi"
 print("=" * 80)
 print("BẢNG THỐNG KÊ PER-STEP PIPELINE CHUẨN HÓA (§2.3.3a)")
 print("=" * 80)
@@ -727,13 +751,13 @@ for i in range(3):
     print(f"TRƯỚC: {df['text'].iloc[i][:200]}...")
     print(f"SAU:   {df['text_normalized'].iloc[i][:200]}...")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.015459, "end_time": "2026-04-18T08:50:14.779983+00:00", "exception": false, "start_time": "2026-04-18T08:50:14.764524+00:00", "status": "completed"}
 # **Phân tích:**
-# - **`lowercase`**: bước giảm vocab lớn nhất — 40,613 → 34,560 (**−14.90%**), trong khi độ dài chỉ giảm 0.49%. Gộp case variants chiếm hơn 2/3 tổng mức giảm vocab.
-# - **`remove_number`**: −8.55% vocab, −0.95% độ dài — RAGTruth chứa nhiều số (năm, thống kê, ID).
-# - **`remove_punct`** (bất ngờ): vocab tăng **+1.23%** (31,558 → 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." → "end", "2023," → "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
-# - **`remove_html`, `remove_url`, `remove_email`, `remove_mention`, `remove_hashtag`**: tác động gần bằng 0 (<0.1%) — xác nhận RAGTruth là văn bản AI-generated sạch, không chứa noise dạng social media.
-# - **Tổng kết**: −21.3% vocab và −15.1% độ dài. Hai bước `lowercase` + `remove_punct` đóng góp >95% mức giảm vocab.
+# - Bảng `PIPELINE_STEP_TABLE` in ra vocab size và Δ% sau **mỗi bước riêng biệt**.
+# - Bước tạo giảm vocab nhiều nhất thường là `remove_punct` và `lowercase` (gộp case variants).
+# - `remove_html`, `remove_url`, `remove_mention`, `remove_hashtag` ảnh hưởng phụ thuộc corpus —
+#   với RAGTruth (văn bản phân tích AI), HTML và URL thường ít → giảm chủ yếu ở `remove_number` và `remove_punct`.
+# - Độ dài trung bình (tokens/doc) giảm dần qua pipeline — phản ánh loại bỏ noise tokens.
 #
 # ---
 #
@@ -745,7 +769,7 @@ for i in range(3):
 # - **Character-level**: Tách từng ký tự. Không OOV nhưng mất ngữ nghĩa, chuỗi rất dài.
 # - **Subword (BPE)**: Tách thành subword units. Cân bằng giữa OOV và kích thước từ vựng.
 
-# %%
+# %% papermill={"duration": 174.453215, "end_time": "2026-04-18T08:53:09.249025+00:00", "exception": false, "start_time": "2026-04-18T08:50:14.795810+00:00", "status": "completed"}
 # Lấy mẫu để phân tích (dùng text đã chuẩn hóa)
 sample_texts = df['text_normalized'].tolist()
 
@@ -802,10 +826,8 @@ bpe_oov = sum(1 for t in test_bpe_tokens if t not in train_bpe_vocab) / \
     max(len(test_bpe_tokens), 1)
 
 # spaCy OOV
-train_spacy_vocab = set(
-    tok for tokens in spacy_tokenized[:split_idx] for tok in tokens)
-test_spacy_tokens = [tok for tokens in spacy_tokenized[split_idx:]
-                     for tok in tokens]
+train_spacy_vocab = set(tok for tokens in spacy_tokenized[:split_idx] for tok in tokens)
+test_spacy_tokens = [tok for tokens in spacy_tokenized[split_idx:] for tok in tokens]
 spacy_oov = sum(1 for t in test_spacy_tokens if t not in train_spacy_vocab) / \
     max(len(test_spacy_tokens), 1)
 
@@ -823,15 +845,13 @@ print("SO SÁNH CÁC PHƯƠNG PHÁP TOKENIZATION")
 print("=" * 70)
 tokenization_results
 
-# %%
+# %% papermill={"duration": 2.013244, "end_time": "2026-04-18T08:53:11.300211+00:00", "exception": false, "start_time": "2026-04-18T08:53:09.286967+00:00", "status": "completed"}
 # Trực quan hóa so sánh tokenization
 fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
 # Phân phối độ dài token
-methods = ['Word (NLTK)', 'Word (spaCy)', 'Sentence-level',
-           'Character-level', 'Subword (BPE)']
-all_lengths = [word_lengths, spacy_lengths,
-               sent_lengths, char_lengths, bpe_lengths]
+methods = ['Word (NLTK)', 'Word (spaCy)', 'Sentence-level', 'Character-level', 'Subword (BPE)']
+all_lengths = [word_lengths, spacy_lengths, sent_lengths, char_lengths, bpe_lengths]
 colors_tok = ['#3498db', '#27ae60', '#e67e22', '#9b59b6', '#1abc9c']
 
 for i, (m, l, c) in enumerate(zip(methods, all_lengths, colors_tok)):
@@ -843,8 +863,7 @@ axes[0].legend()
 axes[0].set_xlim(0, np.percentile(char_lengths, 95))
 
 # Kích thước từ vựng (bar chart)
-vocab_sizes = [len(word_vocab), len(spacy_vocab),
-               len(char_vocab), len(bpe_vocab)]
+vocab_sizes = [len(word_vocab), len(spacy_vocab), len(char_vocab), len(bpe_vocab)]
 vocab_labels = ['Word (NLTK)', 'Word (spaCy)', 'Character-level', 'BPE']
 bars = axes[1].bar(vocab_labels, vocab_sizes, color=[
                    '#3498db', '#27ae60', '#9b59b6', '#1abc9c'], edgecolor='black')
@@ -859,18 +878,17 @@ plt.savefig(OUTPUT_DIR / 'tokenization_comparison.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.046291, "end_time": "2026-04-18T08:53:11.400221+00:00", "exception": false, "start_time": "2026-04-18T08:53:11.353930+00:00", "status": "completed"}
 # **Phân tích:**
-# - **Word (NLTK) vs Word (spaCy)**: **gần như đồng nhất** — vocab 31,946 vs 31,914, avg length 127.37 vs 127.46 tokens/doc, OOV đều 2.64%. Cả hai đều dùng rule-based tokenization trên corpus đã chuẩn hóa, nên kết quả hội tụ.
-# - **BPE** (subword, train trực tiếp trên corpus): vocab = 9,695 — nhỏ hơn **70%** so với word-level, OOV = 0.23% — **11× thấp hơn** word-level. Đây là lợi thế rõ ràng của BPE cho generalization.
-# - **Character-level**: vocab = 27 (26 ký tự + space), avg length = 764.7 tokens/doc — **6× dài hơn** word-level. Zero OOV nhưng mất hoàn toàn ngữ nghĩa từ vựng.
-# - **Sentence-level**: avg = 7.45 câu/doc — phù hợp tác vụ cấp câu, OOV cấp từ không định nghĩa.
-# - **Lựa chọn thực tế**: Word-level được dùng cho pipeline downstream (tương thích NLTK stopwords + WordNet); BPE phù hợp cho neural models cần generalization cao.
+# - **Word-level** có kích thước từ vựng lớn nhất nhưng OOV cao hơn vì gặp từ mới dễ dàng.
+# - **Character-level** có từ vựng nhỏ nhất (~26 chữ cái + khoảng trắng) nhưng chuỗi token rất dài.
+# - **BPE** cân bằng tốt nhất: từ vựng vừa phải, OOV thấp, độ dài hợp lý. Ở notebook này BPE được huấn luyện trực tiếp trên corpus (`train_from_iterator`), không dùng tokenizer prebuilt.
+# - **Sentence-level** phù hợp cho tác vụ cấp câu; OOV kiểu *từ* không định nghĩa trực tiếp → bảng ghi `N/A`.
 #
 # **Lựa chọn cho pipeline downstream:** BPE đạt OOV thấp nhất nhưng subword units không tương thích với
 # NLTK stop word list và WordNet lemmatizer (cần whole-word tokens). Do đó **Word-level** được chọn cho các bước 3.3–3.5.
 
-# %%
+# %% papermill={"duration": 0.059407, "end_time": "2026-04-18T08:53:11.503662+00:00", "exception": false, "start_time": "2026-04-18T08:53:11.444255+00:00", "status": "completed"}
 # === QUYẾT ĐỊNH 1: TOKENIZATION ===
 CHOSEN_TOKENIZER = 'Word-level'
 print(f"[CHỌN] Tokenizer: {CHOSEN_TOKENIZER}")
@@ -880,7 +898,7 @@ print(
     f"  BPE OOV={bpe_oov:.4f} thấp hơn nhưng subwords không tương thích với stop word list + lemmatizer")
 print(f"  → Bước 3.3 và 3.4 sẽ dùng df['tokens'] (word-level)")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.038063, "end_time": "2026-04-18T08:53:11.587626+00:00", "exception": false, "start_time": "2026-04-18T08:53:11.549563+00:00", "status": "completed"}
 # ---
 #
 # ### 3.3. Stop Words [Bắt buộc]
@@ -891,7 +909,7 @@ print(f"  → Bước 3.3 và 3.4 sẽ dùng df['tokens'] (word-level)")
 #
 # Tuy nhiên, trong một số trường hợp, stop words có thể mang thông tin hữu ích (phong cách viết, ngữ pháp).
 
-# %%
+# %% papermill={"duration": 4.405949, "end_time": "2026-04-18T08:53:16.037723+00:00", "exception": false, "start_time": "2026-04-18T08:53:11.631774+00:00", "status": "completed"}
 # Phân tích Stop Words
 stop_words = set(stopwords.words('english'))
 print(f"Số lượng stop words trong NLTK English: {len(stop_words)}")
@@ -920,7 +938,7 @@ print(f"\nTổng tokens CÓ stop words:    {total_with:,}")
 print(f"Tổng tokens KHÔNG stop words:  {total_without:,}")
 print(f"Tỉ lệ tokens bị loại: {(1 - total_without / total_with) * 100:.2f}%")
 
-# %%
+# %% papermill={"duration": 19.068637, "end_time": "2026-04-18T08:53:35.123519+00:00", "exception": false, "start_time": "2026-04-18T08:53:16.054882+00:00", "status": "completed"}
 # Mutual Information: đo mức độ thông tin của từng từ với nhãn
 # Tạo BoW cho cả 2 trường hợp
 cv_with_stop = CountVectorizer(max_features=5000)
@@ -967,7 +985,7 @@ print(f"MI mean (có stop):    {MI_MEAN_WITH_STOP:.6f}")
 print(f"MI mean (không stop): {MI_MEAN_NO_STOP:.6f}")
 print(f"ΔMI mean: {'+' if MI_MEAN_DELTA > 0 else ''}{MI_MEAN_DELTA:.6f}")
 
-# %%
+# %% papermill={"duration": 0.095343, "end_time": "2026-04-18T08:53:35.236107+00:00", "exception": false, "start_time": "2026-04-18T08:53:35.140764+00:00", "status": "completed"}
 # So sánh hiệu năng Naive Bayes trước và sau khi xóa stop words
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 
@@ -1012,14 +1030,13 @@ cohens_d = (scores_no.mean() - scores_with.mean()) / (pooled_std + 1e-9)
 print(
     f"Cohen's d effect size: {cohens_d:.4f} ({'nhỏ' if abs(cohens_d) < 0.5 else 'trung bình' if abs(cohens_d) < 0.8 else 'lớn'})")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.016029, "end_time": "2026-04-18T08:53:35.268175+00:00", "exception": false, "start_time": "2026-04-18T08:53:35.252146+00:00", "status": "completed"}
 # **Phân tích:**
-# - Xóa stop words giảm **41.09%** token nhưng chỉ giảm **0.41%** vocab — xác nhận stop words là một số lượng nhỏ từ tần suất cao, không đóng góp nhiều vào kích thước vocabulary.
-# - **ΔMI mean = −0.000114** (MI giảm sau khi xóa stop words): kết quả ngược trực giác! Stop words mang một chút thông tin phân biệt trung bình trong không gian 5,000 features. Điều này xảy ra khi stop words phân phối không đều giữa hai lớp (vd. văn bản Hallucinated dùng nhiều "the", "a" do cấu trúc câu khác).
-# - **NB F1**: chênh lệch rất nhỏ (< 0.0001) — không có ý nghĩa thực tế. Wilcoxon test sẽ cho p không đáng kể với 5 folds.
-# - **Kết luận**: Quyết định giữ/bỏ stop words không ảnh hưởng đáng kể; nên quyết định dựa trên downstream task và mô hình, không phải chỉ dựa trên raw vocab count.
+# - Xóa stop words làm giảm mạnh số token (giảm nhiễu và giảm kích thước đặc trưng), nhưng mức giảm vocab có thể nhỏ vì nhiều stop words lặp lại cao.
+# - Đã báo cáo thêm **MI trung bình trước/sau** (`MI_MEAN_WITH_STOP`, `MI_MEAN_NO_STOP`) để định lượng mức thông tin phân biệt theo toàn bộ không gian đặc trưng.
+# - Kết quả Naive Bayes cho thấy bỏ stop words **không phải lúc nào cũng cải thiện đáng kể**; chênh lệch có thể rất nhỏ hoặc đảo chiều tùy dataset/tác vụ.
 
-# %%
+# %% papermill={"duration": 0.022051, "end_time": "2026-04-18T08:53:35.306250+00:00", "exception": false, "start_time": "2026-04-18T08:53:35.284199+00:00", "status": "completed"}
 # === QUYẾT ĐỊNH 2: STOP WORDS ===
 CHOSEN_STOPWORDS = 'remove' if scores_no.mean() >= scores_with.mean() else 'keep'
 print(f"[CHỌN] Stop words: {CHOSEN_STOPWORDS}")
@@ -1028,7 +1045,7 @@ print(
 print(f"  ΔMI mean={MI_MEAN_DELTA:+.6f} → bỏ stop words {'tăng' if MI_MEAN_DELTA > 0 else 'không tăng'} thông tin phân biệt trung bình")
 print(f"  → Bước 3.4 dùng: df['tokens_no_stop']")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.015635, "end_time": "2026-04-18T08:53:35.337570+00:00", "exception": false, "start_time": "2026-04-18T08:53:35.321935+00:00", "status": "completed"}
 # ---
 #
 # ### 3.4. Stemming và Lemmatization [Bắt buộc]
@@ -1041,7 +1058,7 @@ print(f"  → Bước 3.4 dùng: df['tokens_no_stop']")
 #   - WordNet Lemmatizer: Sử dụng WordNet database.
 # - **Collision rate**: Tỉ lệ các từ khác nhau bị map về cùng một dạng gốc. Collision cao = nguy cơ mất phân biệt ngữ nghĩa.
 
-# %%
+# %% papermill={"duration": 2.43914, "end_time": "2026-04-18T08:53:37.791737+00:00", "exception": false, "start_time": "2026-04-18T08:53:35.352597+00:00", "status": "completed"}
 # Khởi tạo stemmers và lemmatizer
 porter = PorterStemmer()
 snowball = SnowballStemmer('english')
@@ -1084,7 +1101,7 @@ print(f"  Unique lemmas:    {len(set(wordnet_results.values())):,}")
 print(
     f"  Collision rate:   {wordnet_collision:.4f} ({wordnet_collision*100:.2f}%)")
 
-# %%
+# %% papermill={"duration": 0.026013, "end_time": "2026-04-18T08:53:37.835392+00:00", "exception": false, "start_time": "2026-04-18T08:53:37.809379+00:00", "status": "completed"}
 # Ví dụ so sánh
 example_words = ['running', 'studies', 'better', 'flies', 'organizing', 'happiness',
                  'communication', 'university', 'generated', 'information',
@@ -1100,7 +1117,7 @@ print("Ví dụ so sánh các phương pháp:")
 comparison_df
 
 
-# %%
+# %% papermill={"duration": 18.516338, "end_time": "2026-04-18T08:53:56.367931+00:00", "exception": false, "start_time": "2026-04-18T08:53:37.851593+00:00", "status": "completed"}
 # Áp dụng từng phương pháp lên corpus và đánh giá hiệu năng Logistic Regression
 def apply_stemlem(tokens_series, method):
     """Áp dụng stemming/lemmatization và join lại thành text."""
@@ -1173,7 +1190,7 @@ if friedman_p < 0.05:
 else:
     print("  => Không có phương pháp nào khác biệt đáng kể (p ≥ 0.05)")
 
-# %%
+# %% papermill={"duration": 0.273883, "end_time": "2026-04-18T08:53:56.659005+00:00", "exception": false, "start_time": "2026-04-18T08:53:56.385122+00:00", "status": "completed"}
 # Trực quan hóa so sánh
 fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
@@ -1205,12 +1222,12 @@ plt.savefig(OUTPUT_DIR / 'stemming_lemmatization.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.017041, "end_time": "2026-04-18T08:53:56.693634+00:00", "exception": false, "start_time": "2026-04-18T08:53:56.676593+00:00", "status": "completed"}
 # **Phân tích:**
-# - Collision rate thực tế: Porter **35.43%**, Snowball **35.68%**, WordNet **13.20%** — WordNet bảo toàn ngữ nghĩa tốt hơn ~3×.
-# - F1-macro: None=0.7287, Porter=0.7274, Snowball=0.7284, WordNet=0.7285 — **tất cả cách nhau < 0.002**, không có phương pháp nào vượt trội rõ ràng.
-# - Stemming mạnh (Porter/Snowball) tuy giảm 35% từ vựng nhưng không cải thiện F1 - thậm chí giảm nhẹ. Trên RAGTruth (domain kỹ thuật), các hậu tố mang ý nghĩa ngữ nghĩa quan trọng (e.g. "summarize" vs "summarization").
-# - **Hạn chế thống kê**: Friedman test với chỉ 5 folds có **statistical power thấp** — không thể kết luận chắc chắn về sự khác biệt giữa các phương pháp. Cần ≥20 folds hoặc bootstrap để estimate đáng tin cậy hơn.
+# - Porter và Snowball Stemmer có collision rate cao hơn WordNet Lemmatizer vì chúng cắt hậu tố mạnh hơn.
+# - WordNet Lemmatizer giữ được nhiều thông tin hơn (collision rate thấp) vì dựa trên từ điển.
+# - Stemming quá mạnh có thể làm mất phân biệt ngữ nghĩa và không luôn giúp tăng F1.
+# - Vì vậy cần báo cáo song song collision rate và hiệu năng phân loại để kết luận công bằng.
 #
 # ---
 #
@@ -1223,7 +1240,7 @@ plt.show()
 #
 # **Ghi chú triển khai:** Phần BoW/TF-IDF phía dưới được cài đặt thủ công (xây vocab + ma trận sparse + IDF + chuẩn hóa), không dùng vectorizer có sẵn của scikit-learn.
 
-# %%
+# %% papermill={"duration": 13.622306, "end_time": "2026-04-18T08:54:10.332596+00:00", "exception": false, "start_time": "2026-04-18T08:53:56.710290+00:00", "status": "completed"}
 # Chuẩn bị text — áp dụng BEST_STEMLEM đã chọn ở bước 3.4
 if BEST_STEMLEM == 'Porter':
     df['text_processed'] = df['tokens_no_stop'].apply(
@@ -1319,7 +1336,7 @@ plt.savefig(OUTPUT_DIR / 'length_distribution_ablation.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 5.780757, "end_time": "2026-04-18T08:54:16.131363+00:00", "exception": false, "start_time": "2026-04-18T08:54:10.350606+00:00", "status": "completed"}
 # TỰ CÀI ĐẶT BoW + TF-IDF n-gram (không dùng CountVectorizer/TfidfVectorizer)
 
 
@@ -1418,7 +1435,7 @@ for name, X in [('BoW', X_bow), ('TF-IDF (1-gram)', X_tfidf_uni),
     print(
         f"  Sparsity ratio: {sparsity_ratio(X):.6f} ({sparsity_ratio(X)*100:.2f}%)")
 
-# %%
+# %% papermill={"duration": 8.000052, "end_time": "2026-04-18T08:54:24.150060+00:00", "exception": false, "start_time": "2026-04-18T08:54:16.150008+00:00", "status": "completed"}
 # 5. Word2Vec
 # Tokenize cho Word2Vec (list of lists)
 w2v_corpus = [text.split() for text in texts_final]
@@ -1453,7 +1470,7 @@ print(f"\nWord2Vec document matrix shape: {X_w2v.shape}")
 print(
     f"Sparsity: {(X_w2v == 0).sum() / X_w2v.size:.6f} ({(X_w2v == 0).sum() / X_w2v.size * 100:.2f}%)")
 
-# %%
+# %% papermill={"duration": 0.704073, "end_time": "2026-04-18T08:54:24.873077+00:00", "exception": false, "start_time": "2026-04-18T08:54:24.169004+00:00", "status": "completed"}
 # Cosine Similarity: intra-class và inter-class
 # Lấy sample để tính cosine similarity (tính trên toàn bộ rất tốn bộ nhớ)
 np.random.seed(SEED)
@@ -1492,7 +1509,7 @@ for name, X in [('BoW', X_bow), ('TF-IDF unigram', X_tfidf_uni), ('TF-IDF (1,2)-
     print(f"  Intra-class (Hallucinated): mean={hal_intra.mean():.4f}")
     print(f"  Inter-class:                mean={inter.mean():.4f}")
 
-# %%
+# %% papermill={"duration": 24.87247, "end_time": "2026-04-18T08:54:49.764651+00:00", "exception": false, "start_time": "2026-04-18T08:54:24.892181+00:00", "status": "completed"}
 # t-SNE 2D Visualization cho từng biểu diễn
 print("Đang chạy t-SNE cho các biểu diễn... (có thể mất vài phút)")
 
@@ -1550,7 +1567,7 @@ plt.savefig(OUTPUT_DIR / 'tsne_visualization.png',
 plt.show()
 print("t-SNE hoàn tất!")
 
-# %%
+# %% papermill={"duration": 11.752615, "end_time": "2026-04-18T08:55:01.549106+00:00", "exception": false, "start_time": "2026-04-18T08:54:49.796491+00:00", "status": "completed"}
 # Silhouette Score cho mỗi phương pháp vectorization
 print("=" * 60)
 print("SILHOUETTE SCORE (đánh giá chất lượng clustering theo nhãn)")
@@ -1634,13 +1651,12 @@ if friedman_v_p < 0.05:
 else:
     print("  => Không có khác biệt đáng kể giữa các phương pháp (p ≥ 0.05)")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.025841, "end_time": "2026-04-18T08:55:01.603881+00:00", "exception": false, "start_time": "2026-04-18T08:55:01.578040+00:00", "status": "completed"}
 # **Phân tích:**
-# - **Cài đặt thuật toán**: BoW và TF-IDF n-gram được cài đặt thủ công (xây vocab, ma trận sparse, IDF + chuẩn hóa L2), không dùng `CountVectorizer`/`TfidfVectorizer`.
-# - **Cosine similarity**: Intra-class similarity Hallucinated > Supported trên mọi phương pháp (ví dụ: Word2Vec: 0.237 vs 0.160). Điều này gợi ý văn bản hallucinated có xu hướng giống nhau hơn về mặt ngữ nghĩa — có thể do LLM tạo ra các hallucination theo pattern lặp lại.
-# - **Silhouette scores**: BoW=0.019, TF-IDF~0.004, Word2Vec=0.078 (theo GT labels). Tất cả đều **rất thấp (< 0.1)** — không phương pháp nào tạo ra phân cụm rõ ràng giữa 2 lớp. Điều này phù hợp với F1 ≈ 0.73 (không phải 0.9+).
-# - **Hạn chế bootstrap**: `N_BOOT=10` là quá ít để estimate variance ổn định. Std của silhouette scores có thể không đáng tin cậy.
-# - **Kết luận**: Dữ liệu RAGTruth không có ranh giới phân cụm rõ ràng trong không gian đặc trưng bề mặt — đây là lý do tại sao cần embedding ngữ nghĩa mạnh hơn (Sentence Transformer) hoặc fine-tuned model.
+# - **Cài đặt thuật toán**: BoW và TF-IDF n-gram ở mục này được cài đặt thủ công (xây vocab, tạo ma trận đếm sparse, tính IDF và chuẩn hóa L2), không dùng `CountVectorizer`/`TfidfVectorizer` cho bước vector hóa chính.
+# - **Sparsity**: BoW/TF-IDF tạo ma trận rất thưa (>99%), còn Word2Vec là dense vector nên biểu diễn ngữ nghĩa liên tục hơn.
+# - **Cosine + silhouette**: Các chỉ số giúp lượng hóa khả năng tách lớp; cần đọc cùng F1 để tránh kết luận thiên lệch bởi một metric.
+# - **Khác biệt ngữ nghĩa**: TF-IDF n-gram mạnh ở cụm từ đặc trưng bề mặt (surface lexical cues), còn Word2Vec/Sentence Transformer mạnh ở tương đồng ngữ nghĩa; dữ liệu hallucination hiện tại thiên lexical nên TF-IDF có lợi thế.
 #
 # ---
 #
@@ -1650,7 +1666,7 @@ else:
 # - **K-Means clustering**: Đánh giá chất lượng không giám sát.
 # - **Linear SVM**: Đánh giá hiệu năng phân loại có giám sát.
 
-# %%
+# %% papermill={"duration": 154.983727, "end_time": "2026-04-18T08:57:36.613728+00:00", "exception": false, "start_time": "2026-04-18T08:55:01.630001+00:00", "status": "completed"}
 # Sentence Transformer
 
 print("Loading Sentence Transformer (all-MiniLM-L6-v2)...")
@@ -1662,7 +1678,7 @@ X_st = st_model.encode(df['text'].tolist(),
                        show_progress_bar=True, batch_size=128)
 print(f"\nSentence Transformer embeddings shape: {X_st.shape}")
 
-# %%
+# %% papermill={"duration": 2.563871, "end_time": "2026-04-18T08:57:39.232585+00:00", "exception": false, "start_time": "2026-04-18T08:57:36.668714+00:00", "status": "completed"}
 # K-Means Clustering: So sánh TF-IDF vs Sentence Transformer
 print("=" * 70)
 print("K-MEANS CLUSTERING (k=2): TF-IDF vs Sentence Transformer")
@@ -1688,7 +1704,7 @@ print(f"  Silhouette Score: {sil_km_tfidf:.4f}")
 print(f"\nSentence Transformer + K-Means:")
 print(f"  Silhouette Score: {sil_km_st:.4f}")
 
-# %%
+# %% papermill={"duration": 8.784403, "end_time": "2026-04-18T08:57:48.046189+00:00", "exception": false, "start_time": "2026-04-18T08:57:39.261786+00:00", "status": "completed"}
 # Linear SVM: So sánh TF-IDF vs Sentence Transformer
 print("=" * 70)
 print("LINEAR SVM: TF-IDF vs Sentence Transformer (5-fold CV)")
@@ -1717,7 +1733,7 @@ print(f"  F1-macro = {scores_svm_w2v.mean():.4f} ± {scores_svm_w2v.std():.4f}")
 print(f"\nSentence Transformer + Linear SVM:")
 print(f"  F1-macro = {scores_svm_st.mean():.4f} ± {scores_svm_st.std():.4f}")
 
-# %%
+# %% papermill={"duration": 0.302152, "end_time": "2026-04-18T08:57:48.378957+00:00", "exception": false, "start_time": "2026-04-18T08:57:48.076805+00:00", "status": "completed"}
 # Trực quan hóa so sánh tổng hợp
 fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
@@ -1750,7 +1766,7 @@ plt.savefig(OUTPUT_DIR / 'advanced_comparison.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 4.328528, "end_time": "2026-04-18T08:57:52.737161+00:00", "exception": false, "start_time": "2026-04-18T08:57:48.408633+00:00", "status": "completed"}
 # t-SNE cho Sentence Transformer embeddings
 print("Đang chạy t-SNE cho Sentence Transformer...")
 tsne_st = TSNE(n_components=2, random_state=SEED, perplexity=30, max_iter=1000)
@@ -1771,12 +1787,12 @@ plt.savefig(OUTPUT_DIR / 'tsne_all_methods.png', dpi=150, bbox_inches='tight')
 plt.show()
 print("Hoàn tất!")
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.033034, "end_time": "2026-04-18T08:57:52.803351+00:00", "exception": false, "start_time": "2026-04-18T08:57:52.770317+00:00", "status": "completed"}
 # ### 3.7. Bảng ablation (đối chiếu Requirement §2)
 #
 # Tóm tắt định lượng từng bước — tiện chép vào báo cáo PDF.
 
-# %%
+# %% papermill={"duration": 0.084177, "end_time": "2026-04-18T08:57:52.920185+00:00", "exception": false, "start_time": "2026-04-18T08:57:52.836008+00:00", "status": "completed"}
 rows = [
     {"Mục": "§2.3.1", "Chỉ số": "N / nhãn",
         "Giá trị": f"{N_SAMPLES:,} / {N_LABELS}"},
@@ -1799,23 +1815,23 @@ ABLATION_SUMMARY = pd.DataFrame(rows)
 print(ABLATION_SUMMARY.to_string(index=False))
 
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.031851, "end_time": "2026-04-18T08:57:52.983905+00:00", "exception": false, "start_time": "2026-04-18T08:57:52.952054+00:00", "status": "completed"}
 # **Phân tích:**
-# - **K-Means silhouette**: TF-IDF = **0.1834** > ST = **0.0826** — TF-IDF cho cụm tách biệt hơn khi dùng K-Means. TF-IDF đã được giảm chiều qua TruncatedSVD(100) trước khi clustering, nên so sánh tương đối công bằng.
-# - **Linear SVM F1-macro**: TF-IDF = **0.7223** > W2V = 0.6971 > ST = **0.6948**. TF-IDF thắng vì RAGTruth có lexical cues rõ (domain-specific terms, citation patterns); SentenceTransformer (MiniLM-L6-v2) được train cho semantic similarity tổng quát, không optimize cho hallucination detection.
-# - **Best overall**: LR + TF-IDF bigram = **F1-macro = 0.7331** (leaderboard #1). Bigram nắm được cụm từ đặc trưng (e.g. "according to", "the study") tốt hơn unigram.
-# - **Kết luận phê bình**: Dense embedding không tự động vượt TF-IDF sparse; hiệu quả phụ thuộc mạnh vào domain và cách biểu diễn. Fine-tuning SentenceTransformer trên RAGTruth có thể đảo ngược kết quả này.
+# - Sentence Transformer là embedding ngữ nghĩa mạnh về mặt biểu diễn, nhưng trên bộ dữ liệu này không tự động đảm bảo kết quả cao hơn đặc trưng sparse.
+# - K-Means cho thấy **TF-IDF có silhouette cao hơn** Sentence Transformer, tức phân cụm theo k=2 tách tốt hơn trong thiết lập hiện tại.
+# - Linear SVM cũng cho thấy **TF-IDF có F1-macro cao hơn** Sentence Transformer trên 5-fold CV.
+# - Kết luận thực nghiệm: hiệu quả phụ thuộc dữ liệu và cách biểu diễn; không nên mặc định dense embedding luôn vượt TF-IDF.
 #
 # ---
 #
 # ## 4. TỔNG HỢP VÀ SO SÁNH TOÀN DIỆN
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.032758, "end_time": "2026-04-18T08:57:53.048964+00:00", "exception": false, "start_time": "2026-04-18T08:57:53.016206+00:00", "status": "completed"}
 # ### 3.8. Checklist đối chiếu Requirement (lần cuối)
 #
 # Bảng dưới giúp kiểm tra nhanh từng mục quan trọng trong `Requirement.md` (Phần 2.3 + 3.1) đã được đáp ứng và có bằng chứng định lượng trong notebook.
 
-# %%
+# %% papermill={"duration": 0.049168, "end_time": "2026-04-18T08:57:53.132027+00:00", "exception": false, "start_time": "2026-04-18T08:57:53.082859+00:00", "status": "completed"}
 
 # Kiểm tra nhanh các thư viện cốt lõi theo Requirement §3.1
 required_libs = [
@@ -1883,7 +1899,7 @@ for k, v in lib_status.items():
     status = 'OK' if v else 'MISSING'
     print(f'  {k:12s}: {status}')
 
-# %%
+# %% papermill={"duration": 1.831187, "end_time": "2026-04-18T08:57:54.995677+00:00", "exception": false, "start_time": "2026-04-18T08:57:53.164490+00:00", "status": "completed"}
 # Bảng tổng hợp toàn bộ kết quả phân loại
 print("=" * 80)
 print("BẢNG TỔNG HỢP HIỆU NĂNG PHÂN LOẠI (F1-macro, 5-fold CV)")
@@ -1927,7 +1943,7 @@ results_df['F1-macro'] = results_df['F1-macro'].round(4)
 results_df['Std'] = results_df['Std'].round(4)
 results_df
 
-# %%
+# %% papermill={"duration": 0.268478, "end_time": "2026-04-18T08:57:55.302523+00:00", "exception": false, "start_time": "2026-04-18T08:57:55.034045+00:00", "status": "completed"}
 # Trực quan hóa bảng xếp hạng
 fig, ax = plt.subplots(figsize=(14, 8))
 
@@ -1951,7 +1967,7 @@ plt.savefig(OUTPUT_DIR / 'classification_leaderboard.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %%
+# %% papermill={"duration": 0.326252, "end_time": "2026-04-18T08:57:55.665531+00:00", "exception": false, "start_time": "2026-04-18T08:57:55.339279+00:00", "status": "completed"}
 # Confusion Matrix cho mô hình đứng đầu leaderboard (train 80%, evaluate 20%)
 
 # Chia train/test 80/20 stratified (dùng index để áp dụng nhất quán cho mọi X)
@@ -2018,7 +2034,7 @@ plt.savefig(OUTPUT_DIR / 'confusion_matrix_best.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
-# %% [markdown]
+# %% [markdown] papermill={"duration": 0.036887, "end_time": "2026-04-18T08:57:55.740131+00:00", "exception": false, "start_time": "2026-04-18T08:57:55.703244+00:00", "status": "completed"}
 # ---
 # ## 5. KẾT LUẬN
 #
@@ -2026,22 +2042,21 @@ plt.show()
 #
 # | Mục | Kết quả |
 # |------|--------|
-# | **Dataset** | RAGTruth (17,790 mẫu, 2 nhãn: Supported 10,126 / Hallucinated 7,664) |
-# | **Text EDA** | Mann-Whitney p < 10⁻¹⁹⁵ nhưng r = 0.22–0.28 (nhỏ); độ dài không phải đặc trưng mạnh |
-# | **Zipf** | α = 1.631 (corpus), 1.505 (Supported), 1.534 (Hallucinated); R² = 0.94; α xa 1.0 do domain kỹ thuật |
-# | **Tokenization** | Word(NLTK) ≈ Word(spaCy) (OOV=2.64%); BPE OOV=0.23% (11× thấp hơn) |
-# | **Pipeline** | lowercase: −14.90% vocab; remove_punct: +1.23% vocab (bất ngờ), −13.82% length; tổng −21.3% vocab |
-# | **Stop words** | Xóa −41.09% token nhưng chỉ −0.41% vocab; ΔMI = −0.000114 (stop words mang một chút MI) |
-# | **Stemming** | Porter/Snowball collision 35%; WordNet 13%; ΔF1 ≈ 0 giữa các phương pháp (< 0.002) |
-# | **Vectorization** | BoW + TF-IDF cài đặt thủ công; silhouette < 0.1 — không phương pháp nào tạo cụm rõ |
-# | **Best model** | LR + TF-IDF bigram: **F1-macro = 0.7331** (5-fold CV) |
+# | **Dataset** | RAGTruth (~18,000 mẫu, 2 nhãn: Supported/Hallucinated) |
+# | **Text EDA** | Phân phối độ dài khác biệt giữa 2 nhóm (Mann-Whitney U test); có xu hướng Zipf nhưng lệch khỏi Zipf lý tưởng (\(\alpha\) xa 1) |
+# | **Tokenization** | BPE cân bằng tốt giữa vocab size và OOV rate |
+# | **Stop words** | Đã báo cáo đầy đủ: giảm vocab/tokens, **MI mean trước-sau**, và **NB F1 trước-sau**; kết quả cho thấy bỏ stop words không luôn cải thiện đáng kể |
+# | **Stemming/Lemmatization** | Porter, Snowball, WordNet đều được triển khai; collision + LR 5-fold được đối chiếu định lượng |
+# | **Vectorization** | BoW + TF-IDF (1-gram, 1-2gram, 1-2-3gram) được **cài đặt thủ công**; Word2Vec dense; có cosine + t-SNE + silhouette |
+# | **Ablation** | Có bảng `PREPROCESS_LENGTH_ABLATION` (tác động đến độ dài qua từng bước) và `ABLATION_SUMMARY` (đối chiếu Requirement §2) |
+# | **Best model** | Theo leaderboard: LR + TF-IDF bi đạt F1-macro cao nhất |
 #
-# ### 5.2. Nhận xét và đánh giá phê bình
+# ### 5.2. Nhận xét
 #
-# 1. **Kết quả ngược trực giác**: Xóa stop words làm *giảm* MI trung bình (ΔMI = −0.000114) và TF-IDF sparse vượt Sentence Transformer 384-dim trên dataset này — cho thấy một số giả định thường gặp trong NLP không áp dụng cho domain AI-generated text.
-# 2. **Hạn chế thống kê**: Friedman test với 5 folds có power thấp; bootstrap silhouette với N_BOOT=10 không đủ để estimate variance ổn định. Cần ≥ 20 lần lặp để có kết luận đáng tin.
-# 3. **Silhouette rất thấp** (< 0.1 trên GT labels): không phương pháp nào tạo tách biệt rõ giữa 2 nhóm — phân loại với F1 = 0.73 dựa trên pattern bề mặt, không phải từ cụm ngữ nghĩa rõ ràng.
-# 4. **Hướng phát triển**: Fine-tuning Transformer trên task hallucination detection hoặc dùng feature ngữ cảnh (query + context + response) thay vì chỉ `output` có tiềm năng cải thiện đáng kể.
+# 1. **Tiền xử lý quan trọng**: Chuẩn hóa + stop words + lemmatization làm thay đổi rõ phân phối độ dài và không gian đặc trưng.
+# 2. **Dense vs Sparse**: Trên tập này, TF-IDF (đặc biệt bi-gram) vượt Word2Vec/Sentence Transformer với mô hình tuyến tính.
+# 3. **Không có quy tắc tuyệt đối**: Bỏ stop words và dùng embedding dense không luôn thắng; cần kiểm chứng bằng MI/F1/silhouette cụ thể.
+# 4. **Tính tái lập**: Các chỉ số chính đều được lưu biến và có thể đối chiếu trực tiếp trong bảng ablation.
 #
 # ### 5.3. Hạn chế và hướng phát triển
 #
@@ -2049,7 +2064,7 @@ plt.show()
 # - **Domain-specific preprocessing**: Có thể thêm xử lý riêng cho cấu trúc RAG (query/context/output) thay vì chỉ dùng `output`.
 # - **Mô hình mạnh hơn**: Fine-tuning Transformer chuyên biệt có thể tăng thêm chất lượng phân loại.
 
-# %%
+# %% papermill={"duration": 1.189299, "end_time": "2026-04-18T08:57:56.966371+00:00", "exception": false, "start_time": "2026-04-18T08:57:55.777072+00:00", "status": "completed"}
 # Lưu dữ liệu đã xử lý
 
 df_save = df[['id', 'text', 'text_normalized', 'text_processed', 'label', 'label_name',
