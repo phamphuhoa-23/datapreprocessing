@@ -205,7 +205,8 @@ def _find_data_root() -> Path:
         Path.cwd().parent / 'data' / 'raw',
     ]
     try:
-        candidates.insert(0, Path(__file__).resolve().parent.parent / 'data' / 'raw' / 'text')
+        candidates.insert(0, Path(__file__).resolve(
+        ).parent.parent / 'data' / 'raw' / 'text')
     except NameError:
         pass
     for p in candidates:
@@ -832,8 +833,10 @@ bpe_oov = sum(1 for t in test_bpe_tokens if t not in train_bpe_vocab) / \
     max(len(test_bpe_tokens), 1)
 
 # spaCy OOV
-train_spacy_vocab = set(tok for tokens in spacy_tokenized[:split_idx] for tok in tokens)
-test_spacy_tokens = [tok for tokens in spacy_tokenized[split_idx:] for tok in tokens]
+train_spacy_vocab = set(
+    tok for tokens in spacy_tokenized[:split_idx] for tok in tokens)
+test_spacy_tokens = [tok for tokens in spacy_tokenized[split_idx:]
+                     for tok in tokens]
 spacy_oov = sum(1 for t in test_spacy_tokens if t not in train_spacy_vocab) / \
     max(len(test_spacy_tokens), 1)
 
@@ -856,8 +859,10 @@ tokenization_results
 fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
 # Phân phối độ dài token
-methods = ['Word (NLTK)', 'Word (spaCy)', 'Sentence-level', 'Character-level', 'Subword (BPE)']
-all_lengths = [word_lengths, spacy_lengths, sent_lengths, char_lengths, bpe_lengths]
+methods = ['Word (NLTK)', 'Word (spaCy)', 'Sentence-level',
+           'Character-level', 'Subword (BPE)']
+all_lengths = [word_lengths, spacy_lengths,
+               sent_lengths, char_lengths, bpe_lengths]
 colors_tok = ['#3498db', '#27ae60', '#e67e22', '#9b59b6', '#1abc9c']
 
 for i, (m, l, c) in enumerate(zip(methods, all_lengths, colors_tok)):
@@ -869,7 +874,8 @@ axes[0].legend()
 axes[0].set_xlim(0, np.percentile(char_lengths, 95))
 
 # Kích thước từ vựng (bar chart)
-vocab_sizes = [len(word_vocab), len(spacy_vocab), len(char_vocab), len(bpe_vocab)]
+vocab_sizes = [len(word_vocab), len(spacy_vocab),
+               len(char_vocab), len(bpe_vocab)]
 vocab_labels = ['Word (NLTK)', 'Word (spaCy)', 'Character-level', 'BPE']
 bars = axes[1].bar(vocab_labels, vocab_sizes, color=[
                    '#3498db', '#27ae60', '#9b59b6', '#1abc9c'], edgecolor='black')

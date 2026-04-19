@@ -83,7 +83,8 @@ def _find_image_root() -> Path:
         Path.cwd().parent.parent / 'Source' / 'Dataset',
     ]
     try:
-        candidates.insert(0, Path(__file__).resolve().parent.parent / 'data' / 'raw' / 'image')
+        candidates.insert(0, Path(__file__).resolve(
+        ).parent.parent / 'data' / 'raw' / 'image')
     except NameError:
         pass
     for p in candidates:
@@ -198,7 +199,8 @@ print(f"Components để giải thích 90% variance: {n90}")
 print(f"Components để giải thích 95% variance: {n95}")
 print(f"Components để giải thích 99% variance: {n99}")
 if cum_var[-1] < 0.99:
-    print(f"WARNING: cum_var tối đa chỉ đạt {cum_var[-1]*100:.1f}% — tăng N_COMPONENTS để xác định n99 chính xác")
+    print(
+        f"WARNING: cum_var tối đa chỉ đạt {cum_var[-1]*100:.1f}% — tăng N_COMPONENTS để xác định n99 chính xác")
 
 # %% [markdown]
 # ### Scree Plot & Cumulative Variance
@@ -371,7 +373,8 @@ for ax_t, X_t, perp in zip(axes_tsne, [X_tsne, X_tsne_50], [30, 50]):
         mask = y_tsne == cls
         ax_t.scatter(X_t[mask, 0], X_t[mask, 1],
                      c=[color], label=cls, alpha=0.6, s=10)
-    ax_t.set_title(f"t-SNE perplexity={perp} ({N_TSNE} ảnh, 50 PCA dims)", fontsize=11)
+    ax_t.set_title(
+        f"t-SNE perplexity={perp} ({N_TSNE} ảnh, 50 PCA dims)", fontsize=11)
     ax_t.set_xlabel("t-SNE 1")
     ax_t.set_ylabel("t-SNE 2")
     ax_t.legend(fontsize=5, loc='best', ncol=5, markerscale=2)

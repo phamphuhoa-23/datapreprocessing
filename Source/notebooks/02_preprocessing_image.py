@@ -84,7 +84,8 @@ def _find_image_root() -> Path:
         Path.cwd().parent.parent / 'Source' / 'Dataset',
     ]
     try:
-        candidates.insert(0, Path(__file__).resolve().parent.parent / 'data' / 'raw' / 'image')
+        candidates.insert(0, Path(__file__).resolve(
+        ).parent.parent / 'data' / 'raw' / 'image')
     except NameError:
         pass
     for p in candidates:
