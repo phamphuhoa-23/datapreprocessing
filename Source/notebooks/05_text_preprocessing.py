@@ -120,75 +120,26 @@ plt.rcParams['font.size'] = 12
 SEED = 42
 np.random.seed(SEED)
 
-# Thư mục output: Kaggle / local
+try:
+    _SOURCE_DIR = Path(__file__).resolve().parent.parent
+except NameError:
+    _SOURCE_DIR = Path.cwd().parent
 
-
-def _resolve_output_dir() -> Path:
-    if os.environ.get('KAGGLE_KERNEL_RUN_TYPE') is not None:
-        p = Path('/kaggle/working') / 'data' / 'processed'
-    else:
-        try:
-            p = Path(__file__).resolve().parent.parent / 'data' / 'processed'
-        except NameError:
-            cwd = Path.cwd()
-            if (cwd / 'Source' / 'data').is_dir():
-                p = cwd / 'Source' / 'data' / 'processed'
-            elif (cwd.parent / 'data').is_dir():
-                p = cwd.parent / 'data' / 'processed'
-            elif (cwd / 'data').is_dir():
-                p = cwd / 'data' / 'processed'
-            else:
-                p = cwd.parent / 'data' / 'processed'
-    p.mkdir(parents=True, exist_ok=True)
-    return p
-
-
-OUTPUT_DIR = _resolve_output_dir()
+OUTPUT_DIR = _SOURCE_DIR / 'data' / 'processed'
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 print(f'OUTPUT_DIR = {OUTPUT_DIR}')
 print('All libraries imported successfully!')
 
 # %% [markdown]
 # ## 1. Tải và Chuẩn bị Dữ liệu
 #
-# **Lưu ý:** Dataset đã được tải về local bằng `download_text_dataset.py`.
-# Nếu chưa tải, chạy: `python DataMining-Lab1/download_text_dataset.py`
+# Data nằm ở `Source/data/raw/text/ragtruth_full.parquet`.
 
 # %%
-# Load dataset từ local parquet (không cần kết nối internet)
+# Load dataset từ local parquet
 
 
-def _find_data_root() -> Path:
-    """Tìm thư mục data/raw/text/ chứa ragtruth_full.parquet."""
-    candidates = [
-        # Cấu trúc chuẩn: Source/data/raw/text/
-        Path.cwd().parent / 'data' / 'raw' / 'text',
-        Path.cwd() / 'data' / 'raw' / 'text',
-        Path.cwd().parent.parent / 'data' / 'raw' / 'text',
-        # Khi cwd = workspace root (papermill chạy từ project root)
-        Path.cwd() / 'Source' / 'data' / 'raw' / 'text',
-        # Legacy fallback
-        Path.cwd() / 'data' / 'text' / 'raw',
-        Path.cwd().parent / 'data' / 'text' / 'raw',
-        Path.cwd().parent.parent / 'data' / 'text' / 'raw',
-        Path.cwd() / 'data' / 'raw',
-        Path.cwd().parent / 'data' / 'raw',
-    ]
-    try:
-        candidates.insert(0, Path(__file__).resolve(
-        ).parent.parent / 'data' / 'raw' / 'text')
-    except NameError:
-        pass
-    for p in candidates:
-        if (p / 'ragtruth_full.parquet').exists():
-            return p
-    raise FileNotFoundError(
-        "Không tìm thấy ragtruth_full.parquet!\n"
-        "Hãy chạy: python DataMining-Lab1/download_text_dataset.py\n"
-        "Sau đó đặt file vào Source/data/raw/text/"
-    )
-
-
-DATA_RAW = _find_data_root()
+DATA_RAW = _SOURCE_DIR / 'data' / 'raw' / 'text'
 df = pd.read_parquet(DATA_RAW / 'ragtruth_full.parquet')
 
 print(f"Tải thành công: {DATA_RAW / 'ragtruth_full.parquet'}")

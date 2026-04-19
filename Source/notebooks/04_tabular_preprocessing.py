@@ -82,52 +82,16 @@ np.random.seed(SEED)
 # %% _cell_guid="1cf14a38-24d2-4897-b81d-2cae7c343684" _uuid="22dee88d-1ad8-4f38-ae1b-8e3fc9c8dcff" jupyter={"outputs_hidden": false}
 # ── Đường dẫn dữ liệu ──────────────────────────────────────────────────────
 
-IS_KAGGLE = os.path.exists('/kaggle/input')
+try:
+    _SOURCE_DIR = Path(__file__).resolve().parent.parent
+except NameError:
+    _SOURCE_DIR = Path.cwd().parent
 
-
-def _find_tabular_root() -> str:
-    """Tìm thư mục chứa train_transaction.csv."""
-    if IS_KAGGLE:
-        return '/kaggle/input/ieee-fraud-detection'
-    # Thử từ cwd và các thư mục cha để tìm đúng root project
-    try:
-        _nb_dir = Path(__file__).resolve().parent
-    except NameError:
-        _nb_dir = Path.cwd()
-    cwd = Path.cwd()
-    candidates = [
-        # Cấu trúc chuẩn: Source/data/raw/tabular/
-        _nb_dir.parent / 'data' / 'raw' / 'tabular',
-        cwd.parent / 'data' / 'raw' / 'tabular',
-        cwd / 'data' / 'raw' / 'tabular',
-        cwd.parent.parent / 'data' / 'raw' / 'tabular',
-        # Legacy fallback
-        cwd / 'data' / 'tabular',
-        cwd.parent / 'data' / 'tabular',
-        cwd.parent.parent / 'data' / 'tabular',
-    ]
-    for p in candidates:
-        if (p / 'train_transaction.csv').exists():
-            return str(p)
-    return str(candidates[0])
-
-
-DATA_DIR = _find_tabular_root()
-
-if IS_KAGGLE:
-    OUTPUT_DIR = '/kaggle/working'
-else:
-    try:
-        _SOURCE_DIR = Path(__file__).resolve().parent.parent
-    except NameError:
-        _cwd = Path.cwd()
-        _SOURCE_DIR = _cwd.parent if (_cwd.parent / 'data').is_dir() else _cwd
-    OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
+DATA_DIR = str(_SOURCE_DIR / 'data' / 'raw' / 'tabular')
+OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-print(f"{'[Kaggle]' if IS_KAGGLE else '[Local]'} DATA_DIR   = {DATA_DIR}")
-print(f"{'[Kaggle]' if IS_KAGGLE else '[Local]'} OUTPUT_DIR = {OUTPUT_DIR}")
+print(f"DATA_DIR   = {DATA_DIR}")
+print(f"OUTPUT_DIR = {OUTPUT_DIR}")
 
 print("Đang tải dữ liệu...")
 train_transaction = pd.read_csv(

@@ -49,36 +49,12 @@ plt.rcParams.update(
 sns.set_style("whitegrid")
 
 
-def _find_image_root() -> Path:
-    """Tìm thư mục data/raw/image/ chứa train/."""
-    candidates = [
-        # Cấu trúc chuẩn: Source/data/raw/image/
-        Path.cwd().parent / 'data' / 'raw' / 'image',
-        Path.cwd() / 'data' / 'raw' / 'image',
-        Path.cwd().parent.parent / 'data' / 'raw' / 'image',
-        # Legacy fallback
-        Path.cwd() / 'Dataset',
-        Path.cwd().parent / 'Dataset',
-        Path.cwd() / 'Source' / 'Dataset',
-        Path.cwd() / 'DataMining-Lab1' / 'Dataset',
-        Path.cwd().parent / 'Source' / 'Dataset',
-        Path.cwd().parent / 'DataMining-Lab1' / 'Dataset',
-        Path.cwd().parent.parent / 'Source' / 'Dataset',
-    ]
-    try:
-        candidates.insert(0, Path(__file__).resolve(
-        ).parent.parent / 'data' / 'raw' / 'image')
-    except NameError:
-        pass
-    for p in candidates:
-        if (p / 'train').exists() and any((p / 'train').iterdir()):
-            return p
-    raise FileNotFoundError(
-        "Không tìm thấy data/raw/image/train/. Đặt ảnh NWPU-RESISC45 vào Source/data/raw/image/.")
+try:
+    _SOURCE_DIR = Path(__file__).resolve().parent.parent
+except NameError:
+    _SOURCE_DIR = Path.cwd().parent
 
-
-_IMG_ROOT = _find_image_root()
-TRAIN_DIR = str(_IMG_ROOT / 'train')
+TRAIN_DIR = str(_SOURCE_DIR / 'data' / 'raw' / 'image' / 'train')
 print(f"TRAIN_DIR = {TRAIN_DIR}")
 classes = sorted(os.listdir(TRAIN_DIR))
 print(f"Số lớp: {len(classes)}")
