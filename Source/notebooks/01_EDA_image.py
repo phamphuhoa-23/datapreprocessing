@@ -63,7 +63,7 @@ except NameError:
 
 _IMG_ROOT = _SOURCE_DIR / 'data' / 'raw' / 'image'
 TRAIN_DIR = str(_IMG_ROOT / 'train')
-TEST_DIR  = str(_IMG_ROOT / 'test')
+TEST_DIR = str(_IMG_ROOT / 'test')
 OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

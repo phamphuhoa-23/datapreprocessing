@@ -27,6 +27,7 @@
 # !pip install missingno pyampute category_encoders umap-learn imbalanced-learn scikit-learn scipy statsmodels
 
 # %% _cell_guid="ffca4767-d2d7-4719-9838-50a483bcce1f" _uuid="420d8d7b-8447-4eec-95b6-7a45827c3ac8" jupyter={"outputs_hidden": false}
+from scipy.stats import friedmanchisquare, wilcoxon
 import json
 from sklearn.metrics import (precision_score, recall_score,
                              f1_score, roc_auc_score, classification_report)
@@ -247,7 +248,8 @@ for grp_name, grp_cols in groups.items():
     print(f"   Có trong dataset  : {len(exist)} cột")
     if missing_cols:
         print(f"   Không tìm thấy   : {missing_cols}")
-    print(f"   % giá trị thiếu   : {miss_rate_grp:.1f}% (trung bình trên {len(exist)} cột)")
+    print(
+        f"   % giá trị thiếu   : {miss_rate_grp:.1f}% (trung bình trên {len(exist)} cột)")
     print(f"   Kiểu dữ liệu      : {dtype_str}")
     print(
         f"   Cột               : {', '.join(exist[:10])}{'...' if len(exist) > 10 else ''}")
@@ -430,7 +432,7 @@ sample_corr = sample_corr[ok_cols]
 
 # min_periods=50: cặp cột nào có ít hơn 50 hàng chung thì trả NaN thay vì tính sai
 spearman_corr = sample_corr.corr(method='spearman', min_periods=50)
-pearson_corr  = sample_corr.corr(method='pearson',  min_periods=50)
+pearson_corr = sample_corr.corr(method='pearson',  min_periods=50)
 
 # Vẽ CẢ HAI Pearson và Spearman (đề yêu cầu §2.2.2b)
 fig, axes = plt.subplots(1, 2, figsize=(28, 14))
@@ -439,14 +441,16 @@ mask = np.triu(np.ones_like(spearman_corr, dtype=bool))
 sns.heatmap(pearson_corr, mask=mask, cmap='coolwarm', center=0, vmin=-1, vmax=1,
             ax=axes[0], square=True, linewidths=0.3,
             cbar_kws={"shrink": 0.8}, xticklabels=True, yticklabels=True)
-axes[0].set_title('Tương quan Pearson - 30 thuộc tính số ít thiếu nhất', fontsize=12)
+axes[0].set_title(
+    'Tương quan Pearson - 30 thuộc tính số ít thiếu nhất', fontsize=12)
 axes[0].tick_params(axis='x', rotation=90, labelsize=7)
 axes[0].tick_params(axis='y', labelsize=7)
 
 sns.heatmap(spearman_corr, mask=mask, cmap='coolwarm', center=0, vmin=-1, vmax=1,
             ax=axes[1], square=True, linewidths=0.3,
             cbar_kws={"shrink": 0.8}, xticklabels=True, yticklabels=True)
-axes[1].set_title('Tương quan Spearman - 30 thuộc tính số ít thiếu nhất', fontsize=12)
+axes[1].set_title(
+    'Tương quan Spearman - 30 thuộc tính số ít thiếu nhất', fontsize=12)
 axes[1].tick_params(axis='x', rotation=90, labelsize=7)
 axes[1].tick_params(axis='y', labelsize=7)
 
@@ -458,7 +462,7 @@ plt.show()
 
 # So sánh Pearson vs Spearman — phân tích động
 diff_corr = (pearson_corr - spearman_corr).abs()
-tril_vals  = diff_corr.values[np.tril_indices_from(diff_corr.values, k=-1)]
+tril_vals = diff_corr.values[np.tril_indices_from(diff_corr.values, k=-1)]
 tril_clean = tril_vals[~np.isnan(tril_vals)]
 n_nan_pairs = np.isnan(tril_vals).sum()
 
@@ -466,19 +470,22 @@ if len(tril_clean) == 0:
     print("Không tính được Pearson vs Spearman: toàn bộ cặp cột đều cho NaN "
           "(variance=0 hoặc quá ít giá trị chung)")
 else:
-    max_diff  = tril_clean.max()
+    max_diff = tril_clean.max()
     mean_diff = tril_clean.mean()
     n_total_pairs = len(tril_clean)
-    n_large_diff  = (tril_clean > 0.1).sum()
-    pct_large     = n_large_diff / n_total_pairs * 100
+    n_large_diff = (tril_clean > 0.1).sum()
+    pct_large = n_large_diff / n_total_pairs * 100
 
-    print(f"Pearson vs Spearman: max|Δr| = {max_diff:.4f}, mean|Δr| = {mean_diff:.4f}")
+    print(
+        f"Pearson vs Spearman: max|Δr| = {max_diff:.4f}, mean|Δr| = {mean_diff:.4f}")
     if n_nan_pairs > 0:
         print(f"  [!] {n_nan_pairs} cặp cột bị NaN (bỏ qua khi tính max/mean)")
-    print(f"  Số cặp có |Δr| > 0.1 : {n_large_diff}/{n_total_pairs} ({pct_large:.1f}%)")
+    print(
+        f"  Số cặp có |Δr| > 0.1 : {n_large_diff}/{n_total_pairs} ({pct_large:.1f}%)")
 
     # In cặp có chênh lệch lớn nhất để minh chứng
-    diff_lower = diff_corr.where(np.tril(np.ones(diff_corr.shape, dtype=bool), k=-1))
+    diff_lower = diff_corr.where(
+        np.tril(np.ones(diff_corr.shape, dtype=bool), k=-1))
     max_idx = diff_lower.stack().idxmax()
     col_a, col_b = max_idx
     print(f"  Cặp chênh lệch lớn nhất: {col_a} vs {col_b}")
@@ -721,32 +728,39 @@ fig, axes = plt.subplots(1, 2, figsize=(20, 10))
 # --- Trái: Histogram phân phối missing rate ---
 miss_vals = missing_pct[missing_pct > 0]
 axes[0].hist(miss_vals, bins=30, color='tomato', alpha=0.8, edgecolor='white')
-axes[0].axvline(0.05, color='green',  linestyle='--', linewidth=1.5, label='5% ngưỡng')
-axes[0].axvline(0.5,  color='orange', linestyle='--', linewidth=1.5, label='50% ngưỡng')
-axes[0].axvline(0.9,  color='red',    linestyle='--', linewidth=1.5, label='90% ngưỡng')
+axes[0].axvline(0.05, color='green',  linestyle='--',
+                linewidth=1.5, label='5% ngưỡng')
+axes[0].axvline(0.5,  color='orange', linestyle='--',
+                linewidth=1.5, label='50% ngưỡng')
+axes[0].axvline(0.9,  color='red',    linestyle='--',
+                linewidth=1.5, label='90% ngưỡng')
 axes[0].set_xlabel('Tỉ lệ thiếu', fontsize=12)
 axes[0].set_ylabel('Số cột', fontsize=12)
-axes[0].set_title('Phân phối missing rate\n(histogram theo số cột)', fontsize=13, fontweight='bold')
+axes[0].set_title('Phân phối missing rate\n(histogram theo số cột)',
+                  fontsize=13, fontweight='bold')
 axes[0].legend(fontsize=11)
 
-n_low   = (miss_vals <= 0.05).sum()
-n_mid   = ((miss_vals > 0.05) & (miss_vals <= 0.5)).sum()
-n_high  = ((miss_vals > 0.5)  & (miss_vals <= 0.9)).sum()
-n_crit  = (miss_vals > 0.9).sum()
+n_low = (miss_vals <= 0.05).sum()
+n_mid = ((miss_vals > 0.05) & (miss_vals <= 0.5)).sum()
+n_high = ((miss_vals > 0.5) & (miss_vals <= 0.9)).sum()
+n_crit = (miss_vals > 0.9).sum()
 axes[0].text(0.98, 0.95,
-    f'< 5%  : {n_low} cột\n5–50% : {n_mid} cột\n50–90%: {n_high} cột\n> 90% : {n_crit} cột',
-    transform=axes[0].transAxes, ha='right', va='top',
-    fontsize=10, bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+             f'< 5%  : {n_low} cột\n5–50% : {n_mid} cột\n50–90%: {n_high} cột\n> 90% : {n_crit} cột',
+             transform=axes[0].transAxes, ha='right', va='top',
+             fontsize=10, bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 
 # --- Phải: Bar top 30 cột thiếu nhiều nhất (dễ đọc hơn) ---
 top30 = miss_vals.sort_values(ascending=False).head(30)
 axes[1].barh(range(len(top30)), top30.values, color='tomato', alpha=0.8)
 axes[1].set_yticks(range(len(top30)))
 axes[1].set_yticklabels(top30.index, fontsize=9)
-axes[1].axvline(0.5, color='orange', linestyle='--', linewidth=1.5, label='50% ngưỡng')
-axes[1].axvline(0.9, color='red',    linestyle='--', linewidth=1.5, label='90% ngưỡng')
+axes[1].axvline(0.5, color='orange', linestyle='--',
+                linewidth=1.5, label='50% ngưỡng')
+axes[1].axvline(0.9, color='red',    linestyle='--',
+                linewidth=1.5, label='90% ngưỡng')
 axes[1].set_xlabel('Tỉ lệ thiếu', fontsize=12)
-axes[1].set_title('Top 30 cột thiếu nhiều nhất', fontsize=13, fontweight='bold')
+axes[1].set_title('Top 30 cột thiếu nhiều nhất',
+                  fontsize=13, fontweight='bold')
 axes[1].legend(fontsize=11)
 axes[1].invert_yaxis()
 
@@ -787,15 +801,12 @@ plt.show()
 # Một số runs có thể suy biến (< 2 pattern) và bị loại. Median của các runs hợp lệ robust hơn mean trước các outlier chi2 cực lớn do tình cờ chọn được tập cột xấu.
 
 # %% _cell_guid="d8357571-da90-4ded-9b51-c641dda22fc2" _uuid="2aae2ec1-d032-48ca-8ec8-00941ebe65be" jupyter={"outputs_hidden": false}
-import numpy as np
-import pandas as pd
-from scipy import stats
 
 
 def littles_mcar_test(df, n_sample=5000, random_state=42, ridge_scale=1e-6):
     """
     Little's MCAR test (Little, 1988) - bản đầy đủ với full covariance.
-    
+
     H0: data is MCAR
     d² = Σ_k n_k · (ȳ_k - μ̂)ᵀ · Σ̂_{k,obs}⁻¹ · (ȳ_k - μ̂)
     df = Σ_k d_k - J
@@ -914,9 +925,9 @@ num_miss_cols = [c for c in train.select_dtypes(include=[np.number]).columns
 
 test_groups = {
     'D (timedelta)': [c for c in [f'D{i}' for i in range(1, 16)] if c in num_miss_cols],
-    'V (Vesta)':     [c for c in train.columns if c.startswith('V')    and c in num_miss_cols],
-    'id_ (numeric)': [c for c in train.columns if c.startswith('id_')  and c in num_miss_cols],
-    'addr/dist':     [c for c in ['addr1', 'addr2', 'dist1', 'dist2']  if c in num_miss_cols],
+    'V (Vesta)':     [c for c in train.columns if c.startswith('V') and c in num_miss_cols],
+    'id_ (numeric)': [c for c in train.columns if c.startswith('id_') and c in num_miss_cols],
+    'addr/dist':     [c for c in ['addr1', 'addr2', 'dist1', 'dist2'] if c in num_miss_cols],
 }
 
 rows = []
@@ -1211,7 +1222,8 @@ best_strategy = imp_compare_df.index[0]
 print(f"\n-> Chiến lược tốt nhất (benchmark): {best_strategy}"
       f" (RMSE = {imp_compare_df.iloc[0, 0]})")
 
-scalable = {k: v for k, v in imp_results.items() if k in ('Mean', 'Median', 'Mode')}
+scalable = {k: v for k, v in imp_results.items() if k in ('Mean',
+                                                          'Median', 'Mode')}
 best_scalable = min(scalable, key=scalable.get)
 print(f"-> Chiến lược scalable tốt nhất: {best_scalable}"
       f" (RMSE = {scalable[best_scalable]:.4f})")
@@ -1334,7 +1346,8 @@ def calc_rmse_per_col(df_orig, df_miss, imputed_dict, cols):
             continue
         true_vals = df_orig[col][missing_mask]
         for name, df_imp in imputed_dict.items():
-            rmse = np.sqrt(mean_squared_error(true_vals, df_imp[col][missing_mask]))
+            rmse = np.sqrt(mean_squared_error(
+                true_vals, df_imp[col][missing_mask]))
             results[name].append(rmse)
     return results
 
@@ -1346,7 +1359,8 @@ imp_sample_mar = (train[imp_cols_mar].dropna()
                   .sample(min(5000, train[imp_cols_mar].dropna().shape[0]),
                           random_state=SEED))
 
-print(f"MAR-aware benchmark trên {len(imp_sample_mar):,} hàng x {len(imp_cols_mar)} cột")
+print(
+    f"MAR-aware benchmark trên {len(imp_sample_mar):,} hàng x {len(imp_cols_mar)} cột")
 print("Đang chạy...")
 
 df_orig_mar, df_miss_mar, anchor_map = benchmark_imputation_mar(
@@ -1356,7 +1370,8 @@ actual_miss = df_miss_mar.isnull().mean().mean()
 print(f"Missing rate thực tế sau khi tạo MAR: {actual_miss*100:.1f}%")
 
 imputed_mar = run_imputers(df_miss_mar, imp_cols_mar, seed=SEED)
-per_col_mar = calc_rmse_per_col(df_orig_mar, df_miss_mar, imputed_mar, imp_cols_mar)
+per_col_mar = calc_rmse_per_col(
+    df_orig_mar, df_miss_mar, imputed_mar, imp_cols_mar)
 
 # Tổng hợp kết quả
 mar_summary = {name: round(np.mean(rmse_list), 4)
@@ -1369,13 +1384,13 @@ print(mar_df.to_string())
 print(f"\nChiến lược tốt nhất (MAR benchmark): {mar_df.index[0]} "
       f"(RMSE = {mar_df.iloc[0, 0]})")
 
-best_scalable_mar = mar_df.loc[mar_df.index.isin(['Mean', 'Median', 'Mode'])].index[0]
+best_scalable_mar = mar_df.loc[mar_df.index.isin(
+    ['Mean', 'Median', 'Mode'])].index[0]
 print(f"Chiến lược scalable tốt nhất       : {best_scalable_mar} "
       f"(RMSE = {mar_df.loc[best_scalable_mar, 'RMSE_MAR']:.4f})")
 print("(KNN/MICE không áp dụng production — memory exceed với 400+ cột × 590k dòng)")
 
 # Friedman test so sánh các chiến lược
-from scipy.stats import friedmanchisquare, wilcoxon
 
 groups = [np.array(per_col_mar[s]) for s in mar_df.index]
 strats = list(mar_df.index)
@@ -1422,7 +1437,7 @@ plt.show()
 # Biểu đồ so sánh RMSE
 fig, ax = plt.subplots(figsize=(10, 5))
 imp_compare_df['RMSE_trung_bình'].plot(kind='barh', ax=ax,
-                                        color='steelblue', edgecolor='white')
+                                       color='steelblue', edgecolor='white')
 ax.set_xlabel('RMSE trung bình')
 ax.set_title('So sánh chiến lược điền khuyết (10% MCAR nhân tạo)')
 ax.axvline(imp_compare_df['RMSE_trung_bình'].min(), color='red', linestyle='--',
@@ -1487,12 +1502,15 @@ if train_only_cols:
 # Imputer cho cột CHUNG (dùng cho cả train và test)
 prod_imputer = SimpleImputer(strategy=_strategy_map[best_scalable])
 prod_imputer.fit(train[all_num_cols_imp_test])           # fit trên train
-train[all_num_cols_imp_test] = prod_imputer.transform(train[all_num_cols_imp_test])
-test[all_num_cols_imp_test]  = prod_imputer.transform(test[all_num_cols_imp_test])
+train[all_num_cols_imp_test] = prod_imputer.transform(
+    train[all_num_cols_imp_test])
+test[all_num_cols_imp_test] = prod_imputer.transform(
+    test[all_num_cols_imp_test])
 
 # Imputer riêng cho cột CHỈ CÓ trong train
 if train_only_cols:
-    prod_imputer_train_only = SimpleImputer(strategy=_strategy_map[best_scalable])
+    prod_imputer_train_only = SimpleImputer(
+        strategy=_strategy_map[best_scalable])
     train[train_only_cols] = prod_imputer_train_only.fit_transform(
         train[train_only_cols])
 
@@ -1722,7 +1740,8 @@ if ref_col in outlier_sample.columns:
     best_ks = min(ks_method_results,
                   key=lambda k: ks_method_results[k]['stat'])
     n_sig_ks = sum(1 for v in ks_method_results.values() if v['p'] < 0.05)
-    print(f"KS: {n_sig_ks}/{len(ks_method_results)} phương pháp thay đổi phân phối (KS p<0.05)")
+    print(
+        f"KS: {n_sig_ks}/{len(ks_method_results)} phương pháp thay đổi phân phối (KS p<0.05)")
 
 # Tạo mask ngoại lai cuối cùng (bảo thủ: giao của IQR và IF_c0.05)
 final_outlier_mask_sample = iqr_mask & if_results['IF_c0.05']
@@ -1927,8 +1946,8 @@ scale_sample_large = train.groupby('isFraud', group_keys=False).apply(
 )[scale_cols].copy()
 
 print(f"Sample size: {len(scale_sample_large):,} dòng "
-      f"({(train.loc[scale_sample_large.index, 'isFraud']==1).sum():,} fraud / "
-      f"{(train.loc[scale_sample_large.index, 'isFraud']==0).sum():,} normal)")
+      f"({(train.loc[scale_sample_large.index, 'isFraud'] == 1).sum():,} fraud / "
+      f"{(train.loc[scale_sample_large.index, 'isFraud'] == 0).sum():,} normal)")
 
 # Scale lại trên sample mới
 scaled_dfs_large = {}
@@ -1990,7 +2009,8 @@ test[common_num] = final_scaler.transform(test[common_num])
 # Scale riêng cột chỉ có trong train
 if train_only_num:
     train_only_scaler = RobustScaler()
-    train[train_only_num] = train_only_scaler.fit_transform(train[train_only_num])
+    train[train_only_num] = train_only_scaler.fit_transform(
+        train[train_only_num])
     print(f"  Cột chỉ có trong train (scale riêng): {len(train_only_num)}")
 
 print(f"  Hoàn thành: {len(common_num)} cột chung + {len(train_only_num)} cột train-only"
@@ -2241,18 +2261,19 @@ if not cat_cols_all:
     print(f"\n-> train shape: {train.shape}")
     print(f"-> test  shape: {test.shape}")
 else:
-    low_card_cols  = [c for c in cat_cols_all if cardinality.get(c, 0) <= 20]
+    low_card_cols = [c for c in cat_cols_all if cardinality.get(c, 0) <= 20]
     high_card_cols = [c for c in cat_cols_all if cardinality.get(c, 0) > 20]
 
     print(f"Tổng cột phân loại : {len(cat_cols_all)}")
     print(f"  Low-card  (<=20)  : {len(low_card_cols)}  -> Frequency Encoding")
-    print(f"  High-card (>20)  : {len(high_card_cols)} -> Target Encoding (5-fold CV)\n")
+    print(
+        f"  High-card (>20)  : {len(high_card_cols)} -> Target Encoding (5-fold CV)\n")
 
     # ── Bước 1: Frequency Encoding cho low-cardinality ───────────────────────
     for col in low_card_cols:
         freq_map = train[col].value_counts(normalize=True)
         train[f'{col}_freq'] = train[col].map(freq_map).fillna(0)
-        test[f'{col}_freq']  = test[col].map(freq_map).fillna(0)
+        test[f'{col}_freq'] = test[col].map(freq_map).fillna(0)
 
     print(f"[1/2] Frequency Encoding: {len(low_card_cols)} cột -> "
           f"{len(low_card_cols)} cột _freq")
@@ -2263,7 +2284,8 @@ else:
         train[f'{col}_te'] = target_encode_cv(train, col, 'isFraud', seed=SEED)
         means_map = train.groupby(col)['isFraud'].mean()
         target_means_store[col] = means_map
-        test[f'{col}_te'] = test[col].map(means_map).fillna(train['isFraud'].mean())
+        test[f'{col}_te'] = test[col].map(
+            means_map).fillna(train['isFraud'].mean())
 
     print(f"[2/2] Target Encoding (5-fold CV): {len(high_card_cols)} cột -> "
           f"{len(high_card_cols)} cột _te")
@@ -2273,7 +2295,8 @@ else:
                     if c != 'isFraud']
     if residual_obj:
         train = train.drop(columns=residual_obj)
-        test  = test.drop(columns=[c for c in residual_obj if c in test.columns])
+        test = test.drop(
+            columns=[c for c in residual_obj if c in test.columns])
         print(f"\nXóa {len(residual_obj)} cột object gốc: {residual_obj}")
 
     print(f"\n-> train shape sau encoding: {train.shape}")
@@ -2297,7 +2320,8 @@ if len(enc_vif_cols) >= 2:
     }).sort_values('VIF', ascending=False)
     print(vif_enc_data.to_string(index=False))
     high_vif = vif_enc_data[vif_enc_data['VIF'] > 10]
-    print(f"\n-> Đặc trưng có VIF > 10 (đa cộng tuyến đáng ngại): {len(high_vif)}")
+    print(
+        f"\n-> Đặc trưng có VIF > 10 (đa cộng tuyến đáng ngại): {len(high_vif)}")
     if len(high_vif) > 0:
         print("  Cần xem xét loại bỏ:", high_vif['feature'].tolist())
 else:
@@ -2320,7 +2344,7 @@ cols_to_drop_vif = ['M1_freq']
 cols_to_drop_vif = [c for c in cols_to_drop_vif if c in train.columns]
 
 train = train.drop(columns=cols_to_drop_vif)
-test  = test.drop(columns=[c for c in cols_to_drop_vif if c in test.columns])
+test = test.drop(columns=[c for c in cols_to_drop_vif if c in test.columns])
 
 print(f"Đã loại {len(cols_to_drop_vif)} cột do VIF > 10: {cols_to_drop_vif}")
 print(f"train shape: {train.shape}")
@@ -2428,19 +2452,20 @@ if chi2_cols:
     X_chi2 = X_chi2 - X_chi2.min()
     chi2_scores, chi2_pvals = chi2(X_chi2, y_fs_sample)
     chi2_df = (pd.DataFrame({
-                   'feature':    chi2_cols,
-                   'chi2_stat':  chi2_scores,
-                   'p_value':    chi2_pvals,
-                   'type':       ['_te' if c.endswith('_te') else '_freq'
-                                  for c in chi2_cols]
-               })
-               .sort_values('chi2_stat', ascending=False)
-               .reset_index(drop=True))
+        'feature':    chi2_cols,
+        'chi2_stat':  chi2_scores,
+        'p_value':    chi2_pvals,
+        'type':       ['_te' if c.endswith('_te') else '_freq'
+                       for c in chi2_cols]
+    })
+        .sort_values('chi2_stat', ascending=False)
+        .reset_index(drop=True))
     print(chi2_df.head(15).to_string(index=False))
     top_chi2_feats = chi2_df[chi2_df['p_value'] < 0.05]['feature'].tolist()
     print(f"\n  → {len(top_chi2_feats)}/{len(chi2_cols)} cột có p < 0.05")
-    print(f"     _freq: {sum(c.endswith('_freq') for c in top_chi2_feats)} cột")
-    print(f"     _te  : {sum(c.endswith('_te')   for c in top_chi2_feats)} cột")
+    print(
+        f"     _freq: {sum(c.endswith('_freq') for c in top_chi2_feats)} cột")
+    print(f"     _te  : {sum(c.endswith('_te') for c in top_chi2_feats)} cột")
 else:
     chi2_df = pd.DataFrame(columns=['feature', 'chi2_stat', 'p_value', 'type'])
     top_chi2_feats = []
@@ -2533,7 +2558,7 @@ X_fs_model = X_fs.loc[idx_model]
 y_fs_model = y_fs.loc[idx_model]
 
 print(f"Model sample: {len(X_fs_model):,} dòng "
-      f"({(y_fs_model==1).sum():,} fraud / {(y_fs_model==0).sum():,} normal)")
+      f"({(y_fs_model == 1).sum():,} fraud / {(y_fs_model == 0).sum():,} normal)")
 
 # ─── 2a. Random Forest Feature Importance ───────────────────────────────
 print("\n[2a] Random Forest Importance (n_estimators=100, max_depth=6)...")
@@ -2628,7 +2653,7 @@ idx_rfe = (train.groupby('isFraud', group_keys=False)
 X_rfe = X_fs.loc[idx_rfe]
 y_rfe = y_fs.loc[idx_rfe]
 print(f"     RFE sample: {len(X_rfe):,} dòng "
-      f"({(y_rfe==1).sum()} fraud / {(y_rfe==0).sum()} normal)")
+      f"({(y_rfe == 1).sum()} fraud / {(y_rfe == 0).sum()} normal)")
 
 cv_5fold = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 N_FEATS_RFE = [5, 10, 20, 30, 50]
@@ -2648,7 +2673,8 @@ for n in N_FEATS_RFE:
     scores = cross_val_score(
         pipe, X_rfe, y_rfe, cv=cv_5fold, scoring='f1', n_jobs=-1)
     rfe_f1_scores[n] = round(scores.mean(), 4)
-    print(f"  n_features={n:3d}: F1={scores.mean():.4f} +/- {scores.std():.4f}")
+    print(
+        f"  n_features={n:3d}: F1={scores.mean():.4f} +/- {scores.std():.4f}")
 
 best_rfe_n = max(rfe_f1_scores, key=rfe_f1_scores.get)
 print(f"\n-> RFE tốt nhất: n_features={best_rfe_n}, "
@@ -2772,7 +2798,7 @@ X_tsne_in = X_fs.loc[idx_tsne].fillna(0)
 y_tsne = y_fs.loc[idx_tsne]
 
 print(f"  t-SNE sample: {len(X_tsne_in):,} dòng "
-      f"({(y_tsne==1).sum()} fraud / {(y_tsne==0).sum()} normal)")
+      f"({(y_tsne == 1).sum()} fraud / {(y_tsne == 0).sum()} normal)")
 
 tsne = TSNE(n_components=2, perplexity=30, random_state=SEED, max_iter=500)
 X_tsne = tsne.fit_transform(X_tsne_in)
@@ -2780,10 +2806,10 @@ X_tsne = tsne.fit_transform(X_tsne_in)
 fig, ax = plt.subplots(figsize=(10, 7))
 ax.scatter(X_tsne[y_tsne == 0, 0], X_tsne[y_tsne == 0, 1],
            c='steelblue', alpha=0.4, s=10,
-           label=f'Normal (n={int((y_tsne==0).sum())})')
+           label=f'Normal (n={int((y_tsne == 0).sum())})')
 ax.scatter(X_tsne[y_tsne == 1, 0], X_tsne[y_tsne == 1, 1],
            c='tomato', alpha=0.8, s=25,
-           label=f'Fraud  (n={int((y_tsne==1).sum())})')
+           label=f'Fraud  (n={int((y_tsne == 1).sum())})')
 ax.set_title('t-SNE 2D (stratified 500+500): Phân tách Fraud vs Normal',
              fontsize=12)
 ax.legend(markerscale=3)
@@ -2828,10 +2854,10 @@ try:
     fig, ax = plt.subplots(figsize=(10, 7))
     ax.scatter(X_umap[y_tsne == 0, 0], X_umap[y_tsne == 0, 1],
                c='steelblue', alpha=0.4, s=10,
-               label=f'Normal (n={int((y_tsne==0).sum())})')
+               label=f'Normal (n={int((y_tsne == 0).sum())})')
     ax.scatter(X_umap[y_tsne == 1, 0], X_umap[y_tsne == 1, 1],
                c='tomato', alpha=0.8, s=25,
-               label=f'Fraud  (n={int((y_tsne==1).sum())})')
+               label=f'Fraud  (n={int((y_tsne == 1).sum())})')
     ax.set_title('UMAP 2D (stratified 500+500): Phân tách Fraud vs Normal',
                  fontsize=12)
     ax.legend(markerscale=3)
@@ -2903,7 +2929,8 @@ candidate_pool = list(
     | set(top_gb_feats)
 )
 candidate_pool = [c for c in candidate_pool if c in train.columns]
-print(f"\n[1] Candidate pool (union tất cả methods): {len(candidate_pool)} đặc trưng")
+print(
+    f"\n[1] Candidate pool (union tất cả methods): {len(candidate_pool)} đặc trưng")
 
 # ── Bước 2: Đếm số phương pháp vote cho từng feature ────────────────────
 vote_methods = [
@@ -3126,7 +3153,7 @@ final_cols = [c for c in FINAL_FEATURES
               if c in train.columns and c in test.columns]
 X_train_final = train[final_cols].fillna(0).values.astype(np.float32)
 y_train_final = train['isFraud'].values.astype(np.int8)
-X_test_final  = test[final_cols].fillna(0).values.astype(np.float32)
+X_test_final = test[final_cols].fillna(0).values.astype(np.float32)
 
 np.save(os.path.join(PROCESSED_DIR, 'X_train_processed.npy'), X_train_final)
 np.save(os.path.join(PROCESSED_DIR, 'y_train.npy'),           y_train_final)
