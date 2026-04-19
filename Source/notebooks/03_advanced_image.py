@@ -121,7 +121,7 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 PCA_SIZE = 64
 # đủ để xác định ngưỡng 90/95/99% variance (có thể >200 với ảnh tự nhiên)
 N_COMPONENTS = 800
-BATCH_SIZE = 500    # số ảnh mỗi batch cho IncrementalPCA
+BATCH_SIZE = 1000    # số ảnh mỗi batch; IncrementalPCA yêu cầu >= N_COMPONENTS
 
 # Load toàn bộ ảnh train (27,000 ảnh = 600/lớp × 45 lớp)
 pca_data, pca_labels = [], []
