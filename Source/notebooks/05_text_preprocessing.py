@@ -153,7 +153,7 @@ df.head(3)
 # %% [markdown]
 # #### Đối chiếu §2.3.1 — Quy mô dữ liệu
 #
-# Đề: ≥ 10.000 mẫu, ≥ 2 nhãn. Cell dưới lưu biến `N_SAMPLES`, `N_LABELS` và `assert`.
+# Đề: $\geq$ 10.000 mẫu, $\geq$ 2 nhãn. Cell dưới lưu biến `N_SAMPLES`, `N_LABELS` và `assert`.
 
 # %%
 N_SAMPLES = len(df)
@@ -161,7 +161,7 @@ N_LABELS = df['label'].nunique()
 LABEL_NAMES = df['label_name'].unique().tolist()
 print("=" * 60)
 print("KIỂM TRA §2.3.1")
-print(f"Mẫu: {N_SAMPLES:,} (≥10.000) | Nhãn: {N_LABELS} (≥2) | {LABEL_NAMES}")
+print(f"Mẫu: {N_SAMPLES:,} (>=10.000) | Nhãn: {N_LABELS} (>=2) | {LABEL_NAMES}")
 assert N_SAMPLES >= 10_000
 assert N_LABELS >= 2
 print("=> OK")
@@ -363,7 +363,7 @@ print("Effect size r: <0.1 rất nhỏ | 0.1-0.3 nhỏ | 0.3-0.5 trung bình | >
 
 # %% [markdown]
 # **Phân tích:**
-# - Kết quả thực tế: r = 0.2571 (số từ), 0.2775 (số ký tự), 0.2225 (số câu) — tất cả đều nhỏ (0.1–0.3), dù p < 10⁻¹⁹⁵ do n = 17,790 rất lớn.
+# - Kết quả thực tế: r = 0.2571 (số từ), 0.2775 (số ký tự), 0.2225 (số câu) — tất cả đều nhỏ (0.1–0.3), dù p < $10^{-195}$ do n = 17,790 rất lớn.
 # - **Lưu ý quan trọng**: cỡ mẫu lớn khiến Mann-Whitney "luôn có ý nghĩa" dù khác biệt thực tế rất khiêm tốn. Effect size r ~ 0.25 cho thấy độ dài không phải đặc trưng phân biệt mạnh trong RAGTruth.
 # - Kết quả nhất quán trên cả 3 chỉ số (từ, ký tự, câu): Hallucinated có độ dài ngắn hơn một chút, có thể do LLM generate câu trả lời ngắn gọn hơn khi hallucinate.
 # - **Hạn chế**: r < 0.3 gợi ý độ dài chỉ nên là đặc trưng *phụ trợ*; đặc trưng ngữ nghĩa (TF-IDF, embedding) sẽ mạnh hơn đáng kể trong bài toán này.
@@ -375,7 +375,7 @@ print("Effect size r: <0.1 rất nhỏ | 0.1-0.3 nhỏ | 0.3-0.5 trung bình | >
 # **Lý thuyết:**
 # - **Word Cloud**: Trực quan hóa tần suất từ, từ xuất hiện nhiều có kích thước lớn hơn.
 # - **Top-50**: Phân tích từ vựng phổ biến nhất trong mỗi nhóm.
-# - **TTR (Type-Token Ratio)**: Tỉ lệ giữa số từ duy nhất (types) và tổng số từ (tokens). TTR cao → từ vựng phong phú, đa dạng.
+# - **TTR (Type-Token Ratio)**: Tỉ lệ giữa số từ duy nhất (types) và tổng số từ (tokens). TTR cao $\rightarrow$ từ vựng phong phú, đa dạng.
 
 # %%
 # Tokenize tất cả văn bản
@@ -513,7 +513,7 @@ print(
 #
 # ### 2.3. Phân tích Định luật Zipf
 #
-# **Lý thuyết:** Định luật Zipf phát biểu rằng trong một corpus ngôn ngữ tự nhiên, tần suất của một từ tỉ lệ nghịch với hạng (rank) của nó. Cụ thể: f(r) ∝ 1/r^α, hay log(f) = -α·log(r) + C. Khi vẽ trên thang log-log, ta sẽ thấy đường thẳng nếu dữ liệu tuân theo định luật Zipf.
+# **Lý thuyết:** Định luật Zipf phát biểu rằng trong một corpus ngôn ngữ tự nhiên, tần suất của một từ tỉ lệ nghịch với hạng (rank) của nó. Cụ thể: f(r) ∝ 1/r^$\alpha$, hay log(f) = -$\alpha$·log(r) + C. Khi vẽ trên thang log-log, ta sẽ thấy đường thẳng nếu dữ liệu tuân theo định luật Zipf.
 
 # %%
 # Phân tích Zipf's Law
@@ -530,17 +530,17 @@ slope, intercept, r_value, p_value, std_err = stats.linregress(
 print("=" * 60)
 print("PHÂN TÍCH ĐỊNH LUẬT ZIPF")
 print("=" * 60)
-print(f"Hệ số Zipf (slope):     α = {abs(slope):.4f}")
+print(f"Hệ số Zipf (slope):     alpha = {abs(slope):.4f}")
 print(f"Intercept:               C = {intercept:.4f}")
-print(f"R² (coefficient):        R² = {r_value**2:.4f}")
+print(f"R^2 (coefficient):       R^2 = {r_value**2:.4f}")
 print(f"p-value:                 p = {p_value:.2e}")
-print(f"\nĐịnh luật Zipf lý tưởng: α ≈ 1.0")
+print(f"\nĐịnh luật Zipf lý tưởng: alpha ~ 1.0")
 print(
-    f"Corpus này: α = {abs(slope):.4f} => {'Tuân theo Zipf tốt' if 0.7 < abs(slope) < 1.3 else 'Lệch so với Zipf'}")
+    f"Corpus này: alpha = {abs(slope):.4f} => {'Tuân theo Zipf tốt' if 0.7 < abs(slope) < 1.3 else 'Lệch so với Zipf'}")
 # statsmodels OLS (Requirement §3.1)
 X_zipf = sm.add_constant(log_ranks)
 ols_zipf = sm.OLS(log_freqs, X_zipf).fit()
-print(f"statsmodels OLS α: {ols_zipf.params[1]:.4f} | scipy: {slope:.4f}")
+print(f"statsmodels OLS alpha: {ols_zipf.params[1]:.4f} | scipy: {slope:.4f}")
 
 
 # %%
@@ -552,7 +552,7 @@ axes[0].scatter(log_ranks, log_freqs, s=5, alpha=0.5,
                 color='steelblue', label='Observed')
 fitted_line = slope * log_ranks + intercept
 axes[0].plot(log_ranks, fitted_line, 'r-', linewidth=2,
-             label=f'Zipf fit: α={abs(slope):.3f}, R²={r_value**2:.4f}')
+             label=f'Zipf fit: alpha={abs(slope):.3f}, R^2={r_value**2:.4f}')
 axes[0].set_xlabel('log₁₀(Rank)', fontsize=13)
 axes[0].set_ylabel('log₁₀(Frequency)', fontsize=13)
 axes[0].set_title("Định luật Zipf - Log-Log Plot", fontsize=14)
@@ -567,7 +567,7 @@ for label_name, freq_counter, color in [('Supported', sup_freq, '#2ecc71'), ('Ha
     _zipf_slopes[label_name] = s
     axes[1].scatter(np.log10(r), np.log10(freq_s), s=3, alpha=0.4, color=color)
     axes[1].plot(np.log10(r), s * np.log10(r) + i, color=color, linewidth=2,
-                 label=f'{label_name}: α={abs(s):.3f}, R²={rv**2:.4f}')
+                 label=f'{label_name}: alpha={abs(s):.3f}, R^2={rv**2:.4f}')
 
 axes[1].set_xlabel('log₁₀(Rank)', fontsize=13)
 axes[1].set_ylabel('log₁₀(Frequency)', fontsize=13)
@@ -584,10 +584,10 @@ print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
 
 # %% [markdown]
 # **Phân tích:**
-# - Kết quả cụ thể: α = 1.631 (toàn corpus), 1.505 (Supported), 1.534 (Hallucinated); R² = 0.9357.
-# - α ≈ 1.6 (xa 1.0) phản ánh corpus domain-specific (AI-generated): vocabulary tập trung hơn corpus tự nhiên, một số từ kỹ thuật lặp lại rất cao.
-# - Hai nhóm nhãn có α gần nhau (1.505 vs 1.534) → phân phối từ vựng không khác biệt nhiều về hình dạng Zipf, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
-# - **Lưu ý thống kê**: R² = 0.93 trên log-log plot KHÔNG xác nhận Zipf — nhiều phân phối power-law khác cũng cho R² cao tương tự. Kiểm định nghiêm ngặt hơn cần KS test với power-law distribution (e.g., thư viện `powerlaw` của Alstott et al.).
+# - Kết quả cụ thể: $\alpha$ = 1.631 (toàn corpus), 1.505 (Supported), 1.534 (Hallucinated); R$^2$ = 0.9357.
+# - $\alpha$ $\approx$ 1.6 (xa 1.0) phản ánh corpus domain-specific (AI-generated): vocabulary tập trung hơn corpus tự nhiên, một số từ kỹ thuật lặp lại rất cao.
+# - Hai nhóm nhãn có $\alpha$ gần nhau (1.505 vs 1.534) $\rightarrow$ phân phối từ vựng không khác biệt nhiều về hình dạng Zipf, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
+# - **Lưu ý thống kê**: R$^2$ = 0.93 trên log-log plot KHÔNG xác nhận Zipf — nhiều phân phối power-law khác cũng cho R$^2$ cao tương tự. Kiểm định nghiêm ngặt hơn cần KS test với power-law distribution (e.g., thư viện `powerlaw` của Alstott et al.).
 #
 # ---
 # ## 3. CÁC KỸ THUẬT TIỀN XỬ LÝ VÀ PHÂN TÍCH TÁC ĐỘNG
@@ -633,9 +633,9 @@ _base_chars = float(pd.Series([len(doc) for doc in _corpus]).mean())
 
 _step_rows = [{'Bước': 'Nguyên bản (raw)',
                'Vocab Size': len(_base_vocab),
-               'Δ Vocab (%)': 0.0,
+               'delta Vocab (%)': 0.0,
                'Mean Tokens/Doc': round(_base_len, 1),
-               'Δ Length (%)': 0.0,
+               'delta Length (%)': 0.0,
                'Mean Chars/Doc': round(_base_chars, 1)}]
 
 _current_corpus = _corpus.copy()
@@ -650,9 +650,9 @@ for step_name, step_fn in PIPELINE_STEPS:
     _step_rows.append({
         'Bước': step_name,
         'Vocab Size': len(_vocab_now),
-        'Δ Vocab (%)': round((len(_vocab_now) - _prev_vocab) / max(_prev_vocab, 1) * 100, 2),
+        'delta Vocab (%)': round((len(_vocab_now) - _prev_vocab) / max(_prev_vocab, 1) * 100, 2),
         'Mean Tokens/Doc': round(_len_now, 1),
-        'Δ Length (%)': round((_len_now - _prev_len) / max(_prev_len, 1e-9) * 100, 2),
+        'delta Length (%)': round((_len_now - _prev_len) / max(_prev_len, 1e-9) * 100, 2),
         'Mean Chars/Doc': round(_chars_now, 1),
     })
     _prev_vocab = len(_vocab_now)
@@ -660,9 +660,9 @@ for step_name, step_fn in PIPELINE_STEPS:
 
 PIPELINE_STEP_TABLE = pd.DataFrame(_step_rows)
 print(PIPELINE_STEP_TABLE.to_string(index=False))
-print(f"\nTổng giảm vocab: {len(_base_vocab):,} → {_prev_vocab:,} "
+print(f"\nTổng giảm vocab: {len(_base_vocab):,} -> {_prev_vocab:,} "
       f"({(_prev_vocab - len(_base_vocab)) / max(len(_base_vocab), 1)*100:.1f}%)")
-print(f"Tổng giảm độ dài: {_base_len:.1f} → {_prev_len:.1f} tokens/doc "
+print(f"Tổng giảm độ dài: {_base_len:.1f} -> {_prev_len:.1f} tokens/doc "
       f"({(_prev_len - _base_len) / max(_base_len, 1e-9)*100:.1f}%)")
 
 # Tỉ lệ giảm vocab qua toàn bộ pipeline (dùng cho ablation summary)
@@ -680,9 +680,9 @@ for i in range(3):
 
 # %% [markdown]
 # **Phân tích:**
-# - **`lowercase`**: bước giảm vocab lớn nhất — 40,613 → 34,560 (**−14.90%**), trong khi độ dài chỉ giảm 0.49%. Gộp case variants chiếm hơn 2/3 tổng mức giảm vocab.
+# - **`lowercase`**: bước giảm vocab lớn nhất — 40,613 $\rightarrow$ 34,560 (**−14.90%**), trong khi độ dài chỉ giảm 0.49%. Gộp case variants chiếm hơn 2/3 tổng mức giảm vocab.
 # - **`remove_number`**: −8.55% vocab, −0.95% độ dài — RAGTruth chứa nhiều số (năm, thống kê, ID).
-# - **`remove_punct`** (bất ngờ): vocab tăng +1.23% (31,558 → 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." → "end", "2023," → "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
+# - **`remove_punct`** (bất ngờ): vocab tăng +1.23% (31,558 $\rightarrow$ 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." $\rightarrow$ "end", "2023," $\rightarrow$ "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
 # - **`remove_html`, `remove_url`, `remove_email`, `remove_mention`, `remove_hashtag`**: tác động gần bằng 0 (<0.1%) — xác nhận RAGTruth là văn bản AI-generated sạch, không chứa noise dạng social media.
 # - **Tổng kết**: −21.3% vocab và −15.1% độ dài. Hai bước `lowercase` + `remove_punct` đóng góp >95% mức giảm vocab.
 #
@@ -822,14 +822,10 @@ plt.show()
 # NLTK stop word list và WordNet lemmatizer (cần whole-word tokens). Do đó **Word-level** được chọn cho các bước 3.3–3.5.
 
 # %%
-# === QUYẾT ĐỊNH 1: TOKENIZATION ===
 CHOSEN_TOKENIZER = 'Word-level'
-print(f"[CHỌN] Tokenizer: {CHOSEN_TOKENIZER}")
-print(
-    f"  Word-level OOV={word_oov:.4f} → được kiểm soát bởi min_df/max_features trong TF-IDF")
-print(
-    f"  BPE OOV={bpe_oov:.4f} thấp hơn nhưng subwords không tương thích với stop word list + lemmatizer")
-print(f"  → Bước 3.3 và 3.4 sẽ dùng df['tokens'] (word-level)")
+
+# %% [markdown]
+# > **Quyết định 1 — Tokenizer:** `Word-level` — BPE có OOV thấp hơn nhưng subword units không tương thích với NLTK stop word list và WordNet lemmatizer. Các bước 3.3–3.5 dùng `df['tokens']`.
 
 # %% [markdown]
 # ---
@@ -916,7 +912,7 @@ print("MI TRUNG BÌNH TRƯỚC/SAU XÓA STOP WORDS")
 print("=" * 60)
 print(f"MI mean (có stop):    {MI_MEAN_WITH_STOP:.6f}")
 print(f"MI mean (không stop): {MI_MEAN_NO_STOP:.6f}")
-print(f"ΔMI mean: {'+' if MI_MEAN_DELTA > 0 else ''}{MI_MEAN_DELTA:.6f}")
+print(f"delta MI mean: {'+' if MI_MEAN_DELTA > 0 else ''}{MI_MEAN_DELTA:.6f}")
 
 # %%
 # So sánh hiệu năng Naive Bayes trước và sau khi xóa stop words
@@ -965,13 +961,10 @@ print(
 # - **Kết luận**: Quyết định giữ/bỏ stop words không ảnh hưởng đáng kể; nên quyết định dựa trên downstream task và mô hình, không phải chỉ dựa trên raw vocab count.
 
 # %%
-# === QUYẾT ĐỊNH 2: STOP WORDS ===
 CHOSEN_STOPWORDS = 'remove' if scores_no.mean() >= scores_with.mean() else 'keep'
-print(f"[CHỌN] Stop words: {CHOSEN_STOPWORDS}")
-print(
-    f"  F1 (remove stop)={scores_no.mean():.4f}, F1 (keep stop)={scores_with.mean():.4f}")
-print(f"  ΔMI mean={MI_MEAN_DELTA:+.6f} → bỏ stop words {'tăng' if MI_MEAN_DELTA > 0 else 'không tăng'} thông tin phân biệt trung bình")
-print(f"  → Bước 3.4 dùng: df['tokens_no_stop']")
+
+# %% [markdown]
+# > **Quyết định 2 — Stop words:** Chọn theo F1 NB 5-fold — chênh lệch rất nhỏ ($< 0.0001$), quyết định chủ yếu mang tính quy ước. Bước 3.4 dùng `df['tokens_no_stop']`.
 
 # %% [markdown]
 # ---
@@ -1080,25 +1073,23 @@ for name, texts in [('None (baseline)', texts_none), ('Porter', texts_porter),
     fold_scores_stemlem[name] = scores
     print(f"{name:20s} | F1-macro = {scores.mean():.4f} ± {scores.std():.4f} | Vocab = {len(tfidf.get_feature_names_out()):,}")
 
-print("\nKết luận: Phương pháp tốt nhất:", max(
-    results_stemlem, key=lambda k: results_stemlem[k]['mean']))
-
-# === QUYẾT ĐỊNH 3: STEMMING / LEMMATIZATION ===
 BEST_STEMLEM = max(results_stemlem, key=lambda k: results_stemlem[k]['mean'])
-print(
-    f"[CHỌN] Stemming/Lemmatization: {BEST_STEMLEM} (F1={results_stemlem[BEST_STEMLEM]['mean']:.4f})")
-print(f"  → Bước 3.5 sẽ dùng '{BEST_STEMLEM}' để tạo texts_final")
+
+# %% [markdown]
+# > **Quyết định 3 — Stemming/Lemmatization:** Chọn phương pháp có F1-macro 5-fold cao nhất trong `results_stemlem`. Bước 3.5 dùng `BEST_STEMLEM` để tạo `texts_final`.
+
+# %%
 
 # ===========================================================================
 # Friedman test: so sánh đồng thời 4 phương pháp (dữ liệu lặp = 5 folds)
 # Friedman là non-parametric equivalent của repeated-measures ANOVA
-# Phù hợp khi so sánh k ≥ 3 phương pháp với cùng tập dữ liệu fold
+# Phù hợp khi so sánh k >= 3 phương pháp với cùng tập dữ liệu fold
 # ===========================================================================
 
 # fold_scores_stemlem đã được tạo trong vòng lặp ở trên (mỗi entry = array 5 folds)
 friedman_stat, friedman_p = friedmanchisquare(*fold_scores_stemlem.values())
 print(
-    f"\nFriedman test (4 stemming/lemma methods, 5 folds): χ²={friedman_stat:.4f}, p={friedman_p:.4f}")
+    f"\nFriedman test (4 stemming/lemma methods, 5 folds): chi^2={friedman_stat:.4f}, p={friedman_p:.4f}")
 if friedman_p < 0.05:
     print("  post-hoc pairwise Wilcoxon:")
     names_sl = list(fold_scores_stemlem.keys())
@@ -1106,7 +1097,7 @@ if friedman_p < 0.05:
     from scipy.stats import wilcoxon
     n_pairs = len(list(combinations(names_sl, 2)))
     alpha_bonf = 0.05 / n_pairs  # Bonferroni correction
-    print(f"  Bonferroni-corrected α = {alpha_bonf:.4f} (n_pairs={n_pairs})")
+    print(f"  Bonferroni-corrected alpha = {alpha_bonf:.4f} (n_pairs={n_pairs})")
     for n1, n2 in combinations(names_sl, 2):
         try:
             _, pw = wilcoxon(fold_scores_stemlem[n1], fold_scores_stemlem[n2])
@@ -1115,7 +1106,7 @@ if friedman_p < 0.05:
         except ValueError:
             print(f"    {n1:20s} vs {n2:20s}: identical scores, skip")
 else:
-    print("  Không có phương pháp nào khác biệt đáng kể (p ≥ 0.05)")
+    print("  Không có phương pháp nào khác biệt đáng kể (p >= 0.05)")
 
 # %%
 # Trực quan hóa so sánh
@@ -1154,7 +1145,7 @@ plt.show()
 # - Collision rate thực tế: Porter 35.43%, Snowball 35.68%, WordNet 13.20% — WordNet bảo toàn ngữ nghĩa tốt hơn ~3×.
 # - F1-macro: None=0.7287, Porter=0.7274, Snowball=0.7284, WordNet=0.7285 — tất cả cách nhau < 0.002, không có phương pháp nào vượt trội rõ ràng.
 # - Stemming mạnh (Porter/Snowball) tuy giảm 35% từ vựng nhưng không cải thiện F1 - thậm chí giảm nhẹ. Trên RAGTruth (domain kỹ thuật), các hậu tố mang ý nghĩa ngữ nghĩa quan trọng (e.g. "summarize" vs "summarization").
-# - **Hạn chế thống kê**: Friedman test với chỉ 5 folds có statistical power thấp — không thể kết luận chắc chắn về sự khác biệt giữa các phương pháp. Cần ≥20 folds hoặc bootstrap để estimate đáng tin cậy hơn.
+# - **Hạn chế thống kê**: Friedman test với chỉ 5 folds có statistical power thấp — không thể kết luận chắc chắn về sự khác biệt giữa các phương pháp. Cần $\geq$20 folds hoặc bootstrap để estimate đáng tin cậy hơn.
 #
 # ---
 #
@@ -1181,7 +1172,7 @@ elif BEST_STEMLEM == 'WordNet':
 else:  # None (baseline)
     df['text_processed'] = df['tokens_no_stop'].apply(
         lambda toks: ' '.join(toks))
-print(f"[ÁP DỤNG] {BEST_STEMLEM} → df['text_processed']")
+print(f"[ÁP DỤNG] {BEST_STEMLEM} -> df['text_processed']")
 
 texts_final = df['text_processed'].tolist()
 y = df['label'].values
@@ -1520,7 +1511,7 @@ print("\n(Silhouette score [-1, 1]: cao hơn = tách biệt tốt hơn giữa 2 
 
 # ===========================================================================
 # Friedman test + pairwise Wilcoxon: so sánh các phương pháp vectorization
-# Dùng bootstrap resample để tạo "folds" cho silhouette → estimate uncertainty
+# Dùng bootstrap resample để tạo "folds" cho silhouette -> estimate uncertainty
 # ===========================================================================
 
 sil_bootstrap_scores = {name: [] for name, _ in [
@@ -1557,14 +1548,14 @@ for name, scores_b in sil_bootstrap_scores.items():
 friedman_v_stat, friedman_v_p = friedmanchisquare(
     *[np.array(v) for v in sil_bootstrap_scores.values()])
 print(
-    f"\nFriedman test (5 vectorization methods, {N_BOOT} bootstrap): χ²={friedman_v_stat:.4f}, p={friedman_v_p:.4f}")
+    f"\nFriedman test (5 vectorization methods, {N_BOOT} bootstrap): chi^2={friedman_v_stat:.4f}, p={friedman_v_p:.4f}")
 if friedman_v_p < 0.05:
     print("  post-hoc pairwise Wilcoxon:")
     from scipy.stats import wilcoxon
     names_vec = list(sil_bootstrap_scores.keys())
     n_pairs_v = len(list(combinations(names_vec, 2)))
     alpha_bonf_v = 0.05 / n_pairs_v
-    print(f"  Bonferroni α = {alpha_bonf_v:.4f}")
+    print(f"  Bonferroni alpha = {alpha_bonf_v:.4f}")
     for n1, n2 in combinations(names_vec, 2):
         try:
             _, pw = wilcoxon(
@@ -1572,17 +1563,17 @@ if friedman_v_p < 0.05:
             sig = "***" if pw < alpha_bonf_v else ("*" if pw < 0.05 else "ns")
             d1, d2 = np.mean(sil_bootstrap_scores[n1]), np.mean(
                 sil_bootstrap_scores[n2])
-            print(f"    {n1:25s} vs {n2:25s}: p={pw:.4f} {sig}  Δ={d1-d2:+.4f}")
+            print(f"    {n1:25s} vs {n2:25s}: p={pw:.4f} {sig}  delta={d1-d2:+.4f}")
         except ValueError:
             pass
 else:
-    print("  Không có khác biệt đáng kể giữa các phương pháp (p ≥ 0.05)")
+    print("  Không có khác biệt đáng kể giữa các phương pháp (p >= 0.05)")
 
 # %% [markdown]
 # **Phân tích:**
 # - **Cài đặt thuật toán**: BoW và TF-IDF n-gram được cài đặt thủ công (xây vocab, ma trận sparse, IDF + chuẩn hóa L2), không dùng `CountVectorizer`/`TfidfVectorizer`.
 # - **Cosine similarity**: Intra-class similarity Hallucinated > Supported trên mọi phương pháp (ví dụ: Word2Vec: 0.237 vs 0.160). Điều này gợi ý văn bản hallucinated có xu hướng giống nhau hơn về mặt ngữ nghĩa — có thể do LLM tạo ra các hallucination theo pattern lặp lại.
-# - **Silhouette scores**: BoW=0.019, TF-IDF~0.004, Word2Vec=0.078 (theo GT labels). Tất cả đều rất thấp (< 0.1) — không phương pháp nào tạo ra phân cụm rõ ràng giữa 2 lớp. Điều này phù hợp với F1 ≈ 0.73 (không phải 0.9+).
+# - **Silhouette scores**: BoW=0.019, TF-IDF~0.004, Word2Vec=0.078 (theo GT labels). Tất cả đều rất thấp (< 0.1) — không phương pháp nào tạo ra phân cụm rõ ràng giữa 2 lớp. Điều này phù hợp với F1 $\approx$ 0.73 (không phải 0.9+).
 # - **Hạn chế bootstrap**: `N_BOOT=10` là quá ít để estimate variance ổn định. Std của silhouette scores có thể không đáng tin cậy.
 # - **Kết luận**: Dữ liệu RAGTruth không có ranh giới phân cụm rõ ràng trong không gian đặc trưng bề mặt — đây là lý do tại sao cần embedding ngữ nghĩa mạnh hơn (Sentence Transformer) hoặc fine-tuned model.
 #
@@ -1726,11 +1717,11 @@ rows = [
         "Giá trị": f"{N_SAMPLES:,} / {N_LABELS}"},
     {"Mục": "§2.3.3.a",
         "Chỉ số": "Giảm vocab (chuẩn hóa)", "Giá trị": f"{VOCAB_REDUCTION_RATIO*100:.2f}%"},
-    {"Mục": "§2.3.3.a", "Chỉ số": "ΔMean length Raw→Lemmatized",
+    {"Mục": "§2.3.3.a", "Chỉ số": "delta Mean length Raw->Lemmatized",
      "Giá trị": f"{PREPROCESS_LENGTH_ABLATION.loc[PREPROCESS_LENGTH_ABLATION['Stage'] == 'Lemmatized', 'Len Change vs Raw (%)'].iloc[0]:+.2f}%"},
     {"Mục": "§2.3.3.c",
-        "Chỉ số": "ΔMI mean (bỏ stop − giữ stop)", "Giá trị": f"{MI_MEAN_DELTA:+.6f}"},
-    {"Mục": "§2.3.3.c", "Chỉ số": "ΔF1 NB (bỏ stop − giữ stop)",
+        "Chỉ số": "delta MI mean (bỏ stop - giữ stop)", "Giá trị": f"{MI_MEAN_DELTA:+.6f}"},
+    {"Mục": "§2.3.3.c", "Chỉ số": "delta F1 NB (bỏ stop - giữ stop)",
      "Giá trị": f"{scores_no.mean() - scores_with.mean():+.4f}"},
     {"Mục": "§2.3.3.d", "Chỉ số": "LR best vs baseline F1-macro",
      "Giá trị": f"{max(results_stemlem, key=lambda k: results_stemlem[k]['mean'])} vs {results_stemlem['None (baseline)']['mean']:.4f}"},
@@ -1904,10 +1895,12 @@ _idx_tr, _idx_te = train_test_split(
 y_train_best = y[_idx_tr]
 y_test_best = y[_idx_te]
 
-# === QUYẾT ĐỊNH 4: VECTORIZER (theo leaderboard) ===
 best_method = results_df.iloc[0]['Method']
-print(
-    f"[CHỌN] Vectorizer/Model: {best_method} (F1={results_df.iloc[0]['F1-macro']:.4f})")
+
+# %% [markdown]
+# > **Quyết định 4 — Vectorizer/Model:** Chọn phương pháp đứng đầu leaderboard (`results_df.iloc[0]`). Các block code bên dưới set `X_train_best`, `X_test_best`, `best_model` tương ứng.
+
+# %%
 
 if best_method == 'LR + TF-IDF bi':
     X_train_best = X_tfidf_bi[_idx_tr]
@@ -1971,19 +1964,19 @@ plt.show()
 # | Mục | Kết quả |
 # |------|--------|
 # | **Dataset** | RAGTruth (17,790 mẫu, 2 nhãn: Supported 10,126 / Hallucinated 7,664) |
-# | **Text EDA** | Mann-Whitney p < 10⁻¹⁹⁵ nhưng r = 0.22–0.28 (nhỏ); độ dài không phải đặc trưng mạnh |
-# | **Zipf** | α = 1.631 (corpus), 1.505 (Supported), 1.534 (Hallucinated); R² = 0.94; α xa 1.0 do domain kỹ thuật |
-# | **Tokenization** | Word(NLTK) ≈ Word(spaCy) (OOV=2.64%); BPE OOV=0.23% (11× thấp hơn) |
+# | **Text EDA** | Mann-Whitney p < $10^{-195}$ nhưng r = 0.22–0.28 (nhỏ); độ dài không phải đặc trưng mạnh |
+# | **Zipf** | $\alpha$ = 1.631 (corpus), 1.505 (Supported), 1.534 (Hallucinated); R$^2$ = 0.94; $\alpha$ xa 1.0 do domain kỹ thuật |
+# | **Tokenization** | Word(NLTK) $\approx$ Word(spaCy) (OOV=2.64%); BPE OOV=0.23% (11× thấp hơn) |
 # | **Pipeline** | lowercase: −14.90% vocab; remove_punct: +1.23% vocab (bất ngờ), −13.82% length; tổng −21.3% vocab |
 # | **Stop words** | Xóa −41.09% token nhưng chỉ −0.41% vocab; ΔMI = −0.000114 (stop words mang một chút MI) |
-# | **Stemming** | Porter/Snowball collision 35%; WordNet 13%; ΔF1 ≈ 0 giữa các phương pháp (< 0.002) |
+# | **Stemming** | Porter/Snowball collision 35%; WordNet 13%; ΔF1 $\approx$ 0 giữa các phương pháp (< 0.002) |
 # | **Vectorization** | BoW + TF-IDF cài đặt thủ công; silhouette < 0.1 — không phương pháp nào tạo cụm rõ |
 # | **Best model** | LR + TF-IDF bigram: F1-macro = 0.7331 (5-fold CV) |
 #
 # ### 5.2. Nhận xét và đánh giá phê bình
 #
 # 1. **Kết quả ngược trực giác**: Xóa stop words làm *giảm* MI trung bình (ΔMI = −0.000114) và TF-IDF sparse vượt Sentence Transformer 384-dim trên dataset này — cho thấy một số giả định thường gặp trong NLP không áp dụng cho domain AI-generated text.
-# 2. **Hạn chế thống kê**: Friedman test với 5 folds có power thấp; bootstrap silhouette với N_BOOT=10 không đủ để estimate variance ổn định. Cần ≥ 20 lần lặp để có kết luận đáng tin.
+# 2. **Hạn chế thống kê**: Friedman test với 5 folds có power thấp; bootstrap silhouette với N_BOOT=10 không đủ để estimate variance ổn định. Cần $\geq$ 20 lần lặp để có kết luận đáng tin.
 # 3. Silhouette rất thấp (< 0.1 trên GT labels): không phương pháp nào tạo tách biệt rõ giữa 2 nhóm — phân loại với F1 = 0.73 dựa trên pattern bề mặt, không phải từ cụm ngữ nghĩa rõ ràng.
 # 4. **Hướng phát triển**: Fine-tuning Transformer trên task hallucination detection hoặc dùng feature ngữ cảnh (query + context + response) thay vì chỉ `output` có tiềm năng cải thiện đáng kể.
 #
@@ -1999,7 +1992,7 @@ plt.show()
 df_save = df[['id', 'text', 'text_normalized', 'text_processed', 'label', 'label_name',
               'task_type', 'model', 'text_len_char', 'text_len_words', 'text_len_sents', 'ttr']].copy()
 df_save.to_csv(OUTPUT_DIR / 'ragtruth_processed.csv', index=False)
-print(f"Saved processed text: {df_save.shape} → ragtruth_processed.csv")
+print(f"Saved processed text: {df_save.shape} -> ragtruth_processed.csv")
 
 # Lưu feature matrix tốt nhất (dựa trên QUYẾT ĐỊNH 4)
 if hasattr(X_final_all, 'toarray'):  # sparse (TF-IDF)
