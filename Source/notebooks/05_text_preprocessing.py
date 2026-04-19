@@ -989,8 +989,6 @@ print(
     f"KHÔNG stop words:  F1-macro = {scores_no.mean():.4f} ± {scores_no.std():.4f}")
 diff = scores_no.mean() - scores_with.mean()
 print(f"\nChênh lệch: {'+' if diff > 0 else ''}{diff:.4f}")
-print(
-    f"=> Xóa stop words {'CẢI THIỆN' if diff > 0 else 'GIẢM'} hiệu năng {abs(diff)*100:.2f}%")
 
 # Wilcoxon signed-rank test: so sánh cặp fold (có stop vs không stop)
 # Phù hợp hơn paired t-test vì không giả định phân phối chuẩn
@@ -1006,7 +1004,7 @@ except ValueError as e:
 pooled_std = np.sqrt((scores_no.std()**2 + scores_with.std()**2) / 2)
 cohens_d = (scores_no.mean() - scores_with.mean()) / (pooled_std + 1e-9)
 print(
-    f"Cohen's d effect size: {cohens_d:.4f} ({'nhỏ' if abs(cohens_d) < 0.5 else 'trung bình' if abs(cohens_d) < 0.8 else 'lớn'})")
+    f"Cohen's d = {cohens_d:.4f}")
 
 # %% [markdown]
 # **Phân tích:**
