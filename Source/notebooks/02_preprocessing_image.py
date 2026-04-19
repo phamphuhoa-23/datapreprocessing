@@ -124,7 +124,7 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 # %% [markdown]
 # ### Cấu hình sampling cho ablation study
 #
-# Dùng **toàn bộ 45 lớp** để kết quả không bị bias.
+# Dùng toàn bộ 45 lớp để kết quả không bị bias.
 # Giới hạn số ảnh/lớp để thời gian chạy hợp lý.
 
 # %%
@@ -359,7 +359,7 @@ print(f"\nANOVA: F={f_val:.2f}, p={p_val:.2e}, η²={eta2_resize:.3f}")
 #   - ANOVA + Post-hoc Mann-Whitney (Bonferroni): cả 3 cặp đều p ≈ 0
 #   - Effect size $\eta^2$ rất lớn (xem print trên)
 # - Đường cong SSIM tăng nhanh từ 64 $\to$ 128, chậm lại từ 128 $\to$ 224
-# - k-NN accuracy **gần như không đổi** qua các kích thước (~0.35)
+# - k-NN accuracy gần như không đổi qua các kích thước (~0.35)
 #   - 256x256 thậm chí thấp nhất do curse of dimensionality
 # - **Lựa chọn: 128x128** – k-NN accuracy cao và mất mát thông tin ở mức trung bình
 #   - 128x128 đạt SSIM tốt (mất mát vừa phải) đồng thời k-NN accuracy ngang ngửa 224x224
@@ -388,9 +388,9 @@ print(f"\nANOVA: F={f_val:.2f}, p={p_val:.2e}, η²={eta2_resize:.3f}")
 # Trọng số của ITU-R BT.601 phản ánh độ nhạy của mắt người:
 # mắt nhạy nhất với xanh lá ($G$), kém nhất với xanh dương ($B$).
 #
-# **PCA explained variance** được dùng để so sánh **information density**:
+# PCA explained variance được dùng để so sánh information density:
 # không gian màu đạt 95% variance với ít components hơn = nén được tốt hơn.
-# k-NN accuracy xác nhận không gian nào bảo toàn thông tin **phân loại** tốt nhất.
+# k-NN accuracy xác nhận không gian nào bảo toàn thông tin phân loại tốt nhất.
 
 # %%
 COLOR_SPACES = {
@@ -518,14 +518,14 @@ for cs_name, (mean_acc, std_acc) in cs_knn_results.items():
 #
 # **Ý nghĩa per-channel normalization:**
 # Mỗi kênh có phân phối khác nhau; chuẩn hóa riêng từng kênh loại bỏ
-# **bias do chiếu sáng** (kênh G thường sáng hơn kênh B).
-# Tuy nhiên, nó phá vỡ **tương quan tương đối** giữa R, G, B — có thể gây hại cho biểu diễn màu sắc.
+# bias do chiếu sáng (kênh G thường sáng hơn kênh B).
+# Tuy nhiên, nó phá vỡ tương quan tương đối giữa R, G, B — có thể gây hại cho biểu diễn màu sắc.
 #
 # **KS test (Kolmogorov-Smirnov)** kiểm tra sự thay đổi phân phối trước/sau chuẩn hóa:
 #
 # $$D = \sup_x \left|F_1(x) - F_2(x)\right|$$
 #
-# $p \approx 0$ là **MONG MUỐN**: chứng tỏ distribution shift (mục đích của chuẩn hóa).
+# $p \approx 0$ là MONG MUỐN: chứng tỏ distribution shift (mục đích của chuẩn hóa).
 # K-NN accuracy mới là chỉ số đánh giá chất lượng chuẩn hóa.
 #
 # - $H_0$: Phân phối pixel trước và sau chuẩn hóa không khác biệt
@@ -623,7 +623,7 @@ print(
 
 # %% [markdown]
 # **Nhận xét Levene test:** Nếu $p < 0.05$ → bác bỏ $H_0$ (phương sai giữa các phương pháp KHÔNG đồng nhất).
-# Đây là **kết quả mong đợi**: mỗi chuẩn hóa thay đổi scale/spread theo cách khác nhau —
+# Đây là kết quả mong đợi: mỗi chuẩn hóa thay đổi scale/spread theo cách khác nhau —
 # Min-Max giới hạn range cố định $[0,1]$ hay $[-1,1]$, còn Z-score tạo phân phối có
 # variance $\approx 1$. Variance khác nhau giữa các phương pháp là tính năng thiết kế, không phải lỗi.
 
@@ -700,12 +700,12 @@ print(
 # %% [markdown]
 # **Kết luận Normalization:** (số liệu chính xác xem output bên trên)
 #
-# > **Ghi chú KS test p ≈ 0:** p-value ≈ 0 là **MONG MUỐN** – chuẩn hóa đã thay đổi scale/phân phối
-# > pixel (đó là mục đích). KS test chỉ xác nhận distribution shift, **KHÔNG** đá́nh giá chất lượng
+# > **Ghi chú KS test p ≈ 0:** p-value ≈ 0 là MONG MUỐN – chuẩn hóa đã thay đổi scale/phân phối
+# > pixel (đó là mục đích). KS test chỉ xác nhận distribution shift, KHÔNG đá́nh giá chất lượng
 # > chuẩn hóa. Để đánh giá hiệu quả của chuẩn hóa, dùng k-NN accuracy (xem output trên).
 #
 # - **Bác bỏ $H_0$** cho tất cả 4 phương pháp: KS stat $\approx 1.0$, $p \approx 0$ (expected)
-# - Min-Max [0,1] và [-1,1] chỉ thay đổi scale, **không thay đổi hình dạng phân bố**
+# - Min-Max [0,1] và [-1,1] chỉ thay đổi scale, không thay đổi hình dạng phân bố
 #   - k-NN accuracy giống hệt Original vì k-NN dựa trên khoảng cách tỉ lệ thuận
 # - Z-score global cho accuracy cao nhất (xem print trên)
 # - Z-score per-channel phá hủy quan hệ tương đối giữa R, G, B → accuracy rất thấp
@@ -718,8 +718,8 @@ print(
 # **Lý thuyết:**
 #
 # **Data augmentation** tạo ra các biến thể hợp lệ của ảnh gốc bằng cách áp dụng các
-# phép biến đổi **label-preserving** (không thay đổi nhãn).
-# Mục tiêu: tăng **diversity** tập train, giảm overfitting, cải thiện tính robust của model.
+# phép biến đổi label-preserving (không thay đổi nhãn).
+# Mục tiêu: tăng diversity tập train, giảm overfitting, cải thiện tính robust của model.
 #
 # | Phép biến đổi | Mô tả toán học | Label-preserving |
 # |---|---|---|
@@ -731,8 +731,8 @@ print(
 # | **Brightness/Contrast** | $I' = \alpha I + \beta$, $\alpha \approx 1$, $\beta \approx 0$ | ✅ |
 #
 # **Tác động được đánh giá bằng:**
-# - **k-NN ablation per-technique**: mỗi augmentation chạy riêng biệt so với baseline (original only)
-# - **t-SNE visualization**: biểu diễn feature distribution trước/sau augment
+# - k-NN ablation per-technique: mỗi augmentation chạy riêng biệt so với baseline (original only)
+# - t-SNE visualization: biểu diễn feature distribution trước/sau augment
 #   (t-SNE giảm chiều từ 128×128×3 xuống 2D, bảo toàn local structure)
 
 # %%
@@ -813,7 +813,7 @@ plt.show()
 # %% [markdown]
 # ### t-SNE: Feature space trước/sau augmentation
 #
-# Pipeline augmentation áp dụng **2 phép ngẫu nhiên trong số 6 phép** (H-Flip, V-Flip,
+# Pipeline augmentation áp dụng 2 phép ngẫu nhiên trong số 6 phép (H-Flip, V-Flip,
 # Rotation, Random Crop, Gaussian Noise, Brightness/Contrast) cho mỗi ảnh.
 # Cách chọn này giúp tạo đa dạng biến thể mà không làm ảnh quá biến dạng.
 # t-SNE giảm chiều từ 32×32×3 xuống 2D để quan sát sự thay đổi phân phối đặc trưng.
@@ -930,7 +930,7 @@ print(f"Lớp có variance tăng: {sum(d > 0 for d in diff)}/{len(diff)}")
 # %% [markdown]
 # ### Ablation: k-NN accuracy theo từng kỹ thuật augmentation (per-technique)
 #
-# Mỗi kỹ thuật được đánh giá **độc lập** với dataset = ảnh gốc + augmented_by_fn
+# Mỗi kỹ thuật được đánh giá độc lập với dataset = ảnh gốc + augmented_by_fn
 # (gấp đôi số mẫu mỗi ablation). Đây là thiết kế đúng: không stack tất cả aug cùng lúc.
 
 # %%
@@ -1100,9 +1100,9 @@ print(f"Wilcoxon p={w_p:.4f}")
 #   - Paired t-test, Wilcoxon, Cohen's d: xem print trên
 #   - Hai phương pháp đồng thuận → kết quả robust
 # - Đa số lớp có variance tăng sau augmentation (xem print trên)
-# - **k-NN Ablation**: giảm accuracy là **expected** – raw-pixel k-NN không bất biến với
+# - k-NN Ablation: giảm accuracy là expected – raw-pixel k-NN không bất biến với
 #   biến đổi hình học/màu sắc; với CNN feature extractor, augmentation sẽ cải thiện accuracy
-# - **Pipeline 6 phép** (H-Flip, V-Flip, Rotation, Random Crop, Gaussian Noise, Brightness/Contrast)
+# - Pipeline 6 phép (H-Flip, V-Flip, Rotation, Random Crop, Gaussian Noise, Brightness/Contrast)
 #   hiệu quả cho tăng diversity mà không phá cấu trúc lớp
 
 # %% [markdown]

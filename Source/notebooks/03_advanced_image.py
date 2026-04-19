@@ -105,7 +105,7 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 #
 # **Lý thuyết:**
 #
-# **PCA (Principal Component Analysis)** tìm các hướng **phương sai cực đại** trong dữ liệu.
+# **PCA (Principal Component Analysis)** tìm các hướng phương sai cực đại trong dữ liệu.
 # Với ma trận dữ liệu đã center $\mathbf{X} \in \mathbb{R}^{n \times d}$ ($n$ ảnh, $d$ pixel):
 #
 # **Bước 1 — Covariance matrix:**
@@ -132,7 +132,7 @@ def load_sample(n_per_class=20, target_classes=None, seed=42):
 # Sai số tái tạo $\|\mathbf{x} - \hat{\mathbf{x}}\|^2 = \sum_{i=k+1}^{d} \lambda_i$
 # (phần variance bị bỏ qua khi dùng $k$ components).
 #
-# **Lựa chọn kích thước ảnh:** Dùng **Grayscale 64×64** (vector 4,096 chiều) thay vì 224×224
+# **Lựa chọn kích thước ảnh:** Dùng Grayscale 64×64 (vector 4,096 chiều) thay vì 224×224
 # vì: (1) ảnh 224×224 tạo ma trận 27,000 × 50,176 ≈ 5.4 GB RAM; (2) PCA phân tích cấu trúc
 # hình học tổng thể — không đòi hỏi độ phân giải cao; (3) Grayscale bỏ nhiễu màu sắc,
 # giúp eigenimages biểu diễn rõ hơn đặc trưng texture/shape.
@@ -406,7 +406,7 @@ print(f"\nEta² = {eta_sq:.3f}")
 # - Eigenimages cho thấy PC1 nắm bắt pattern độ sáng tổng thể; PC2-PC3 nắm bắt cạnh/texture.
 # - Số components đạt 90/95/99% variance in ra bên trên — đây là số thực sự đo được.
 # - Levene test + Kruskal-Wallis (xem output): nếu p ≈ 0 → bác bỏ H₀ → các lớp
-#   **phân tách được** trên PC1. Eta² cho biết mức độ effect size (>0.14 là large).
+#   phân tách được trên PC1. Eta² cho biết mức độ effect size (>0.14 là large).
 
 # %% [markdown]
 # ---

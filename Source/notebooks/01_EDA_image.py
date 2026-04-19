@@ -121,9 +121,9 @@ print(f"Số lớp: {len(classes)}")
 #
 # $$\sigma_c = \sqrt{\frac{1}{HW}\sum_{i,j}(c_{ij} - \bar{c})^2}$$
 #
-# Phân tích **per-image mean** (trung bình toàn bộ pixel của 1 ảnh) giúp so sánh đặc trưng
+# Phân tích per-image mean (trung bình toàn bộ pixel của 1 ảnh) giúp so sánh đặc trưng
 # màu sắc tổng thể giữa các lớp mà không bị ảnh hưởng bởi vị trí không gian.
-# Phân tích **per-channel** phân biệt sự đóng góp của từng thành phần màu —
+# Phân tích per-channel phân biệt sự đóng góp của từng thành phần màu —
 # ví dụ lớp `forest` kỳ vọng $\bar{G} \gg \bar{R}$, lớp `sea_ice` kỳ vọng cả 3 kênh cao.
 
 # %%
@@ -201,12 +201,12 @@ plt.show()
 #
 # $$\hat{f}(x) = \frac{1}{nh}\sum_{i=1}^{n} K\!\left(\frac{x - x_i}{h}\right)$$
 #
-# với $h$ là **bandwidth** (quyết định độ mượt). Bandwidth Silverman $h = 1.06 \hat{\sigma} n^{-1/5}$
+# với $h$ là bandwidth (quyết định độ mượt). Bandwidth Silverman $h = 1.06 \hat{\sigma} n^{-1/5}$
 # là ước lượng tự động tối ưu nếu phân phối gần Gaussian.
 #
 # Phân tích KDE per-channel giúp xác định:
-# - Phân phối **unimodal** (một đỉnh) hay multimodal (nhiều lớp pha trộn)
-# - Độ **lệch** (skewness) — đuôi trái/phải dài hơn
+# - Phân phối unimodal (một đỉnh) hay multimodal (nhiều lớp pha trộn)
+# - Độ lệch (skewness) — đuôi trái/phải dài hơn
 # - Vùng tập trung giá trị pixel ($\mu \pm \sigma$)
 
 # %%
@@ -236,7 +236,7 @@ plt.show()
 # %% [markdown]
 # **Nhận xét:**
 #
-# - Cả 3 kênh R, G, B đều có phân bố **lệch phải** (right-skewed, unimodal)
+# - Cả 3 kênh R, G, B đều có phân bố lệch phải (right-skewed, unimodal)
 #   - Đa số ảnh tập trung ở vùng pixel mean thấp-trung bình (60-120)
 #   - Đuôi dài kéo về phía giá trị cao ($>150$) do các lớp cảnh sáng như `cloud`, `snow`, `desert`
 # - $\text{Mean} > \text{Median}$ ở cả 3 kênh (chênh $\approx 4$ đơn vị)
@@ -274,14 +274,14 @@ plt.show()
 # %% [markdown]
 # ### 1.4 So sánh chi tiết pixel distribution - 5 lớp đại diện
 #
-# Để minh họa sự đa dạng phân bố pixel, chọn **5 lớp đại diện** ở 5 vị trí
+# Để minh họa sự đa dạng phân bố pixel, chọn 5 lớp đại diện ở 5 vị trí
 # phân vị đều nhau (min, Q1, median, Q3, max) trên thang overall pixel mean.
 # Cách chọn này đảm bảo bao phủ toàn bộ dải giá trị một cách có hệ thống,
 # không thiên vị lớp cụ thể nào, và phản ánh cả hai cực cảnh sáng (cloud, desert)
 # lẫn cảnh tối (forest, mountain).
 #
-# > **Lưu ý:** Phần này chỉ là **visualization** để quan sát định tính.
-# > Kiểm định thống kê chính thức được thực hiện trên **toàn bộ 45 lớp** ở mục 1.5.
+# > **Lưu ý:** Phần này chỉ là visualization để quan sát định tính.
+# > Kiểm định thống kê chính thức được thực hiện trên toàn bộ 45 lớp ở mục 1.5.
 
 # %%
 sorted_classes = df_pixel.index.tolist()
@@ -320,7 +320,7 @@ plt.show()
 #
 # **Lựa chọn phương pháp:**
 #
-# - Phân bố pixel mean **lệch phải** (mục 2.2), vi phạm giả định normality của ANOVA
+# - Phân bố pixel mean lệch phải (mục 2.2), vi phạm giả định normality của ANOVA
 #   - Dùng **Kruskal-Wallis** (non-parametric) làm kiểm định chính
 #   - Chạy ANOVA song song để đối chiếu
 # - **Levene test** kiểm tra variance đồng nhất giữa các lớp
@@ -380,14 +380,14 @@ print(f"Tổng hợp Eta²:  R={eta2_r:.3f},  G={eta2_g:.3f},  B={eta2_b:.3f}")
 #
 # - **Bác bỏ $H_0$** ở cả 3 kênh (KW: $p \approx 0$, ANOVA: $p \approx 0$).
 #   - Levene test reject → variance không đồng nhất giữa các lớp.
-#     **Kruskal-Wallis là kiểm định chính** (không giả định equal variance).
+#     Kruskal-Wallis là kiểm định chính (không giả định equal variance).
 #   - ANOVA và KW cùng reject nhưng kiểm định khác nhau:
-#     ANOVA kiểm định sự khác biệt về **mean**; KW kiểm định sự khác biệt về **phân phối rank**.
-#   - $\eta^2$ được tính trên **per-image pixel channel mean** (mỗi sample là mean của một ảnh).
-#     Lớp ảnh giải thích **43–50% variance** của pixel channel mean; kênh R cao nhất ($\eta^2 = 0.500$).
+#     ANOVA kiểm định sự khác biệt về mean; KW kiểm định sự khác biệt về phân phối rank.
+#   - $\eta^2$ được tính trên per-image pixel channel mean (mỗi sample là mean của một ảnh).
+#     Lớp ảnh giải thích 43–50% variance của pixel channel mean; kênh R cao nhất ($\eta^2 = 0.500$).
 # - Post-hoc (Mann-Whitney + Bonferroni): hầu hết các cặp lớp đại diện khác biệt có ý nghĩa ($p \ll 0.005$).
 #   - `freeway` vs `river` không khác biệt ở kênh **R** ($p_{bonf} = 0.45$),
-#     nhưng **vẫn khác biệt** ở kênh G và B → kết hợp cả 3 kênh vẫn phân biệt được 2 lớp này.
+#     nhưng vẫn khác biệt ở kênh G và B → kết hợp cả 3 kênh vẫn phân biệt được 2 lớp này.
 
 # %% [markdown]
 # ---
@@ -489,11 +489,11 @@ else:
 # %% [markdown]
 # **Nhận xét:**
 #
-# - Dataset **cân bằng hoàn hảo** (imbalance ratio $= 1.00$)
+# - Dataset cân bằng hoàn hảo (imbalance ratio $= 1.00$)
 #   - Mỗi lớp có đúng 600 ảnh train và 100 ảnh test
 #   - Không có lớp nào vượt ngưỡng $3\times$
 # - Không cần áp dụng oversampling/undersampling
-# - Mọi khác biệt giữa các lớp phát hiện sau đây phản ánh sự khác biệt thực sự về **nội dung ảnh**, không phải do chênh lệch số lượng
+# - Mọi khác biệt giữa các lớp phát hiện sau đây phản ánh sự khác biệt thực sự về nội dung ảnh, không phải do chênh lệch số lượng
 
 # %% [markdown]
 # ### 2.3 Ảnh mẫu toàn bộ 45 lớp
@@ -529,7 +529,7 @@ plt.show()
 # 1. Resize ảnh về $32 \times 32$ grayscale
 # 2. Áp dụng **DCT-2D** (Discrete Cosine Transform): biến đổi tín hiệu sang miền tần số
 # 3. Lấy khối $8 \times 8$ góc trên-trái (64 hệ số tần số thấp, mang thông tin cấu trúc chính)
-# 4. So sánh từng hệ số với **median** của 64 hệ số: $1$ nếu $\geq$ median, $0$ nếu $<$ median
+# 4. So sánh từng hệ số với median của 64 hệ số: $1$ nếu $\geq$ median, $0$ nếu $<$ median
 # 5. Kết quả: chuỗi 64 bit duy nhất đặc trưng cho nội dung ảnh
 #
 # **Phát hiện trùng lặp** bằng **Hamming distance**:
@@ -720,13 +720,13 @@ else:
 # Ngoài ra còn có **Michelson contrast** (cho mẫu tuần hoàn):
 # $C_M = (L_{\max} - L_{\min})/(L_{\max} + L_{\min})$
 #
-# Phân tích độ sáng/tương phản **per class** giúp phát hiện:
-# - Lớp **sáng** ($\bar{L} > 70$): `cloud`, `snowberg`, `sea_ice`
-# - Lớp **tối** ($\bar{L} < 40$): `forest`, `chaparral`
-# - Lớp **tương phản cao** (lớn $\sigma_L$): cảnh có ranh giới rõ như `harbor`, `stadium`
-# - Lớp **tương phản thấp**: cảnh đơn sắc như `desert`, `cloud`
+# Phân tích độ sáng/tương phản per class giúp phát hiện:
+# - Lớp sáng ($\bar{L} > 70$): `cloud`, `snowberg`, `sea_ice`
+# - Lớp tối ($\bar{L} < 40$): `forest`, `chaparral`
+# - Lớp tương phản cao (lớn $\sigma_L$): cảnh có ranh giới rõ như `harbor`, `stadium`
+# - Lớp tương phản thấp: cảnh đơn sắc như `desert`, `cloud`
 #
-# Những thông tin này sẽ hỗ trợ quyết định chiến lược **normalization** ở notebook 02.
+# Những thông tin này sẽ hỗ trợ quyết định chiến lược normalization ở notebook 02.
 
 # %%
 brightness_data = []
@@ -924,7 +924,7 @@ for metric_name in ["Brightness", "Contrast"]:
 # | Contrast | $F=48.62$, $p \approx 0$ | $H=1072$, $p \approx 0$ | $0.492$ |
 #
 # - **Bác bỏ $H_0$** cho cả Brightness và Contrast (KW là kiểm định chính, Levene reject).
-#   - Contrast có $\eta^2$ nhỉnh hơn một chút ($0.492$ vs $0.434$), cả hai đều ở mức **large** (> 0.14).
+#   - Contrast có $\eta^2$ nhỉnh hơn một chút ($0.492$ vs $0.434$), cả hai đều ở mức large (> 0.14).
 # - Scatter plot gợi ý xu hướng: lớp tự nhiên đồng nhất (forest, lake) có contrast thấp hơn
 #   lớp cấu trúc phức tạp (dense_residential, harbor) — cần post-hoc test để xác nhận từng cặp.
 # - 2 đặc trưng này có tiềm năng dùng làm feature phân biệt lớp.

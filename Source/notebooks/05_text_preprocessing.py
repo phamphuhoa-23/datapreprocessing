@@ -202,7 +202,7 @@ df.head(3)
 # %% [markdown]
 # #### Đối chiếu §2.3.1 — Quy mô dữ liệu
 #
-# Đề: **≥ 10.000 mẫu**, **≥ 2 nhãn**. Cell dưới lưu biến `N_SAMPLES`, `N_LABELS` và `assert`.
+# Đề: ≥ 10.000 mẫu, ≥ 2 nhãn. Cell dưới lưu biến `N_SAMPLES`, `N_LABELS` và `assert`.
 
 # %%
 N_SAMPLES = len(df)
@@ -412,8 +412,8 @@ print("Effect size r: <0.1 rất nhỏ | 0.1-0.3 nhỏ | 0.3-0.5 trung bình | >
 
 # %% [markdown]
 # **Phân tích:**
-# - Kết quả thực tế: r = 0.2571 (số từ), 0.2775 (số ký tự), 0.2225 (số câu) — tất cả đều **nhỏ** (0.1–0.3), dù p < 10⁻¹⁹⁵ do n = 17,790 rất lớn.
-# - **Lưu ý quan trọng**: cỡ mẫu lớn khiến Mann-Whitney "luôn có ý nghĩa" dù khác biệt thực tế rất khiêm tốn. Effect size r ~ 0.25 cho thấy độ dài **không phải đặc trưng phân biệt mạnh** trong RAGTruth.
+# - Kết quả thực tế: r = 0.2571 (số từ), 0.2775 (số ký tự), 0.2225 (số câu) — tất cả đều nhỏ (0.1–0.3), dù p < 10⁻¹⁹⁵ do n = 17,790 rất lớn.
+# - **Lưu ý quan trọng**: cỡ mẫu lớn khiến Mann-Whitney "luôn có ý nghĩa" dù khác biệt thực tế rất khiêm tốn. Effect size r ~ 0.25 cho thấy độ dài không phải đặc trưng phân biệt mạnh trong RAGTruth.
 # - Kết quả nhất quán trên cả 3 chỉ số (từ, ký tự, câu): Hallucinated có độ dài ngắn hơn một chút, có thể do LLM generate câu trả lời ngắn gọn hơn khi hallucinate.
 # - **Hạn chế**: r < 0.3 gợi ý độ dài chỉ nên là đặc trưng *phụ trợ*; đặc trưng ngữ nghĩa (TF-IDF, embedding) sẽ mạnh hơn đáng kể trong bài toán này.
 #
@@ -633,10 +633,10 @@ print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
 
 # %% [markdown]
 # **Phân tích:**
-# - Kết quả cụ thể: α = **1.631** (toàn corpus), **1.505** (Supported), **1.534** (Hallucinated); R² = 0.9357.
+# - Kết quả cụ thể: α = 1.631 (toàn corpus), 1.505 (Supported), 1.534 (Hallucinated); R² = 0.9357.
 # - α ≈ 1.6 (xa 1.0) phản ánh corpus domain-specific (AI-generated): vocabulary tập trung hơn corpus tự nhiên, một số từ kỹ thuật lặp lại rất cao.
-# - Hai nhóm nhãn có α gần nhau (1.505 vs 1.534) → phân phối từ vựng **không khác biệt nhiều về hình dạng Zipf**, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
-# - **Lưu ý thống kê**: R² = 0.93 trên log-log plot **KHÔNG xác nhận Zipf** — nhiều phân phối power-law khác cũng cho R² cao tương tự. Kiểm định nghiêm ngặt hơn cần KS test với power-law distribution (e.g., thư viện `powerlaw` của Alstott et al.).
+# - Hai nhóm nhãn có α gần nhau (1.505 vs 1.534) → phân phối từ vựng không khác biệt nhiều về hình dạng Zipf, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
+# - **Lưu ý thống kê**: R² = 0.93 trên log-log plot KHÔNG xác nhận Zipf — nhiều phân phối power-law khác cũng cho R² cao tương tự. Kiểm định nghiêm ngặt hơn cần KS test với power-law distribution (e.g., thư viện `powerlaw` của Alstott et al.).
 #
 # ---
 # ## 3. CÁC KỸ THUẬT TIỀN XỬ LÝ VÀ PHÂN TÍCH TÁC ĐỘNG
@@ -646,7 +646,7 @@ print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
 # **Lý thuyết:** Pipeline chuẩn hóa bao gồm 9 bước tuần tự: (1) lowercase, (2) xóa HTML tags,
 # (3) xóa URL, (4) xóa email, (5) xóa mention (@user), (6) xóa hashtag (#topic), (7) xóa số,
 # (8) xóa ký tự đặc biệt, (9) chuẩn hóa khoảng trắng.
-# Với **mỗi bước**, bảng bên dưới báo cáo tỉ lệ từ vựng thay đổi và tác động đến độ dài văn bản.
+# Với mỗi bước, bảng bên dưới báo cáo tỉ lệ từ vựng thay đổi và tác động đến độ dài văn bản.
 
 # %%
 # ── Tách từng bước pipeline để đo per-step vocab change (§2.3.3a yêu cầu) ──────
@@ -731,7 +731,7 @@ for i in range(3):
 # **Phân tích:**
 # - **`lowercase`**: bước giảm vocab lớn nhất — 40,613 → 34,560 (**−14.90%**), trong khi độ dài chỉ giảm 0.49%. Gộp case variants chiếm hơn 2/3 tổng mức giảm vocab.
 # - **`remove_number`**: −8.55% vocab, −0.95% độ dài — RAGTruth chứa nhiều số (năm, thống kê, ID).
-# - **`remove_punct`** (bất ngờ): vocab tăng **+1.23%** (31,558 → 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." → "end", "2023," → "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
+# - **`remove_punct`** (bất ngờ): vocab tăng +1.23% (31,558 → 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." → "end", "2023," → "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
 # - **`remove_html`, `remove_url`, `remove_email`, `remove_mention`, `remove_hashtag`**: tác động gần bằng 0 (<0.1%) — xác nhận RAGTruth là văn bản AI-generated sạch, không chứa noise dạng social media.
 # - **Tổng kết**: −21.3% vocab và −15.1% độ dài. Hai bước `lowercase` + `remove_punct` đóng góp >95% mức giảm vocab.
 #
@@ -862,8 +862,8 @@ plt.show()
 # %% [markdown]
 # **Phân tích:**
 # - **Word (NLTK) vs Word (spaCy)**: **gần như đồng nhất** — vocab 31,946 vs 31,914, avg length 127.37 vs 127.46 tokens/doc, OOV đều 2.64%. Cả hai đều dùng rule-based tokenization trên corpus đã chuẩn hóa, nên kết quả hội tụ.
-# - **BPE** (subword, train trực tiếp trên corpus): vocab = 9,695 — nhỏ hơn **70%** so với word-level, OOV = 0.23% — **11× thấp hơn** word-level. Đây là lợi thế rõ ràng của BPE cho generalization.
-# - **Character-level**: vocab = 27 (26 ký tự + space), avg length = 764.7 tokens/doc — **6× dài hơn** word-level. Zero OOV nhưng mất hoàn toàn ngữ nghĩa từ vựng.
+# - **BPE** (subword, train trực tiếp trên corpus): vocab = 9,695 — nhỏ hơn 70% so với word-level, OOV = 0.23% — 11× thấp hơn word-level. Đây là lợi thế rõ ràng của BPE cho generalization.
+# - **Character-level**: vocab = 27 (26 ký tự + space), avg length = 764.7 tokens/doc — 6× dài hơn word-level. Zero OOV nhưng mất hoàn toàn ngữ nghĩa từ vựng.
 # - **Sentence-level**: avg = 7.45 câu/doc — phù hợp tác vụ cấp câu, OOV cấp từ không định nghĩa.
 # - **Lựa chọn thực tế**: Word-level được dùng cho pipeline downstream (tương thích NLTK stopwords + WordNet); BPE phù hợp cho neural models cần generalization cao.
 #
@@ -1008,9 +1008,9 @@ print(
 
 # %% [markdown]
 # **Phân tích:**
-# - Xóa stop words giảm **41.09%** token nhưng chỉ giảm **0.41%** vocab — xác nhận stop words là một số lượng nhỏ từ tần suất cao, không đóng góp nhiều vào kích thước vocabulary.
-# - **ΔMI mean = −0.000114** (MI giảm sau khi xóa stop words): kết quả ngược trực giác! Stop words mang một chút thông tin phân biệt trung bình trong không gian 5,000 features. Điều này xảy ra khi stop words phân phối không đều giữa hai lớp (vd. văn bản Hallucinated dùng nhiều "the", "a" do cấu trúc câu khác).
-# - **NB F1**: chênh lệch rất nhỏ (< 0.0001) — không có ý nghĩa thực tế. Wilcoxon test sẽ cho p không đáng kể với 5 folds.
+# - Xóa stop words giảm 41.09% token nhưng chỉ giảm 0.41% vocab — xác nhận stop words là một số lượng nhỏ từ tần suất cao, không đóng góp nhiều vào kích thước vocabulary.
+# - ΔMI mean = −0.000114 (MI giảm sau khi xóa stop words): kết quả ngược trực giác! Stop words mang một chút thông tin phân biệt trung bình trong không gian 5,000 features. Điều này xảy ra khi stop words phân phối không đều giữa hai lớp (vd. văn bản Hallucinated dùng nhiều "the", "a" do cấu trúc câu khác).
+# - NB F1: chênh lệch rất nhỏ (< 0.0001) — không có ý nghĩa thực tế. Wilcoxon test sẽ cho p không đáng kể với 5 folds.
 # - **Kết luận**: Quyết định giữ/bỏ stop words không ảnh hưởng đáng kể; nên quyết định dựa trên downstream task và mô hình, không phải chỉ dựa trên raw vocab count.
 
 # %%
@@ -1200,10 +1200,10 @@ plt.show()
 
 # %% [markdown]
 # **Phân tích:**
-# - Collision rate thực tế: Porter **35.43%**, Snowball **35.68%**, WordNet **13.20%** — WordNet bảo toàn ngữ nghĩa tốt hơn ~3×.
-# - F1-macro: None=0.7287, Porter=0.7274, Snowball=0.7284, WordNet=0.7285 — **tất cả cách nhau < 0.002**, không có phương pháp nào vượt trội rõ ràng.
+# - Collision rate thực tế: Porter 35.43%, Snowball 35.68%, WordNet 13.20% — WordNet bảo toàn ngữ nghĩa tốt hơn ~3×.
+# - F1-macro: None=0.7287, Porter=0.7274, Snowball=0.7284, WordNet=0.7285 — tất cả cách nhau < 0.002, không có phương pháp nào vượt trội rõ ràng.
 # - Stemming mạnh (Porter/Snowball) tuy giảm 35% từ vựng nhưng không cải thiện F1 - thậm chí giảm nhẹ. Trên RAGTruth (domain kỹ thuật), các hậu tố mang ý nghĩa ngữ nghĩa quan trọng (e.g. "summarize" vs "summarization").
-# - **Hạn chế thống kê**: Friedman test với chỉ 5 folds có **statistical power thấp** — không thể kết luận chắc chắn về sự khác biệt giữa các phương pháp. Cần ≥20 folds hoặc bootstrap để estimate đáng tin cậy hơn.
+# - **Hạn chế thống kê**: Friedman test với chỉ 5 folds có statistical power thấp — không thể kết luận chắc chắn về sự khác biệt giữa các phương pháp. Cần ≥20 folds hoặc bootstrap để estimate đáng tin cậy hơn.
 #
 # ---
 #
@@ -1631,7 +1631,7 @@ else:
 # **Phân tích:**
 # - **Cài đặt thuật toán**: BoW và TF-IDF n-gram được cài đặt thủ công (xây vocab, ma trận sparse, IDF + chuẩn hóa L2), không dùng `CountVectorizer`/`TfidfVectorizer`.
 # - **Cosine similarity**: Intra-class similarity Hallucinated > Supported trên mọi phương pháp (ví dụ: Word2Vec: 0.237 vs 0.160). Điều này gợi ý văn bản hallucinated có xu hướng giống nhau hơn về mặt ngữ nghĩa — có thể do LLM tạo ra các hallucination theo pattern lặp lại.
-# - **Silhouette scores**: BoW=0.019, TF-IDF~0.004, Word2Vec=0.078 (theo GT labels). Tất cả đều **rất thấp (< 0.1)** — không phương pháp nào tạo ra phân cụm rõ ràng giữa 2 lớp. Điều này phù hợp với F1 ≈ 0.73 (không phải 0.9+).
+# - **Silhouette scores**: BoW=0.019, TF-IDF~0.004, Word2Vec=0.078 (theo GT labels). Tất cả đều rất thấp (< 0.1) — không phương pháp nào tạo ra phân cụm rõ ràng giữa 2 lớp. Điều này phù hợp với F1 ≈ 0.73 (không phải 0.9+).
 # - **Hạn chế bootstrap**: `N_BOOT=10` là quá ít để estimate variance ổn định. Std của silhouette scores có thể không đáng tin cậy.
 # - **Kết luận**: Dữ liệu RAGTruth không có ranh giới phân cụm rõ ràng trong không gian đặc trưng bề mặt — đây là lý do tại sao cần embedding ngữ nghĩa mạnh hơn (Sentence Transformer) hoặc fine-tuned model.
 #
@@ -1794,9 +1794,9 @@ print(ABLATION_SUMMARY.to_string(index=False))
 
 # %% [markdown]
 # **Phân tích:**
-# - **K-Means silhouette**: TF-IDF = **0.1834** > ST = **0.0826** — TF-IDF cho cụm tách biệt hơn khi dùng K-Means. TF-IDF đã được giảm chiều qua TruncatedSVD(100) trước khi clustering, nên so sánh tương đối công bằng.
-# - **Linear SVM F1-macro**: TF-IDF = **0.7223** > W2V = 0.6971 > ST = **0.6948**. TF-IDF thắng vì RAGTruth có lexical cues rõ (domain-specific terms, citation patterns); SentenceTransformer (MiniLM-L6-v2) được train cho semantic similarity tổng quát, không optimize cho hallucination detection.
-# - **Best overall**: LR + TF-IDF bigram = **F1-macro = 0.7331** (leaderboard #1). Bigram nắm được cụm từ đặc trưng (e.g. "according to", "the study") tốt hơn unigram.
+# - **K-Means silhouette**: TF-IDF = 0.1834 > ST = 0.0826 — TF-IDF cho cụm tách biệt hơn khi dùng K-Means. TF-IDF đã được giảm chiều qua TruncatedSVD(100) trước khi clustering, nên so sánh tương đối công bằng.
+# - **Linear SVM F1-macro**: TF-IDF = 0.7223 > W2V = 0.6971 > ST = 0.6948. TF-IDF thắng vì RAGTruth có lexical cues rõ (domain-specific terms, citation patterns); SentenceTransformer (MiniLM-L6-v2) được train cho semantic similarity tổng quát, không optimize cho hallucination detection.
+# - **Best overall**: LR + TF-IDF bigram = F1-macro = 0.7331 (leaderboard #1). Bigram nắm được cụm từ đặc trưng (e.g. "according to", "the study") tốt hơn unigram.
 # - **Kết luận phê bình**: Dense embedding không tự động vượt TF-IDF sparse; hiệu quả phụ thuộc mạnh vào domain và cách biểu diễn. Fine-tuning SentenceTransformer trên RAGTruth có thể đảo ngược kết quả này.
 #
 # ---
@@ -2027,13 +2027,13 @@ plt.show()
 # | **Stop words** | Xóa −41.09% token nhưng chỉ −0.41% vocab; ΔMI = −0.000114 (stop words mang một chút MI) |
 # | **Stemming** | Porter/Snowball collision 35%; WordNet 13%; ΔF1 ≈ 0 giữa các phương pháp (< 0.002) |
 # | **Vectorization** | BoW + TF-IDF cài đặt thủ công; silhouette < 0.1 — không phương pháp nào tạo cụm rõ |
-# | **Best model** | LR + TF-IDF bigram: **F1-macro = 0.7331** (5-fold CV) |
+# | **Best model** | LR + TF-IDF bigram: F1-macro = 0.7331 (5-fold CV) |
 #
 # ### 5.2. Nhận xét và đánh giá phê bình
 #
 # 1. **Kết quả ngược trực giác**: Xóa stop words làm *giảm* MI trung bình (ΔMI = −0.000114) và TF-IDF sparse vượt Sentence Transformer 384-dim trên dataset này — cho thấy một số giả định thường gặp trong NLP không áp dụng cho domain AI-generated text.
 # 2. **Hạn chế thống kê**: Friedman test với 5 folds có power thấp; bootstrap silhouette với N_BOOT=10 không đủ để estimate variance ổn định. Cần ≥ 20 lần lặp để có kết luận đáng tin.
-# 3. **Silhouette rất thấp** (< 0.1 trên GT labels): không phương pháp nào tạo tách biệt rõ giữa 2 nhóm — phân loại với F1 = 0.73 dựa trên pattern bề mặt, không phải từ cụm ngữ nghĩa rõ ràng.
+# 3. Silhouette rất thấp (< 0.1 trên GT labels): không phương pháp nào tạo tách biệt rõ giữa 2 nhóm — phân loại với F1 = 0.73 dựa trên pattern bề mặt, không phải từ cụm ngữ nghĩa rõ ràng.
 # 4. **Hướng phát triển**: Fine-tuning Transformer trên task hallucination detection hoặc dùng feature ngữ cảnh (query + context + response) thay vì chỉ `output` có tiềm năng cải thiện đáng kể.
 #
 # ### 5.3. Hạn chế và hướng phát triển

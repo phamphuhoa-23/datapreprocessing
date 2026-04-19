@@ -184,8 +184,8 @@ print(f"\nBộ nhớ train: {mem_mb:.1f} MB")
 # %% [markdown] _cell_guid="2a072991-4bc5-4801-be53-d985d587802f" _uuid="d3b21416-8d51-49f8-9665-a5a637343bcd" jupyter={"outputs_hidden": false}
 # #### Phân nhóm cột theo ý nghĩa nghiệp vụ
 # #
-# Dataset IEEE-CIS gồm **~400 cột** được Vesta Corporation đặt tên có chủ đích.
-# Ta có thể chia toàn bộ thuộc tính thành **9 nhóm** dựa theo ý nghĩa nghiệp vụ:
+# Dataset IEEE-CIS gồm ~400 cột được Vesta Corporation đặt tên có chủ đích.
+# Ta có thể chia toàn bộ thuộc tính thành 9 nhóm dựa theo ý nghĩa nghiệp vụ:
 # #
 # | Nhóm | Cột đại diện | Ý nghĩa |
 # |---|---|---|
@@ -207,29 +207,29 @@ print(f"\nBộ nhớ train: {mem_mb:.1f} MB")
 # #
 # **2. Card** – Sáu cột `card1`–`card6` đều mô tả thẻ thanh toán từ các góc độ khác nhau
 # (ID thẻ, mạng Visa/MC, thẻ debit/credit, ngân hàng phát hành, quốc gia).
-# Nhóm lại vì chúng cùng xác định **danh tính của phương tiện thanh toán**.
+# Nhóm lại vì chúng cùng xác định danh tính của phương tiện thanh toán.
 # #
 # **3. Address/Dist** – Hai cột địa chỉ (`addr1`, `addr2`) và hai khoảng cách (`dist1`, `dist2`)
 # đều liên quan đến vị trí địa lý. Gian lận thường xảy ra khi địa chỉ giao hàng khác xa
 # địa chỉ thẻ → nhóm lại để phân tích tương quan không gian.
 # #
-# **4. Email** – Hai domain email (purchaser vs. recipient) phản ánh **hành vi tạo tài khoản**.
+# **4. Email** – Hai domain email (purchaser vs. recipient) phản ánh hành vi tạo tài khoản.
 # Khi P_email ≠ R_email hoặc dùng domain bất thường → tín hiệu gian lận. Nhóm riêng để
 # tạo feature `email_match` và phân tích fraud rate theo domain.
 # #
-# **5. C (count)** – Theo tài liệu Vesta, C1–C14 là các **biến đếm** (count) về lịch sử
+# **5. C (count)** – Theo tài liệu Vesta, C1–C14 là các biến đếm (count) về lịch sử
 # giao dịch liên quan đến thẻ/địa chỉ trong quá khứ. Giá trị lớn = thẻ/địa chỉ đã dùng nhiều.
 # Nhóm lại vì tất cả cùng kiểu "lịch sử tần suất".
 # #
-# **6. D (timedelta)** – D1–D15 là **khoảng thời gian** (ngày) giữa các sự kiện:
+# **6. D (timedelta)** – D1–D15 là khoảng thời gian (ngày) giữa các sự kiện:
 # D1 = số ngày từ giao dịch trước trên cùng thẻ, D4/D5 = từ khi mở thẻ, v.v.
-# Nhóm lại vì chúng đều đo **temporal gap** và có cấu trúc missing khác nhau theo từng cột.
+# Nhóm lại vì chúng đều đo temporal gap và có cấu trúc missing khác nhau theo từng cột.
 # #
-# **7. M (match)** – M1–M9 là **cờ khớp** (match flag) dạng T/F/NaN:
+# **7. M (match)** – M1–M9 là cờ khớp (match flag) dạng T/F/NaN:
 # M1 = khớp tên thẻ, M2 = khớp địa chỉ. Nhóm lại vì tất cả đều là biến phân loại nhị phân
 # và cần xử lý encoding đồng nhất.
 # #
-# **8. V (Vesta)** – 339 cột V1–V339 là **đặc trưng bí mật** do Vesta tính toán. Chúng có cấu trúc
+# **8. V (Vesta)** – 339 cột V1–V339 là đặc trưng bí mật do Vesta tính toán. Chúng có cấu trúc
 # missing rất rõ ràng theo 11 sub-group (G1–G11) → nhóm lại để phân tích missing pattern
 # và giảm chiều bằng PCA/feature selection theo sub-group.
 # #
@@ -295,7 +295,7 @@ print("=" * 70)
 # #
 # #### Kiểm tra phân phối là gì và tại sao cần?
 # #
-# **Kiểm tra phân phối** (normality test) xác định liệu một thuộc tính có tuân theo **phân phối chuẩn** $\mathcal{N}(\mu, \sigma^2)$ hay không.
+# **Kiểm tra phân phối** (normality test) xác định liệu một thuộc tính có tuân theo phân phối chuẩn $\mathcal{N}(\mu, \sigma^2)$ hay không.
 # Kết quả ảnh hưởng trực tiếp đến các bước tiếp theo:
 # #
 # | Nếu phân phối... | Dùng correlation | Dùng scaler |
@@ -306,7 +306,7 @@ print("=" * 70)
 # #### Shapiro-Wilk là gì?
 # #
 # **Shapiro-Wilk** (1965) là kiểm định phân phối chuẩn phổ biến nhất, hoạt động bằng cách
-# so sánh các **order statistics** (giá trị đã sắp xếp) của mẫu với các order statistics kỳ vọng
+# so sánh các order statistics (giá trị đã sắp xếp) của mẫu với các order statistics kỳ vọng
 # của phân phối chuẩn lý thuyết:
 # #
 # $$W = \frac{\left(\sum_{i=1}^{n} a_i x_{(i)}\right)^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
@@ -376,7 +376,7 @@ print(normality_df.sort_values(
 # | Phân phối chuẩn ($p > 0.05$) | **1 / 400** (0.25%) |
 # | Không phân phối chuẩn | **399 / 400** (99.75%) |
 # #
-# **Kết luận**: Gần như **toàn bộ dataset không tuân theo phân phối chuẩn** – đây là kết quả
+# **Kết luận**: Gần như toàn bộ dataset không tuân theo phân phối chuẩn – đây là kết quả
 # điển hình với dữ liệu tài chính/giao dịch thực tế. Cột duy nhất gần chuẩn là **`id_25`**
 # ($p = 0.627$), vốn là một cột identity thưa dữ liệu và ít giá trị khác nhau.
 # #
@@ -517,7 +517,7 @@ else:
 # **Kết quả tổng quan:**
 # - `max|Δr| = 1.1928` — chênh lệch cực đại giữa hai phương pháp rất lớn (thang đo từ 0 đến 2)
 # - `mean|Δr| = 0.2159` — trung bình gần 50% số cặp cột có sự khác biệt đáng kể
-# - **49.8% số cặp** (202/406 cặp) có `|Δr| > 0.1`, tức là gần một nửa các cặp thuộc tính bị ảnh hưởng
+# - 49.8% số cặp (202/406 cặp) có `|Δr| > 0.1`, tức là gần một nửa các cặp thuộc tính bị ảnh hưởng
 #
 # **Minh chứng điển hình — cặp `C4` vs `C14`:**
 # | Phương pháp | Hệ số tương quan |
@@ -526,10 +526,10 @@ else:
 # | Spearman | −0.2510 (tương quan âm yếu) |
 # | `|Δr|` | **1.1928** |
 #
-# Pearson cho thấy C4 và C14 tương quan dương cực mạnh (~0.94), trong khi Spearman (dựa trên rank) lại cho thấy tương quan âm yếu (−0.25). Mâu thuẫn này là dấu hiệu rõ ràng của **outlier cực đoan**: một vài giá trị ngoại lệ lớn bất thường đã kéo hệ số Pearson lên cao giả tạo, trong khi Spearman — không bị ảnh hưởng bởi giá trị tuyệt đối — phản ánh đúng hơn xu hướng thực sự của phần lớn dữ liệu.
+# Pearson cho thấy C4 và C14 tương quan dương cực mạnh (~0.94), trong khi Spearman (dựa trên rank) lại cho thấy tương quan âm yếu (−0.25). Mâu thuẫn này là dấu hiệu rõ ràng của outlier cực đoan: một vài giá trị ngoại lệ lớn bất thường đã kéo hệ số Pearson lên cao giả tạo, trong khi Spearman — không bị ảnh hưởng bởi giá trị tuyệt đối — phản ánh đúng hơn xu hướng thực sự của phần lớn dữ liệu.
 #
 # **Kết luận:**
-# > Dữ liệu IEEE-CIS Fraud Detection chứa nhiều outlier nghiêm trọng (đặc biệt ở các cột nhóm **C**). Pearson không phù hợp vì nhạy cảm với outlier và giả định phân phối chuẩn. **Spearman được ưu tiên** cho phân tích tương quan trong toàn bộ notebook này.
+# > Dữ liệu IEEE-CIS Fraud Detection chứa nhiều outlier nghiêm trọng (đặc biệt ở các cột nhóm **C**). Pearson không phù hợp vì nhạy cảm với outlier và giả định phân phối chuẩn. Spearman được ưu tiên cho phân tích tương quan trong toàn bộ notebook này.
 
 # %% _cell_guid="2a9e1000-4c99-48c3-819e-f1de5d078ff4" _uuid="c7aafb4f-8b90-4b50-9bd7-2a63b480572c" jupyter={"outputs_hidden": false}
 # Phát hiện đa cộng tuyến mạnh |r_s| > 0.9 (dùng Spearman)
@@ -552,7 +552,7 @@ if len(high_corr_df) > 0:
 # %% [markdown]
 # #### Nhận xét: Phát hiện đa cộng tuyến (Multicollinearity)
 #
-# Sử dụng ngưỡng `|Spearman r| > 0.9`, phát hiện **4 cặp thuộc tính** có đa cộng tuyến mạnh:
+# Sử dụng ngưỡng `|Spearman r| > 0.9`, phát hiện 4 cặp thuộc tính có đa cộng tuyến mạnh:
 #
 # | Feature 1 | Feature 2 | Spearman r | Mức độ |
 # |---|---|---|---|
@@ -563,7 +563,7 @@ if len(high_corr_df) > 0:
 #
 # **Nhận xét:**
 # - `C8` xuất hiện trong 3/4 cặp $\rightarrow$ đây là cột trung tâm của cụm đa cộng tuyến
-# - `C8`, `C10`, `V304` tạo thành một **cụm 3 cột** tương quan chéo lẫn nhau rất mạnh (r > 0.94)
+# - `C8`, `C10`, `V304` tạo thành một cụm 3 cột tương quan chéo lẫn nhau rất mạnh (r > 0.94)
 # - Nhóm **C** (count features) là các biến đếm hành vi giao dịch của Vesta, nên việc chúng tương quan cao là có thể lý giải được về mặt nghiệp vụ
 #
 # **Đề xuất xử lý:**
@@ -636,22 +636,22 @@ plt.show()
 # #
 # - **Identity** thiếu 84.5% vì đây là kết quả của **left join**: không phải mọi giao dịch đều có bản ghi identity đi kèm. Nói cách khác, ~84.5% giao dịch không có thông tin thiết bị/trình duyệt, đây không phải lỗi thu thập dữ liệu mà phản ánh thực tế nghiệp vụ. Giao dịch không có identity có thể đáng ngờ hơn.
 # #
-# - **D (timedelta)** thiếu 58.2% trung bình nhưng **không đồng đều**: D1 thiếu ít, D8–D15 thiếu rất nhiều. Mỗi cột D đo khoảng cách thời gian khác nhau, thiếu = sự kiện đó chưa từng xảy ra trước đó $\rightarrow$ **không nên impute bằng median**, nên dùng -1 hoặc tạo flag.
+# - **D (timedelta)** thiếu 58.2% trung bình nhưng không đồng đều: D1 thiếu ít, D8–D15 thiếu rất nhiều. Mỗi cột D đo khoảng cách thời gian khác nhau, thiếu = sự kiện đó chưa từng xảy ra trước đó $\rightarrow$ không nên impute bằng median, nên dùng -1 hoặc tạo flag.
 # #
 # - **M (match)** và **Email** thiếu ~46–50%: có thể do giao dịch khách vãng lai (guest checkout) không cần xác thực email hay địa chỉ, nên missing có thể là **MNAR** (thiếu phụ thuộc vào loại giao dịch), cần cẩn thận với imputation.
 # #
-# - **C (count)** và **Transaction** đầy đủ 100%. Đây là nhóm feature **đáng tin cậy nhất** cho model, không cần xử lý thiếu.
+# - **C (count)** và **Transaction** đầy đủ 100%. Đây là nhóm feature đáng tin cậy nhất cho model, không cần xử lý thiếu.
 
 # %% [markdown]
 # ### Phân tích nhóm V (Vesta engineered features)
 #
 # Nhóm **V** gồm 339 cột (V1–V339) là các feature được Vesta tự tạo ra (engineered),
 # không có tên ý nghĩa cụ thể. Kaggle công bố rằng 339 cột này được chia thành
-# **11 sub-group nội bộ (G1–G11)** dựa trên **missing pattern**:
+# 11 sub-group nội bộ (G1–G11) dựa trên missing pattern:
 # các cột trong cùng một sub-group bị thiếu ở những hàng giống nhau,
 # ngụ ý chúng được sinh ra từ cùng một nguồn dữ liệu gốc.
 #
-# > Lưu ý: 11 sub-group này là phân nhóm **nội bộ riêng cho V**,
+# > Lưu ý: 11 sub-group này là phân nhóm nội bộ riêng cho V,
 # > khác với 9 nhóm feature tổng quan của toàn dataset (Transaction, Card, C, D, M, V, ...).
 #
 # Biểu đồ dưới đây thể hiện tỉ lệ thiếu từng cột V1–V339,
@@ -732,12 +732,12 @@ plt.show()
 # ### Nhận xét: Phân tích giá trị thiếu (Missing Values)
 #
 # **Ma trận missing (hình 1):**
-# - Phần bên trái (các cột C, D, M, addr) có pattern thiếu **không đồng đều** — từng hàng có thể thiếu ở các cột khác nhau, gợi ý missing xảy ra ngẫu nhiên theo từng giao dịch.
-# - Phần bên phải (nhóm V) có các **dải đen liên tục theo chiều dọc** — toàn bộ một dải cột V cùng thiếu ở cùng một tập hàng, xác nhận các sub-group G1–G11 có missing pattern đồng nhất nội bộ.
+# - Phần bên trái (các cột C, D, M, addr) có pattern thiếu không đồng đều — từng hàng có thể thiếu ở các cột khác nhau, gợi ý missing xảy ra ngẫu nhiên theo từng giao dịch.
+# - Phần bên phải (nhóm V) có các dải đen liên tục theo chiều dọc — toàn bộ một dải cột V cùng thiếu ở cùng một tập hàng, xác nhận các sub-group G1–G11 có missing pattern đồng nhất nội bộ.
 #
 # **Tỉ lệ có mặt (hình 2):**
-# - Một số cột gần như **đầy đủ dữ liệu** (bar ~1.0): `card2`, `card3`, `card5`, `addr1`
-# - Một số cột **thiếu cực nặng** (bar < 0.1): `D6`, `D7`, `D8`, `D11` $\rightarrow$ hơn 90% hàng không có giá trị
+# - Một số cột gần như đầy đủ dữ liệu (bar ~1.0): `card2`, `card3`, `card5`, `addr1`
+# - Một số cột thiếu cực nặng (bar < 0.1): `D6`, `D7`, `D8`, `D11` $\rightarrow$ hơn 90% hàng không có giá trị
 # - `P_emaildomain` và `R_emaildomain` thiếu ở mức trung bình (~20–40%)
 #
 
@@ -792,7 +792,7 @@ plt.show()
 # | 50–90% | 202 cột |
 # | > 90% | 12 cột |
 #
-# **Top 30 cột thiếu nhiều nhất** đều vượt ngưỡng 90%, chủ yếu thuộc nhóm `id_` (Identity) và `D` (timedelta) — phù hợp với nhận xét trước: thiếu do giao dịch không có bản ghi identity đi kèm, không phải lỗi thu thập.
+# Top 30 cột thiếu nhiều nhất đều vượt ngưỡng 90%, chủ yếu thuộc nhóm `id_` (Identity) và `D` (timedelta) — phù hợp với nhận xét trước: thiếu do giao dịch không có bản ghi identity đi kèm, không phải lỗi thu thập.
 #
 # **Kết luận:** Phần lớn missing tập trung ở mức cao (50–90%), không nên impute đơn giản mà cần kết hợp tạo feature `is_missing` để mô hình khai thác tín hiệu từ chính sự vắng mặt của dữ liệu.
 
@@ -800,9 +800,9 @@ plt.show()
 # #### Little's MCAR Test – Thiết kế bootstrap
 #
 # Thay vì chạy test một lần trên toàn bộ cột của mỗi nhóm, cell dưới sử dụng **bootstrap sampling**:
-# - Mỗi lần chạy: sample ngẫu nhiên **5 cột** trong nhóm, chạy Little's MCAR test
-# - Lặp lại **30 lần** với các tập cột khác nhau
-# - Kết quả cuối: **median chi2 và p-value** qua các runs hợp lệ
+# - Mỗi lần chạy: sample ngẫu nhiên 5 cột trong nhóm, chạy Little's MCAR test
+# - Lặp lại 30 lần với các tập cột khác nhau
+# - Kết quả cuối: median chi2 và p-value qua các runs hợp lệ
 #
 # **Lý do không lấy toàn bộ cột:**
 #
@@ -980,7 +980,7 @@ print(result_df.to_string(index=False))
 # %% [markdown]
 # #### Nhận xét: Kết quả Little's MCAR Test
 #
-# **Tóm tắt:** Cả 4 nhóm đều **bác bỏ MCAR** với p-value (Fisher) = 0.0 và chi² rất lớn, nhất quán qua toàn bộ runs hợp lệ, không có run nào suy biến.
+# **Tóm tắt:** Cả 4 nhóm đều bác bỏ MCAR với p-value (Fisher) = 0.0 và chi² rất lớn, nhất quán qua toàn bộ runs hợp lệ, không có run nào suy biến.
 #
 # | Nhóm | Tổng cột | Patterns (med) | Chi² (median) | Mức độ bác bỏ |
 # |---|---|---|---|---|
@@ -1003,14 +1003,14 @@ print(result_df.to_string(index=False))
 # %% [markdown]
 # #### Phân tích tương quan Missing Indicator vs isFraud
 #
-# Little's MCAR test ở trên cho biết dữ liệu thiếu **có cấu trúc** (MAR/MNAR), nhưng chưa cho biết việc thiếu có **liên quan trực tiếp đến fraud** hay không.
+# Little's MCAR test ở trên cho biết dữ liệu thiếu có cấu trúc (MAR/MNAR), nhưng chưa cho biết việc thiếu có liên quan trực tiếp đến fraud hay không.
 #
 # Cell dưới kiểm tra điều đó bằng cách đơn giản hơn: với mỗi cột có missing, tạo biến nhị phân `is_missing` (1 = thiếu, 0 = có dữ liệu), rồi tính **Pearson correlation** giữa `is_missing` và `isFraud`.
 #
-# - Nếu `|corr| > 0.1` $\rightarrow$ việc thiếu dữ liệu ở cột đó có liên quan đến fraud $\rightarrow$ cột đó mang **tín hiệu MNAR/MAR informative** $\rightarrow$ nên tạo feature `is_missing` để mô hình khai thác
+# - Nếu `|corr| > 0.1` $\rightarrow$ việc thiếu dữ liệu ở cột đó có liên quan đến fraud $\rightarrow$ cột đó mang tín hiệu MNAR/MAR informative $\rightarrow$ nên tạo feature `is_missing` để mô hình khai thác
 # - Nếu `|corr| ≤ 0.1` $\rightarrow$ việc thiếu gần như độc lập với fraud $\rightarrow$ không cần tạo indicator, impute bình thường
 #
-# > Ngưỡng `0.1` là ngưỡng **hệ số tương quan** (không phải p-value). Với `isFraud` mất cân bằng nặng (~3.5% fraud), correlation > 0.1 đã là tín hiệu thực sự đáng chú ý.
+# > Ngưỡng `0.1` là ngưỡng hệ số tương quan (không phải p-value). Với `isFraud` mất cân bằng nặng (~3.5% fraud), correlation > 0.1 đã là tín hiệu thực sự đáng chú ý.
 
 # %% _cell_guid="68c16a82-db0c-4e01-9c9d-f4ad3b2e52ea" _uuid="31904c12-1a79-417e-8569-d4e161aac79d" jupyter={"outputs_hidden": false}
 print("\n=== Tương quan Missing Indicator vs isFraud ===")
@@ -1037,13 +1037,13 @@ print(miss_indicator_df.head(15).to_string())
 # %% [markdown]
 # #### Nhận xét: Tương quan Missing Indicator vs isFraud
 #
-# **134/288 cột** (46.5%) có `|corr(is_missing, isFraud)| > 0.1` — gần một nửa số cột có missing mang tín hiệu liên quan đến fraud thông qua chính sự vắng mặt của dữ liệu.
+# 134/288 cột (46.5%) có `|corr(is_missing, isFraud)| > 0.1` — gần một nửa số cột có missing mang tín hiệu liên quan đến fraud thông qua chính sự vắng mặt của dữ liệu.
 #
 # **Top 15 cột nổi bật:**
 #
-# - **Tương quan âm** (D7, D12, D14, D6, D8, D9, id_09, id_10, ...): `is_missing = 1` $\rightarrow$ *ít* fraud hơn. Tức là các giao dịch **có** dữ liệu D/id tương ứng lại có xu hướng fraud cao hơn — gợi ý rằng fraud thường đến từ các tài khoản *có lịch sử giao dịch* hoặc *có thiết bị được nhận dạng*.
+# - Tương quan âm (D7, D12, D14, D6, D8, D9, id_09, id_10, ...): `is_missing = 1` $\rightarrow$ *ít* fraud hơn. Tức là các giao dịch **có** dữ liệu D/id tương ứng lại có xu hướng fraud cao hơn — gợi ý rằng fraud thường đến từ các tài khoản *có lịch sử giao dịch* hoặc *có thiết bị được nhận dạng*.
 #
-# - **Tương quan dương** (addr1, addr2): `is_missing = 1` $\rightarrow$ *nhiều* fraud hơn. Giao dịch **không có địa chỉ** có tỉ lệ fraud cao hơn — hợp lý vì kẻ gian thường không cung cấp đầy đủ thông tin địa chỉ.
+# - Tương quan dương (addr1, addr2): `is_missing = 1` $\rightarrow$ *nhiều* fraud hơn. Giao dịch **không có địa chỉ** có tỉ lệ fraud cao hơn — hợp lý vì kẻ gian thường không cung cấp đầy đủ thông tin địa chỉ.
 #
 # **Kết luận:**
 # > 134 cột này có cơ chế missing **MAR/MNAR informative** — việc thiếu bản thân nó đã là tín hiệu dự báo fraud. Cần tạo feature `is_missing` cho các cột này trước khi impute, thay vì chỉ điền giá trị và bỏ qua thông tin về sự vắng mặt.
@@ -1134,7 +1134,7 @@ plt.show()
 # | Không có identity | 2.09% |
 # | Có identity | **7.85%** |
 #
-# Giao dịch **có** identity record có fraud rate cao gấp ~3.75 lần so với không có. Điều này có vẻ ngược với trực giác, nhưng lý giải được: fraud thường xảy ra trên các thiết bị/trình duyệt được nhận dạng (có identity), trong khi các giao dịch không có identity phần lớn là các kênh thanh toán đơn giản ít bị tấn công hơn. Feature `has_identity` (1/0) vì vậy là tín hiệu phân biệt tốt và nên tạo trong pipeline.
+# Giao dịch có identity record có fraud rate cao gấp ~3.75 lần so với không có. Điều này có vẻ ngược với trực giác, nhưng lý giải được: fraud thường xảy ra trên các thiết bị/trình duyệt được nhận dạng (có identity), trong khi các giao dịch không có identity phần lớn là các kênh thanh toán đơn giản ít bị tấn công hơn. Feature `has_identity` (1/0) vì vậy là tín hiệu phân biệt tốt và nên tạo trong pipeline.
 #
 # **Phân phối id_01–id_06:**
 #
@@ -1297,11 +1297,11 @@ if len(per_col_rmse) >= 3:
 #
 # Bác bỏ $H_0$ — có sự khác biệt có ý nghĩa thống kê giữa các chiến lược. Post-hoc Wilcoxon (Bonferroni α = 0.0024, 21 cặp so sánh) cho thấy:
 #
-# - **MICE vượt trội có ý nghĩa** so với kNN-3, kNN-5, kNN-10, và Mode (tất cả `*`) — xác nhận MICE thực sự tốt nhất.
-# - **MICE vs Mean/Median: không có ý nghĩa** (`ns`, p $\approx$ 0.0046) — tuy nhiên đây là do **thiếu power thống kê** (chỉ 15 cột = 15 quan sát cho Wilcoxon, kết hợp Bonferroni chia 21 rất khắt khe). Chênh lệch RMSE thực tế ~23 điểm (120 $\rightarrow$ 97) là đáng kể về mặt thực tiễn.
-# - **Mean vs Median/kNN-3/kNN-5/kNN-10: không khác biệt** (`ns`) — 5 phương pháp này tạo thành một nhóm không phân biệt được ở mức Bonferroni.
-# - **Mode kém có ý nghĩa** so với Mean (`*`) và MICE (`*`) — xác nhận Mode không phù hợp cho biến liên tục.
-# - **kNN-3 kém có ý nghĩa** so với kNN-5, kNN-10, MICE (`*`) — k = 3 quá nhỏ, dễ bị nhiễu.
+# - MICE vượt trội có ý nghĩa so với kNN-3, kNN-5, kNN-10, và Mode (tất cả `*`) — xác nhận MICE thực sự tốt nhất.
+# - MICE vs Mean/Median: không có ý nghĩa (`ns`, p $\approx$ 0.0046) — tuy nhiên đây là do thiếu power thống kê (chỉ 15 cột = 15 quan sát cho Wilcoxon, kết hợp Bonferroni chia 21 rất khắt khe). Chênh lệch RMSE thực tế ~23 điểm (120 $\rightarrow$ 97) là đáng kể về mặt thực tiễn.
+# - Mean vs Median/kNN-3/kNN-5/kNN-10: không khác biệt (`ns`) — 5 phương pháp này tạo thành một nhóm không phân biệt được ở mức Bonferroni.
+# - Mode kém có ý nghĩa so với Mean (`*`) và MICE (`*`) — xác nhận Mode không phù hợp cho biến liên tục.
+# - kNN-3 kém có ý nghĩa so với kNN-5, kNN-10, MICE (`*`) — k = 3 quá nhỏ, dễ bị nhiễu.
 #
 # **Kết luận:**
 #
@@ -1440,7 +1440,7 @@ plt.savefig(os.path.join(OUTPUT_DIR, 'fig_imp_mar_benchmark.png'),
 plt.show()
 
 # %% [markdown]
-# **Kiểm tra tính vững (robustness):** Benchmark MCAR và MAR-aware cho **ranking giống nhau**
+# **Kiểm tra tính vững (robustness):** Benchmark MCAR và MAR-aware cho ranking giống nhau
 # → lựa chọn imputer không nhạy cảm với cơ chế missing.
 # Kết quả MCAR benchmark ban đầu là đủ tin cậy cho dataset này.
 
@@ -1468,7 +1468,7 @@ plt.show()
 # 3. **Scale / Encode** ở bước tiếp theo
 #
 # **Lưu ý kỹ thuật:** KNNImputer và MICE chỉ phù hợp để *benchmark* trên tập con nhỏ.
-# Với ~400+ cột số và 590k dòng, áp dụng toàn bộ sẽ gây **out-of-memory**.
+# Với ~400+ cột số và 590k dòng, áp dụng toàn bộ sẽ gây out-of-memory.
 # $\rightarrow$ Dùng chiến lược scalable tốt nhất (Mean/Median/Mode theo RMSE benchmark) cho production pipeline
 # (KNN/MICE không phù hợp 400+ cột × 590k dòng — OOM)
 #
@@ -1550,7 +1550,7 @@ gc.collect()
 # - **Imputation** (Mean): outlier làm mean lệch $\rightarrow$ điền sai cho các ô thiếu
 # - **Correlation**: như đã thấy ở phần trước, outlier làm Pearson lệch hoàn toàn so với Spearman
 #
-# Tuy nhiên với **mô hình tree-based** (XGBoost, Random Forest), outlier ít ảnh hưởng hơn vì các cây phân chia dựa trên rank.
+# Tuy nhiên với mô hình tree-based (XGBoost, Random Forest), outlier ít ảnh hưởng hơn vì các cây phân chia dựa trên rank.
 #
 # ---
 #
@@ -1578,10 +1578,10 @@ gc.collect()
 #
 # Trong đó $F_1$, $F_2$ là CDF trước và sau xử lý.
 #
-# - $p < 0.05$ $\rightarrow$ phân phối bị biến dạng đáng kể $\rightarrow$ phương pháp đó **quá hung hăng**, loại bỏ quá nhiều điểm hợp lệ
+# - $p < 0.05$ $\rightarrow$ phân phối bị biến dạng đáng kể $\rightarrow$ phương pháp đó quá hung hăng, loại bỏ quá nhiều điểm hợp lệ
 # - $p \geq 0.05$ $\rightarrow$ phân phối được bảo toàn tốt
 #
-# **Ưu tiên IQR clipping** (giới hạn giá trị tại ngưỡng) thay vì xóa dòng — bảo toàn toàn bộ số mẫu, đặc biệt quan trọng khi lớp fraud chỉ chiếm 3.5%.
+# Ưu tiên IQR clipping (giới hạn giá trị tại ngưỡng) thay vì xóa dòng — bảo toàn toàn bộ số mẫu, đặc biệt quan trọng khi lớp fraud chỉ chiếm 3.5%.
 
 # %% _cell_guid="8d884d03-1eb1-4e32-8d37-725cb05a7e53" _uuid="8032e199-e56c-483c-825b-3e3aedf95743" jupyter={"outputs_hidden": false}
 
@@ -1657,7 +1657,7 @@ for name, rate in outlier_rates.items():
 # #### Nhận xét: Tỉ lệ phát hiện ngoại lai theo từng phương pháp
 #
 # **Univariate:**
-# - **IQR: 54.38%** — phát hiện hơn nửa dataset là outlier. Nguyên nhân: các cột phân phối lệch phải rất mạnh (đã xác nhận qua D'Agostino-Pearson test) $\rightarrow$ IQR range hẹp $\rightarrow$ ngưỡng $Q_3 + 1.5 \times IQR$ quá thấp, đánh dấu gần như toàn bộ đuôi phải. Tỉ lệ này **quá hung hăng** để dùng trực tiếp cho việc xóa dòng.
+# - **IQR: 54.38%** — phát hiện hơn nửa dataset là outlier. Nguyên nhân: các cột phân phối lệch phải rất mạnh (đã xác nhận qua D'Agostino-Pearson test) $\rightarrow$ IQR range hẹp $\rightarrow$ ngưỡng $Q_3 + 1.5 \times IQR$ quá thấp, đánh dấu gần như toàn bộ đuôi phải. Tỉ lệ này quá hung hăng để dùng trực tiếp cho việc xóa dòng.
 # - **Z-score: 10.11%** — hợp lý hơn IQR trong trường hợp này. Tuy Z-score giả định phân phối chuẩn, ngưỡng $|z| > 3$ vẫn cắt được $\sim$10% điểm cực trị. Mean và std bị kéo bởi outlier nhưng không đến mức vô hiệu hóa hoàn toàn.
 #
 # **Multivariate:**
@@ -1673,7 +1673,7 @@ for name, rate in outlier_rates.items():
 # | Multivariate | LOF\_k20 hoặc IF\_c0.05 | Tỉ lệ $\sim$5–8% hợp lý, không quá aggressive |
 #
 # **Kết luận:**
-# > IQR $1.5\times$ không phù hợp trực tiếp với dataset có phân phối lệch mạnh — tỉ lệ 54% cho thấy ngưỡng quá thấp. Nếu dùng IQR, cần tăng hệ số (ví dụ $3\times IQR$) hoặc áp dụng IQR clipping (cap giá trị thay vì xóa dòng). Z-score ($\sim$10%) và LOF ($\sim$8%) cho tỉ lệ hợp lý hơn. Multivariate methods (LOF, IF) hữu ích để **phân tích pattern** bất thường phức tạp, nhưng cần thận trọng khi xóa dòng vì có thể loại nhầm các giao dịch fraud thực sự — đây là lớp thiểu số cần bảo toàn.
+# > IQR $1.5\times$ không phù hợp trực tiếp với dataset có phân phối lệch mạnh — tỉ lệ 54% cho thấy ngưỡng quá thấp. Nếu dùng IQR, cần tăng hệ số (ví dụ $3\times IQR$) hoặc áp dụng IQR clipping (cap giá trị thay vì xóa dòng). Z-score ($\sim$10%) và LOF ($\sim$8%) cho tỉ lệ hợp lý hơn. Multivariate methods (LOF, IF) hữu ích để phân tích pattern bất thường phức tạp, nhưng cần thận trọng khi xóa dòng vì có thể loại nhầm các giao dịch fraud thực sự — đây là lớp thiểu số cần bảo toàn.
 #
 
 # %% _cell_guid="9a2f8be1-082b-4403-874a-e1641a2767f1" _uuid="2ec6ba58-996c-42b4-8e72-ef5060d984d7" jupyter={"outputs_hidden": false}
@@ -1720,13 +1720,13 @@ plt.show()
 # - Tăng k làm thay đổi tập outlier khá nhiều (~67% không trùng)
 #
 # **Giữa các nhóm — hầu như không đồng thuận:**
-# - IQR vs tất cả multivariate: Jaccard $\leq$ 0.02 — IQR và multivariate phát hiện **những điểm hoàn toàn khác nhau**
+# - IQR vs tất cả multivariate: Jaccard $\leq$ 0.02 — IQR và multivariate phát hiện những điểm hoàn toàn khác nhau
 # - Z-score vs tất cả: Jaccard = 0.00 — xác nhận Z-score không phát hiện được gì
 # - IF vs LOF: Jaccard $\leq$ 0.05 — hai họ multivariate cũng bất đồng với nhau
 # - DBSCAN vs tất cả: Jaccard $\leq$ 0.04 — gần như độc lập hoàn toàn
 #
 # **Kết luận:**
-# > Các phương pháp phát hiện **những tập outlier khác nhau**, không có sự đồng thuận giữa univariate và multivariate. Đây là bằng chứng cho thấy outlier trong dataset này là **đa dạng về bản chất** — một số bất thường theo từng chiều (IQR bắt được), một số bất thường trong không gian đa chiều (LOF/IF bắt được). Không nên chỉ dùng một phương pháp duy nhất.
+# > Các phương pháp phát hiện những tập outlier khác nhau, không có sự đồng thuận giữa univariate và multivariate. Đây là bằng chứng cho thấy outlier trong dataset này là đa dạng về bản chất — một số bất thường theo từng chiều (IQR bắt được), một số bất thường trong không gian đa chiều (LOF/IF bắt được). Không nên chỉ dùng một phương pháp duy nhất.
 
 # %% _cell_guid="2dd6b460-51d2-4cda-a55c-506e6ab4f9fd" _uuid="e573a9af-f1fb-4a95-b503-b955f44a9f36" jupyter={"outputs_hidden": false}
 # Đánh giá tác động loại bỏ ngoại lai qua KS test
