@@ -334,8 +334,7 @@ for i in range(len(sizes)):
 
 # Kết luận động dựa vào eta²
 best_size = sizes[np.argmax([groups_ssim[s].mean() for s in sizes])]
-print(f"\n=> η²={eta2_resize:.3f} ({'lớn ≥0.14' if eta2_resize >= 0.14 else 'trung bình' if eta2_resize >= 0.06 else 'nhỏ'}) — effect size {'rất lớn' if eta2_resize >= 0.14 else 'trung bình'}")
-print(f"=> Kích thước cho SSIM cao nhất: {best_size}")
+print(f"η²={eta2_resize:.3f}, best_size={best_size}")
 
 # %%
 # === Tóm tắt động kết quả Resize ===
@@ -681,12 +680,9 @@ except ValueError:  # all zeros — identical scores
     w_norm, p_norm = 0.0, 1.0
 diff_norm = scores_best_norm - scores_orig_norm
 cohen_d_norm = diff_norm.mean() / (diff_norm.std(ddof=1) + 1e-8)
-cohen_label = 'lớn' if abs(cohen_d_norm) >= 0.8 else (
-    'trung bình' if abs(cohen_d_norm) >= 0.5 else 'nhỏ')
 print(
     f"\nWilcoxon signed-rank ({best_norm_method} vs Original): W={w_norm:.1f}, p={p_norm:.4f}")
-print(f"Cohen's d = {cohen_d_norm:.3f} (effect size {cohen_label})")
-print(f"=> {best_norm_method} {'CẢI THIỆN CÓ Ý NGHĨA thống kê' if p_norm < 0.05 else 'KHÔNG cải thiện có ý nghĩa thống kê'} so với không chuẩn hóa (α=0.05)")
+print(f"Cohen's d = {cohen_d_norm:.3f}")
 
 # %%
 # === Tóm tắt động kết quả Normalization ===
@@ -924,10 +920,8 @@ cohens_d = diff.mean() / (diff.std(ddof=1) + 1e-8)
 
 print(f"\nPaired t-test: t={t_stat:.3f}, p={t_p:.4f}")
 print(f"Wilcoxon: W={w_stat:.1f}, p={w_p:.4f}")
-print(f"Cohen's d = {cohens_d:.3f} ({'lớn' if abs(cohens_d) >= 0.8 else 'trung bình' if abs(cohens_d) >= 0.5 else 'nhỏ'})")
+print(f"Cohen's d = {cohens_d:.3f}")
 print(f"Lớp có variance tăng: {sum(d > 0 for d in diff)}/{len(diff)}")
-print(
-    f"=> Augmentation {'LÀM TĂNG' if w_p < 0.05 else 'KHÔNG làm tăng'} intra-class variance có ý nghĩa thống kê")
 
 # %% [markdown]
 # ---
@@ -1091,14 +1085,13 @@ print(f"\n=== Tóm tắt Augmentation ===")
 print(f"Paired t-test: t={t_stat:.3f}, p={t_p:.4f}")
 print(f"Wilcoxon:      W={w_stat:.1f}, p={w_p:.4f}")
 print(
-    f"Cohen's d:     {cohens_d:.3f} ({'lớn' if abs(cohens_d) >= 0.8 else 'trung bình' if abs(cohens_d) >= 0.5 else 'nhỏ'})")
+    f"Cohen's d:     {cohens_d:.3f}")
 print(f"Lớp tăng variance: {n_increased}/{len(diff)}")
 print(
     f"k-NN Trước aug: {scores_orig.mean():.4f} +/- {scores_orig.std():.4f} [{len(X_orig_knn)} samples]")
 print(
     f"k-NN Sau aug:   {scores_aug.mean():.4f} +/- {scores_aug.std():.4f} [{len(X_aug_knn)} samples]")
-print(
-    f"=> Augmentation {'LÀM TĂNG intra-class variance' if w_p < 0.05 else 'KHÔNG làm tăng'} có ý nghĩa (Wilcoxon p={w_p:.4f})")
+print(f"Wilcoxon p={w_p:.4f}")
 
 # %% [markdown]
 # **Kết luận Augmentation:** (số liệu chính xác xem output bên trên)

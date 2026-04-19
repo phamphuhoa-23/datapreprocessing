@@ -269,12 +269,6 @@ kmeans_ari = KMeans(n_clusters=45, random_state=42, n_init=5)
 cluster_labels = kmeans_ari.fit_predict(X_pca_transformed[:, :2])
 ari = adjusted_rand_score(y_encoded, cluster_labels)
 print(f"Adjusted Rand Index (PCA 2D, 45 classes): {ari:.3f}")
-if ari >= 0.4:
-    print(f"  => phân tách tốt")
-elif ari >= 0.1:
-    print(f"  => phân tách trung bình – PCA 2D giữ được một phần cấu trúc")
-else:
-    print(f"  => phân tách yếu – cần thêm chiều hoặc non-linear method (t-SNE)")
 
 # %% [markdown]
 # ### 3D PCA Projection — toàn bộ 45 lớp
@@ -763,8 +757,7 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
     print(f"  Levene:   stat={lev_s:.2f}, p={lev_p:.2e}")
     print(f"  ANOVA:    F={f_val:.2f}, p={p_anova:.2e}")
     print(f"  Kruskal:  H={h_val:.2f}, p={p_kw:.2e}")
-    print(
-        f"  Eta²={eta2:.3f}  ({'lớn ≥0.14' if eta2 >= 0.14 else 'trung bình ≥0.06' if eta2 >= 0.06 else 'nhỏ'})")
+    print(f"  Eta²={eta2:.3f}")
     print()
 
 # %% [markdown]

@@ -502,11 +502,6 @@ else:
     if n_nan_pairs > 0:
         print(f"  [!] {n_nan_pairs} cặp cột bị NaN (bỏ qua khi tính max/mean)")
     print(f"  Số cặp có |Δr| > 0.1 : {n_large_diff}/{n_total_pairs} ({pct_large:.1f}%)")
-    if max_diff > 0.1:
-        print(f"  => {pct_large:.1f}% số cặp thuộc tính có tương quan tuyến tính và đơn điệu khác nhau đáng kể")
-        print("  => Spearman được ưu tiên vì dữ liệu không chuẩn và có outlier")
-    else:
-        print("  => Pearson và Spearman nhất quán — phân phối gần tuyến tính")
 
     # In cặp có chênh lệch lớn nhất để minh chứng
     diff_lower = diff_corr.where(np.tril(np.ones(diff_corr.shape, dtype=bool), k=-1))
@@ -1260,7 +1255,7 @@ if len(per_col_rmse) >= 3:
         fstat, fp = friedmanchisquare(*groups_rmse)
         print(f"  Friedman: X^2={fstat:.3f}, p={fp:.4e}")
         if fp < 0.05:
-            print("  => Có ít nhất 1 chiến lược khác biệt có ý nghĩa — post-hoc Wilcoxon:")
+            print("  post-hoc Wilcoxon:")
             n_p = len(strats_ordered) * (len(strats_ordered) - 1) // 2
             alpha_b = 0.05 / n_p
             for i in range(len(strats_ordered)):
@@ -1273,7 +1268,7 @@ if len(per_col_rmse) >= 3:
                     print(f"    {strats_ordered[i]:8s} vs {strats_ordered[j]:8s}:"
                           f" p={pw:.4e} {sig} (Bonf alpha={alpha_b:.4f})")
         else:
-            print("  => Không có sự khác biệt có ý nghĩa thống kê giữa các chiến lược")
+            print("  Không có sự khác biệt có ý nghĩa thống kê giữa các chiến lược")
     except Exception as e:
         print(f"  Friedman test không chạy được: {e}")
 
@@ -1414,7 +1409,7 @@ try:
     fstat, fp = friedmanchisquare(*groups)
     print(f"\nFriedman test: X^2={fstat:.3f}, p={fp:.4e}")
     if fp < 0.05:
-        print("=> Có sự khác biệt có ý nghĩa — post-hoc Wilcoxon (Bonferroni):")
+        print("post-hoc Wilcoxon (Bonferroni):")
         n_pairs = len(strats) * (len(strats) - 1) // 2
         alpha_b = 0.05 / n_pairs
         for i in range(len(strats)):
@@ -1427,7 +1422,7 @@ try:
                 print(f"  {strats[i]:8s} vs {strats[j]:8s}: p={pw:.4e} {sig} "
                       f"(Bonf alpha={alpha_b:.4f})")
     else:
-        print("=> Không có sự khác biệt có ý nghĩa thống kê giữa các chiến lược")
+        print("Không có sự khác biệt có ý nghĩa thống kê giữa các chiến lược")
 except Exception as e:
     print(f"Friedman test không chạy được: {e}")
 
@@ -1753,7 +1748,7 @@ if ref_col in outlier_sample.columns:
     best_ks = min(ks_method_results,
                   key=lambda k: ks_method_results[k]['stat'])
     n_sig_ks = sum(1 for v in ks_method_results.values() if v['p'] < 0.05)
-    print(f"=> {n_sig_ks}/{len(ks_method_results)} phương pháp thay đổi phân phối đáng kể (KS p<0.05)")
+    print(f"KS: {n_sig_ks}/{len(ks_method_results)} phương pháp thay đổi phân phối (KS p<0.05)")
 
 # Tạo mask ngoại lai cuối cùng (bảo thủ: giao của IQR và IF_c0.05)
 final_outlier_mask_sample = iqr_mask & if_results['IF_c0.05']

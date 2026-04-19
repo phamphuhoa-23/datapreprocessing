@@ -999,10 +999,6 @@ try:
     w_stat, w_p = wilcoxon(scores_no, scores_with, alternative='two-sided')
     print(
         f"\nWilcoxon signed-rank test (paired folds): W={w_stat:.2f}, p={w_p:.4f}")
-    if w_p < 0.05:
-        print("  => Khác biệt CÓ ý nghĩa thống kê (α=0.05)")
-    else:
-        print("  => Khác biệt KHÔNG có ý nghĩa thống kê → chênh lệch F1 có thể do variance")
 except ValueError as e:
     print(f"\nWilcoxon: {e} (cần ít nhất 2 folds khác nhau)")
 
@@ -1155,8 +1151,7 @@ friedman_stat, friedman_p = friedmanchisquare(*fold_scores_stemlem.values())
 print(
     f"\nFriedman test (4 stemming/lemma methods, 5 folds): χ²={friedman_stat:.4f}, p={friedman_p:.4f}")
 if friedman_p < 0.05:
-    print("  => Có ít nhất một phương pháp khác biệt đáng kể (p < 0.05)")
-    print("  => Chạy pairwise Wilcoxon để xác định cặp nào khác biệt:")
+    print("  post-hoc pairwise Wilcoxon:")
     names_sl = list(fold_scores_stemlem.keys())
     from itertools import combinations
     from scipy.stats import wilcoxon
@@ -1171,7 +1166,7 @@ if friedman_p < 0.05:
         except ValueError:
             print(f"    {n1:20s} vs {n2:20s}: identical scores, skip")
 else:
-    print("  => Không có phương pháp nào khác biệt đáng kể (p ≥ 0.05)")
+    print("  Không có phương pháp nào khác biệt đáng kể (p ≥ 0.05)")
 
 # %%
 # Trực quan hóa so sánh
@@ -1615,7 +1610,7 @@ friedman_v_stat, friedman_v_p = friedmanchisquare(
 print(
     f"\nFriedman test (5 vectorization methods, {N_BOOT} bootstrap): χ²={friedman_v_stat:.4f}, p={friedman_v_p:.4f}")
 if friedman_v_p < 0.05:
-    print("  => Ít nhất một phương pháp khác biệt đáng kể → post-hoc pairwise Wilcoxon:")
+    print("  post-hoc pairwise Wilcoxon:")
     from scipy.stats import wilcoxon
     names_vec = list(sil_bootstrap_scores.keys())
     n_pairs_v = len(list(combinations(names_vec, 2)))
@@ -1632,7 +1627,7 @@ if friedman_v_p < 0.05:
         except ValueError:
             pass
 else:
-    print("  => Không có khác biệt đáng kể giữa các phương pháp (p ≥ 0.05)")
+    print("  Không có khác biệt đáng kể giữa các phương pháp (p ≥ 0.05)")
 
 # %% [markdown]
 # **Phân tích:**

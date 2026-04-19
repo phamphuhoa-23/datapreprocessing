@@ -350,8 +350,7 @@ for ch_name in ['R', 'G', 'B']:
     print(f"Levene: stat={lev_s:.2f}, p={lev_p:.2e}")
     print(f"ANOVA:  F={f_val:.2f}, p={p_anova:.2e}")
     print(f"Kruskal-Wallis: H={h_val:.2f}, p={p_kw:.2e}")
-    print(
-        f"Eta² = {eta2[ch_name]:.3f}  ({'lớn' if eta2[ch_name] >= 0.14 else 'trung bình' if eta2[ch_name] >= 0.06 else 'nhỏ'})")
+    print(f"Eta² = {eta2[ch_name]:.3f}")
 
     print(
         f"\nPost-hoc Mann-Whitney (5 lớp đại diện, Bonferroni a={0.05/10:.4f}):")
@@ -476,10 +475,6 @@ print(
 chi2_stat, chi2_p = stats.chisquare(df_counts['train'].values)
 print(f"\nChi-square test (phân phối lớp đồng đều):")
 print(f"  χ² = {chi2_stat:.4f}, p = {chi2_p:.4e}")
-if chi2_p < 0.05:
-    print("  => Phân phối KHÔNG đồng đều (p < 0.05)")
-else:
-    print("  => Phan phoi dong deu (p >= 0.05), dataset can bang tot")
 
 # %%
 # Kiểm tra ngưỡng 3x
