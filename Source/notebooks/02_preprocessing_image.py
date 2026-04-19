@@ -249,7 +249,7 @@ plt.show()
 
 # %%
 # Ảnh mẫu qua các kích thước
-fig, axes = plt.subplots(2, 4, figsize=(14, 6))
+fig, axes = plt.subplots(2, len(RESIZE_DIMS) + 1, figsize=(14, 6))
 for row, (img, cls) in enumerate([(samples[0][0], samples[0][1]), (samples[60][0], samples[60][1])]):
     axes[row][0].imshow(img)
     axes[row][0].set_title(f"Gốc 256x256\n({cls})", fontsize=9)
@@ -304,8 +304,9 @@ for i in range(len(sizes)):
             f"  {sizes[i]} vs {sizes[j]}: U={u:.0f}, p_raw={p:.2e}, p_bonf={p_bonf:.2e} {sig}")
 
 # Kết luận động dựa vào eta²
-best_size = sizes[np.argmax([groups_ssim[s].mean() for s in sizes])]
-print(f"η²={eta2_resize:.3f}, best_size={best_size}")
+best_size_label = sizes[np.argmax([groups_ssim[s].mean() for s in sizes])]
+best_size = int(best_size_label.split('x')[0])
+print(f"η²={eta2_resize:.3f}, best_size={best_size_label} (→ best_size={best_size})")
 
 # %%
 # === Tóm tắt động kết quả Resize ===
