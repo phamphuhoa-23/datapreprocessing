@@ -47,6 +47,10 @@ from tqdm import tqdm
 from collections import Counter
 from scipy import stats
 from scipy.stats import gaussian_kde
+try:
+    from IPython.display import display
+except ImportError:
+    display = print
 
 warnings.filterwarnings('ignore')
 plt.rcParams.update({
