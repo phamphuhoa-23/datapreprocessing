@@ -254,8 +254,8 @@ plt.show()
 # không thiên vị lớp cụ thể nào, và phản ánh cả hai cực cảnh sáng (cloud, desert)
 # lẫn cảnh tối (forest, mountain).
 #
-# > **Lưu ý:** Phần này chỉ là visualization để quan sát định tính.
-# > Kiểm định thống kê chính thức được thực hiện trên toàn bộ 45 lớp ở mục 1.5.
+# Lưu ý: Phần này chỉ là visualization để quan sát định tính.
+# Kiểm định thống kê chính thức được thực hiện trên toàn bộ 45 lớp ở mục 1.5.
 
 # %%
 sorted_classes = df_pixel.index.tolist()
@@ -890,22 +890,21 @@ for metric_name in ["Brightness", "Contrast"]:
     print()
 
 # %% [markdown]
-# **Kết luận:**
-#
 # | Metric | ANOVA | Kruskal-Wallis | $\eta^2$ |
 # |--------|-------|----------------|---------|
 # | Brightness | $F=38.37$, $p \approx 0$ | $H=866$, $p \approx 0$ | $0.434$ |
 # | Contrast | $F=48.62$, $p \approx 0$ | $H=1072$, $p \approx 0$ | $0.492$ |
 #
-# - **Bác bỏ $H_0$** cho cả Brightness và Contrast (KW là kiểm định chính, Levene reject).
-#   - Contrast có $\eta^2$ nhỉnh hơn một chút ($0.492$ vs $0.434$), cả hai đều ở mức large (> 0.14).
-# - Scatter plot gợi ý xu hướng: lớp tự nhiên đồng nhất (forest, lake) có contrast thấp hơn
-#   lớp cấu trúc phức tạp (dense_residential, harbor) — cần post-hoc test để xác nhận từng cặp.
-# - 2 đặc trưng này có tiềm năng dùng làm feature phân biệt lớp.
+# Levene test bác bỏ equal variance nên KW là kiểm định chính. Cả Brightness lẫn Contrast đều cho $p \approx 0$ — 45 lớp có phân phối rõ ràng khác nhau.
+# $\eta^2$ ở mức large (0.434 và 0.492), tức lớp giải thích gần 44–49% tổng variance, khá lớn cho đặc trưng pixel thô.
+#
+# Nhìn scatter plot, lớp tự nhiên thuần nhất như forest, lake thường có contrast thấp và brightness trung bình,
+# còn lớp đô thị như dense\_residential, harbor nằm ở vùng contrast cao hơn. Đây chỉ là quan sát sơ bộ —
+# cần post-hoc để xác nhận từng cặp cụ thể. Dù vậy, cả hai đặc trưng đủ discriminative để dùng làm feature cho classifier đơn giản.
 
 # %% [markdown]
 # ---
-# ## 6. Tổng kết EDA
+# ## 5. Tổng kết EDA
 #
 # | Tiêu chí | Kết quả |
 # |----------|---------|

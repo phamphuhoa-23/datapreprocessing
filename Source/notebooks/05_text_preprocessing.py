@@ -375,7 +375,7 @@ print("Effect size r: <0.1 rất nhỏ | 0.1-0.3 nhỏ | 0.3-0.5 trung bình | >
 # **Lý thuyết:**
 # - **Word Cloud**: Trực quan hóa tần suất từ, từ xuất hiện nhiều có kích thước lớn hơn.
 # - **Top-50**: Phân tích từ vựng phổ biến nhất trong mỗi nhóm.
-# - **TTR (Type-Token Ratio)**: Tỉ lệ giữa số từ duy nhất (types) và tổng số từ (tokens). TTR cao $\rightarrow$ từ vựng phong phú, đa dạng.
+# - **TTR (Type-Token Ratio)**: Tỉ lệ giữa số từ duy nhất (types) và tổng số từ (tokens). TTR cao -> từ vựng phong phú, đa dạng.
 
 # %%
 # Tokenize tất cả văn bản
@@ -586,7 +586,7 @@ print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
 # **Phân tích:**
 # - Kết quả cụ thể: $\alpha$ = 1.631 (toàn corpus), 1.505 (Supported), 1.534 (Hallucinated); R$^2$ = 0.9357.
 # - $\alpha$ $\approx$ 1.6 (xa 1.0) phản ánh corpus domain-specific (AI-generated): vocabulary tập trung hơn corpus tự nhiên, một số từ kỹ thuật lặp lại rất cao.
-# - Hai nhóm nhãn có $\alpha$ gần nhau (1.505 vs 1.534) $\rightarrow$ phân phối từ vựng không khác biệt nhiều về hình dạng Zipf, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
+# - Hai nhóm nhãn có $\alpha$ gần nhau (1.505 vs 1.534) -> phân phối từ vựng không khác biệt nhiều về hình dạng Zipf, nhất quán với việc cả hai đều sinh bởi cùng các LLM.
 # - **Lưu ý thống kê**: R$^2$ = 0.93 trên log-log plot KHÔNG xác nhận Zipf — nhiều phân phối power-law khác cũng cho R$^2$ cao tương tự. Kiểm định nghiêm ngặt hơn cần KS test với power-law distribution (e.g., thư viện `powerlaw` của Alstott et al.).
 #
 # ---
@@ -680,9 +680,9 @@ for i in range(3):
 
 # %% [markdown]
 # **Phân tích:**
-# - **`lowercase`**: bước giảm vocab lớn nhất — 40,613 $\rightarrow$ 34,560 (**−14.90%**), trong khi độ dài chỉ giảm 0.49%. Gộp case variants chiếm hơn 2/3 tổng mức giảm vocab.
+# - **`lowercase`**: bước giảm vocab lớn nhất — 40,613 -> 34,560 (**−14.90%**), trong khi độ dài chỉ giảm 0.49%. Gộp case variants chiếm hơn 2/3 tổng mức giảm vocab.
 # - **`remove_number`**: −8.55% vocab, −0.95% độ dài — RAGTruth chứa nhiều số (năm, thống kê, ID).
-# - **`remove_punct`** (bất ngờ): vocab tăng +1.23% (31,558 $\rightarrow$ 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." $\rightarrow$ "end", "2023," $\rightarrow$ "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
+# - **`remove_punct`** (bất ngờ): vocab tăng +1.23% (31,558 -> 31,946 types) nhưng độ dài giảm −13.82% (bước giảm độ dài lớn nhất). Nguyên nhân: xóa dấu câu tách các token ghép ("end." -> "end", "2023," -> "2023") tạo thêm types mới, đồng thời loại bỏ nhiều punctuation tokens.
 # - **`remove_html`, `remove_url`, `remove_email`, `remove_mention`, `remove_hashtag`**: tác động gần bằng 0 (<0.1%) — xác nhận RAGTruth là văn bản AI-generated sạch, không chứa noise dạng social media.
 # - **Tổng kết**: −21.3% vocab và −15.1% độ dài. Hai bước `lowercase` + `remove_punct` đóng góp >95% mức giảm vocab.
 #
@@ -825,7 +825,7 @@ plt.show()
 CHOSEN_TOKENIZER = 'Word-level'
 
 # %% [markdown]
-# > **Quyết định 1 — Tokenizer:** `Word-level` — BPE có OOV thấp hơn nhưng subword units không tương thích với NLTK stop word list và WordNet lemmatizer. Các bước 3.3–3.5 dùng `df['tokens']`.
+# Quyết định 1 -- Tokenizer: Word-level. BPE có OOV thấp hơn nhưng subword units không tương thích với NLTK stop word list và WordNet lemmatizer. Các bước 3.3-3.5 dùng df['tokens'].
 
 # %% [markdown]
 # ---
@@ -964,7 +964,7 @@ print(
 CHOSEN_STOPWORDS = 'remove' if scores_no.mean() >= scores_with.mean() else 'keep'
 
 # %% [markdown]
-# > **Quyết định 2 — Stop words:** Chọn theo F1 NB 5-fold — chênh lệch rất nhỏ ($< 0.0001$), quyết định chủ yếu mang tính quy ước. Bước 3.4 dùng `df['tokens_no_stop']`.
+# Quyết định 2 -- Stop words: Chọn theo F1 NB 5-fold -- chênh lệch rất nhỏ (< 0.0001), quyết định chủ yếu mang tính quy ước. Bước 3.4 dùng df['tokens_no_stop'].
 
 # %% [markdown]
 # ---
@@ -1076,7 +1076,7 @@ for name, texts in [('None (baseline)', texts_none), ('Porter', texts_porter),
 BEST_STEMLEM = max(results_stemlem, key=lambda k: results_stemlem[k]['mean'])
 
 # %% [markdown]
-# > **Quyết định 3 — Stemming/Lemmatization:** Chọn phương pháp có F1-macro 5-fold cao nhất trong `results_stemlem`. Bước 3.5 dùng `BEST_STEMLEM` để tạo `texts_final`.
+# Quyết định 3 -- Stemming/Lemmatization: Chọn phương pháp có F1-macro 5-fold cao nhất trong results_stemlem. Bước 3.5 dùng BEST_STEMLEM để tạo texts_final.
 
 # %%
 
@@ -1571,11 +1571,25 @@ else:
 
 # %% [markdown]
 # **Phân tích:**
-# - **Cài đặt thuật toán**: BoW và TF-IDF n-gram được cài đặt thủ công (xây vocab, ma trận sparse, IDF + chuẩn hóa L2), không dùng `CountVectorizer`/`TfidfVectorizer`.
-# - **Cosine similarity**: Intra-class similarity Hallucinated > Supported trên mọi phương pháp (ví dụ: Word2Vec: 0.237 vs 0.160). Điều này gợi ý văn bản hallucinated có xu hướng giống nhau hơn về mặt ngữ nghĩa — có thể do LLM tạo ra các hallucination theo pattern lặp lại.
-# - **Silhouette scores**: BoW=0.019, TF-IDF~0.004, Word2Vec=0.078 (theo GT labels). Tất cả đều rất thấp (< 0.1) — không phương pháp nào tạo ra phân cụm rõ ràng giữa 2 lớp. Điều này phù hợp với F1 $\approx$ 0.73 (không phải 0.9+).
-# - **Hạn chế bootstrap**: `N_BOOT=10` là quá ít để estimate variance ổn định. Std của silhouette scores có thể không đáng tin cậy.
-# - **Kết luận**: Dữ liệu RAGTruth không có ranh giới phân cụm rõ ràng trong không gian đặc trưng bề mặt — đây là lý do tại sao cần embedding ngữ nghĩa mạnh hơn (Sentence Transformer) hoặc fine-tuned model.
+# BoW và TF-IDF n-gram ở đây được cài đặt thủ công (xây vocab, ma trận sparse, IDF + chuẩn hóa L2),
+# không dùng / sẵn có.
+#
+# Intra-class cosine similarity của Hallucinated cao hơn Supported trên mọi phương pháp (Word2Vec: 0.237 vs 0.160).
+# Có thể LLM tạo ra hallucination theo pattern từ vựng lặp lại — đáng khảo sát thêm.
+#
+# Silhouette scores (GT labels) đều rất thấp: BoW=0.0187, TF-IDF uni=0.0039, bi=0.0034, tri=0.0033, Word2Vec=0.0779.
+# Không đáng ngạc nhiên khi nghĩ lại: Supported và Hallucinated đều là văn bản tiếng Anh bình thường, chia sẻ phần lớn từ vựng.
+# Ranh giới giữa hai lớp không phải ở ngữ nghĩa bề mặt mà là factual accuracy —
+# thứ không thể hiện qua phân phối từ. Với binary clustering, silhouette ≈ 0 có nghĩa
+# hai 'cụm' chồng lên nhau hoàn toàn trong không gian đặc trưng.
+#
+# BoW (0.019) cao hơn TF-IDF (~0.004) không phải vì nó tốt hơn, mà vì BoW không chuẩn hóa —
+# document dài (Supported thường dài hơn) tự nhiên tạo ra cluster theo length chứ không theo content.
+# Đây là bias, không phải tín hiệu thật.
+#
+# Điều quan trọng: silhouette thấp nhưng SVM đạt F1=0.73 không mâu thuẫn.
+# K-Means tìm cụm cầu trong không gian thấp chiều, còn SVM tìm hyperplane trong 10,000 chiều — hai việc khác nhau.
+# N_BOOT=10 quá ít để CI silhouette ổn định, nhưng không ảnh hưởng đến kết luận chính.
 #
 # ---
 #
@@ -1651,6 +1665,15 @@ print(f"\nWord2Vec + Linear SVM:")
 print(f"  F1-macro = {scores_svm_w2v.mean():.4f} ± {scores_svm_w2v.std():.4f}")
 print(f"\nSentence Transformer + Linear SVM:")
 print(f"  F1-macro = {scores_svm_st.mean():.4f} ± {scores_svm_st.std():.4f}")
+
+# Wilcoxon: TF-IDF vs SentenceTransformer (paired 5-fold)
+diff_svm = scores_svm_tfidf - scores_svm_st
+if len(set(diff_svm)) > 1:
+    w_svm, p_svm = wilcoxon(scores_svm_tfidf, scores_svm_st)
+    d_svm = diff_svm.mean() / (diff_svm.std(ddof=1) + 1e-8)
+    print(f"\nWilcoxon TF-IDF vs SentenceTransformer: W={w_svm:.1f}, p={p_svm:.4f}, Cohen's d={d_svm:.3f}")
+else:
+    print(f"\nWilcoxon TF-IDF vs SentenceTransformer: hiệu số đồng nhất, dùng sign test: {sum(diff_svm > 0)}/5 folds TF-IDF tốt hơn")
 
 # %%
 # Trực quan hóa so sánh tổng hợp
@@ -1736,11 +1759,20 @@ print(ABLATION_SUMMARY.to_string(index=False))
 
 # %% [markdown]
 # **Phân tích:**
-# - **K-Means silhouette**: TF-IDF = 0.1834 > ST = 0.0826 — TF-IDF cho cụm tách biệt hơn khi dùng K-Means. TF-IDF đã được giảm chiều qua TruncatedSVD(100) trước khi clustering, nên so sánh tương đối công bằng.
-# - **Linear SVM F1-macro**: TF-IDF = 0.7223 > W2V = 0.6971 > ST = 0.6948. TF-IDF thắng vì RAGTruth có lexical cues rõ (domain-specific terms, citation patterns); SentenceTransformer (MiniLM-L6-v2) được train cho semantic similarity tổng quát, không optimize cho hallucination detection.
-# - **Best overall**: LR + TF-IDF bigram = F1-macro = 0.7331 (leaderboard #1). Bigram nắm được cụm từ đặc trưng (e.g. "according to", "the study") tốt hơn unigram.
-# - **Kết luận phê bình**: Dense embedding không tự động vượt TF-IDF sparse; hiệu quả phụ thuộc mạnh vào domain và cách biểu diễn. Fine-tuning SentenceTransformer trên RAGTruth có thể đảo ngược kết quả này.
+# K-Means silhouette của TF-IDF (sau TruncatedSVD 100 chiều) = 0.1834, cao hơn rõ so với ST = 0.0826.
+# TF-IDF sau SVD tạo ra "topic vectors" tập trung vào từ khóa domain-specific — K-Means cắt được theo chủ đề.
+# ST embeddings tổng quát hơn, phân tán đều trong không gian 384 chiều.
 #
+# Về phân loại có giám sát: TF-IDF SVM = 0.7223 > Word2Vec = 0.6965 > SentenceTransformer = 0.6948.
+# TF-IDF thắng vì RAGTruth có nhiều lexical cues bề mặt (citation patterns, hedging phrases như "may", "reportedly") —
+# những tín hiệu này nằm trực tiếp trong từ vựng, không cần hiểu ngữ nghĩa sâu.
+# SentenceTransformer (all-MiniLM-L6-v2) được pretrain cho semantic similarity tổng quát, không phải factual accuracy detection,
+# nên không tận dụng được tín hiệu đó. Word2Vec (mean pooling) mất thông tin vị trí và ngữ cảnh cục bộ.
+#
+# Kết quả tốt nhất: LR + TF-IDF bigram (F1=**0.7331**, leaderboard \#1).
+# Bigram nắm được cụm từ đặc trưng như "according to", "it is believed" tốt hơn unigram đơn lẻ (+0.0036).
+# Test set xác nhận: F1=0.7438, Acc=0.7639 — tổng quát hóa ổn.
+# Fine-tune SentenceTransformer trên RAGTruth có lẽ sẽ đảo ngược thứ hạng, nhưng chưa thể kết luận nếu chưa thử.
 # ---
 #
 # ## 4. TỔNG HỢP VÀ SO SÁNH TOÀN DIỆN
@@ -1835,10 +1867,13 @@ configs = [
     ('NB + TF-IDF bigram', MultinomialNB(), X_tfidf_bi),
 ]
 
+fold_scores_leaderboard = {}
+
 for name, model, X in configs:
     scores = cross_val_score(model, X, y, cv=skf, scoring='f1_macro')
     all_results.append(
         {'Method': name, 'F1-macro': scores.mean(), 'Std': scores.std()})
+    fold_scores_leaderboard[name] = scores
 
 # Logistic Regression
 for vec_name, X in [('TF-IDF uni', X_tfidf_uni), ('TF-IDF bi', X_tfidf_bi), ('Word2Vec', X_w2v)]:
@@ -1846,14 +1881,18 @@ for vec_name, X in [('TF-IDF uni', X_tfidf_uni), ('TF-IDF bi', X_tfidf_bi), ('Wo
     scores = cross_val_score(lr, X, y, cv=skf, scoring='f1_macro')
     all_results.append({'Method': f'LR + {vec_name}',
                        'F1-macro': scores.mean(), 'Std': scores.std()})
+    fold_scores_leaderboard[f'LR + {vec_name}'] = scores
 
 # Thêm SVM đã tính
 all_results.append({'Method': 'SVM + TF-IDF',
                    'F1-macro': scores_svm_tfidf.mean(), 'Std': scores_svm_tfidf.std()})
+fold_scores_leaderboard['SVM + TF-IDF'] = scores_svm_tfidf
 all_results.append({'Method': 'SVM + Word2Vec',
                    'F1-macro': scores_svm_w2v.mean(), 'Std': scores_svm_w2v.std()})
+fold_scores_leaderboard['SVM + Word2Vec'] = scores_svm_w2v
 all_results.append({'Method': 'SVM + SentenceTransformer',
                    'F1-macro': scores_svm_st.mean(), 'Std': scores_svm_st.std()})
+fold_scores_leaderboard['SVM + SentenceTransformer'] = scores_svm_st
 
 results_df = pd.DataFrame(all_results).sort_values(
     'F1-macro', ascending=False).reset_index(drop=True)
@@ -1887,6 +1926,29 @@ plt.savefig(OUTPUT_DIR / 'classification_leaderboard.png',
 plt.show()
 
 # %%
+# Kiểm định thống kê: top-1 vs top-2 trong leaderboard
+top1_name = results_df.iloc[0]['Method']
+top2_name = results_df.iloc[1]['Method']
+s1 = fold_scores_leaderboard[top1_name]
+s2 = fold_scores_leaderboard[top2_name]
+w_top, p_top = wilcoxon(s1, s2)
+diff_top = s1 - s2
+d_top = diff_top.mean() / (diff_top.std(ddof=1) + 1e-8)
+print(f"Wilcoxon top-1 vs top-2: W={w_top:.1f}, p={p_top:.4f}, Cohen's d={d_top:.3f}")
+print(f"  {top1_name}: {s1.mean():.4f} ± {s1.std():.4f}")
+print(f"  {top2_name}: {s2.mean():.4f} ± {s2.std():.4f}")
+if p_top < 0.05:
+    print(f"  => Khác biệt CÓ ý nghĩa thống kê (p < 0.05)")
+else:
+    print(f"  => Khác biệt KHÔNG có ý nghĩa thống kê (p = {p_top:.4f})")
+
+# %% [markdown]
+# **Nhận xét kiểm định leaderboard:**
+# Wilcoxon signed-rank test giữa mô hình đứng đầu và thứ nhì trên 5 fold CV cho thấy
+# sự khác biệt có (hoặc không) ý nghĩa thống kê. Với 5 fold, lực kiểm định thấp — kết quả
+# chủ yếu dựa vào hướng chênh lệch nhất quán qua các fold.
+
+# %%
 # Confusion Matrix cho mô hình đứng đầu leaderboard (train 80%, evaluate 20%)
 
 # Chia train/test 80/20 stratified (dùng index để áp dụng nhất quán cho mọi X)
@@ -1898,7 +1960,7 @@ y_test_best = y[_idx_te]
 best_method = results_df.iloc[0]['Method']
 
 # %% [markdown]
-# > **Quyết định 4 — Vectorizer/Model:** Chọn phương pháp đứng đầu leaderboard (`results_df.iloc[0]`). Các block code bên dưới set `X_train_best`, `X_test_best`, `best_model` tương ứng.
+# Quyết định 4 -- Vectorizer/Model: Chọn phương pháp đứng đầu leaderboard (results_df.iloc[0]). Các block code bên dưới set X_train_best, X_test_best, best_model tương ứng.
 
 # %%
 
@@ -1975,16 +2037,26 @@ plt.show()
 #
 # ### 5.2. Nhận xét và đánh giá phê bình
 #
-# 1. **Kết quả ngược trực giác**: Xóa stop words làm *giảm* MI trung bình (ΔMI = −0.000114) và TF-IDF sparse vượt Sentence Transformer 384-dim trên dataset này — cho thấy một số giả định thường gặp trong NLP không áp dụng cho domain AI-generated text.
-# 2. **Hạn chế thống kê**: Friedman test với 5 folds có power thấp; bootstrap silhouette với N_BOOT=10 không đủ để estimate variance ổn định. Cần $\geq$ 20 lần lặp để có kết luận đáng tin.
-# 3. Silhouette rất thấp (< 0.1 trên GT labels): không phương pháp nào tạo tách biệt rõ giữa 2 nhóm — phân loại với F1 = 0.73 dựa trên pattern bề mặt, không phải từ cụm ngữ nghĩa rõ ràng.
-# 4. **Hướng phát triển**: Fine-tuning Transformer trên task hallucination detection hoặc dùng feature ngữ cảnh (query + context + response) thay vì chỉ `output` có tiềm năng cải thiện đáng kể.
+# Một số kết quả trong notebook này đi ngược lại trực giác thông thường.
+# Xóa stop words làm *giảm* MI trung bình (ΔMI = −0.000114) thay vì tăng —
+# nghĩa là stop words trong RAGTruth mang một chút tín hiệu phân biệt nhãn,
+# có thể vì LLM hallucinate thường dùng hedge words ("it is believed", "may be") vốn là stop words.
+# TF-IDF sparse vượt Sentence Transformer 384-dim cũng bất ngờ: SentenceTransformer pretrain cho
+# semantic similarity tổng quát, không phải factual accuracy detection, nên embedding ngữ nghĩa
+# không giúp ích trong task này bằng pattern từ vựng bề mặt.
+#
+# Về mặt thống kê, có hai điểm cần lưu ý: Friedman test với 5 folds bị giới hạn power,
+# và bootstrap silhouette với N_BOOT=10 chưa đủ để ước lượng variance ổn định.
+# Silhouette < 0.1 trên tất cả phương pháp xác nhận rằng không có cụm ngữ nghĩa rõ ràng —
+# F1 = 0.73 đạt được nhờ pattern từ vựng, không phải tách biệt hình học trong không gian đặc trưng.
 #
 # ### 5.3. Hạn chế và hướng phát triển
 #
-# - **Mất cân bằng nhãn**: Có thể áp dụng SMOTE hoặc class weighting để cải thiện.
-# - **Domain-specific preprocessing**: Có thể thêm xử lý riêng cho cấu trúc RAG (query/context/output) thay vì chỉ dùng `output`.
-# - **Mô hình mạnh hơn**: Fine-tuning Transformer chuyên biệt có thể tăng thêm chất lượng phân loại.
+# Dataset RAGTruth chỉ có nhãn ở cấp độ response, không phải span — nên các phương pháp token-level
+# không áp dụng được. Notebook chỉ dùng cột `output`, bỏ qua query và context vốn là tín hiệu quan trọng
+# để phát hiện hallucination. Một hướng rõ ràng là fine-tune Transformer (ví dụ DeBERTa) trực tiếp trên
+# cặp (context, output) với task NLI hoặc hallucination detection chuyên biệt — khả năng cao sẽ đảo ngược
+# thứ hạng giữa TF-IDF và Transformer hiện tại.
 
 # %%
 # Lưu dữ liệu đã xử lý

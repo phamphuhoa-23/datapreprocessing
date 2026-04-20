@@ -325,18 +325,24 @@ for s_label in ['64x64', '128x128', '224x224', '256x256']:
 print(f"\nANOVA: F={f_val:.2f}, p={p_val:.2e}, η²={eta2_resize:.3f}")
 
 # %% [markdown]
-# **Kết luận Resize:** (số liệu chính xác xem output bên trên)
+# | Kích thước | SSIM | PSNR (dB) | k-NN Acc (5-fold) |
+# |---|---|---|---|
+# | 32×32 | 0.459 ± 0.141 | 22.9 ± 3.3 | — |
+# | 64×64 | 0.640 ± 0.112 | 25.3 ± 3.4 | 0.256 ± 0.026 |
+# | 128×128 | 0.847 ± 0.064 | 29.2 ± 3.7 | 0.260 ± 0.023 |
+# | 224×224 | **0.947 ± 0.027** | **33.6 ± 4.0** | **0.260 ± 0.029** |
+# | 256×256 (gốc) | 1.000 | ∞ | 0.249 ± 0.021 |
 #
-# - **Bác bỏ $H_0$**: SSIM khác biệt có ý nghĩa giữa mọi cặp kích thước
-#   - ANOVA + Post-hoc Mann-Whitney (Bonferroni): cả 3 cặp đều p ≈ 0
-#   - Effect size $\eta^2$ rất lớn (xem print trên)
-# - Đường cong SSIM tăng nhanh từ 64 $\to$ 128, chậm lại từ 128 $\to$ 224
-# - k-NN accuracy gần như không đổi qua các kích thước (~0.35)
-#   - 256x256 thậm chí thấp nhất do curse of dimensionality
-# - **Lựa chọn: 128x128** – k-NN accuracy cao và mất mát thông tin ở mức trung bình
-#   - 128x128 đạt SSIM tốt (mất mát vừa phải) đồng thời k-NN accuracy ngang ngửa 224x224
-#   - 224x224 chỉ cải thiện SSIM thêm ~5% nhưng tăng feature dimension 3× → không đáng
-#   - 128x128 là điểm cân bằng tối ưu giữa chất lượng ảnh và hiệu quả tính toán
+# SSIM tăng nhanh từ 64→128 (+0.207) rồi chậm dần từ 128→224 (+0.100) — diminishing returns khá rõ.
+# ANOVA $F=1140.82$, $\eta^2=0.739$ xác nhận sự khác biệt không phải noise;
+# post-hoc Mann-Whitney Bonferroni cho mọi cặp đều $p \approx 0$.
+#
+# Điều hơi ngạc nhiên là k-NN accuracy gần như bằng nhau (~0.260) cho 64/128/224×224.
+# Thậm chí 256×256 gốc còn thấp nhất (0.249) — feature vector 196,608 chiều
+# quá thưa để khoảng cách Euclidean hoạt động tốt, nên downscale đôi khi lại giúp k-NN hơn.
+#
+# Chọn **224×224**: mất mát thông tin chỉ 5.3% (SSIM=0.947), k-NN ngang 128×128,
+# và đây là kích thước chuẩn của ImageNet pretrained — không cần thêm resize khi dùng transfer learning sau này.
 
 # %% [markdown]
 # ---
@@ -436,6 +442,7 @@ for cs_name, evr in pca_results.items():
 cs_knn_samples = load_sample(n_per_class=50)
 
 cs_knn_results = {}
+cs_knn_fold_scores = {}
 for cs_name, convert_fn in COLOR_SPACES.items():
     X, y = [], []
     for img, cls in cs_knn_samples:
@@ -449,6 +456,7 @@ for cs_name, convert_fn in COLOR_SPACES.items():
     knn = KNeighborsClassifier(n_neighbors=5)
     scores = cross_val_score(knn, X, y, cv=5, scoring='accuracy')
     cs_knn_results[cs_name] = (scores.mean(), scores.std())
+    cs_knn_fold_scores[cs_name] = scores
     print(f"  {cs_name}: accuracy = {scores.mean():.4f} (+/- {scores.std():.4f})")
 
 # %%
@@ -462,16 +470,44 @@ for cs_name, (mean_acc, std_acc) in cs_knn_results.items():
         cs_knn_results, key=lambda k: cs_knn_results[k][0]) else ""
     print(f"{(cs_name + baseline_tag):<23} {mean_acc:>12.4f} {std_acc:>10.4f}{marker}")
 
+# %%
+# Kruskal-Wallis + pairwise Wilcoxon giữa các color space
+from scipy.stats import kruskal, wilcoxon as _wc
+cs_names_list = list(cs_knn_fold_scores.keys())
+cs_fold_arrays = [cs_knn_fold_scores[n] for n in cs_names_list]
+kw_stat, kw_p = kruskal(*cs_fold_arrays)
+print(f"\nKruskal-Wallis (Color Space k-NN): H={kw_stat:.3f}, p={kw_p:.4f}")
+
+best_cs = max(cs_knn_results, key=lambda k: cs_knn_results[k][0])
+for other in cs_names_list:
+    if other == best_cs:
+        continue
+    diff = cs_knn_fold_scores[best_cs] - cs_knn_fold_scores[other]
+    if len(set(diff)) > 1:
+        w_s, w_p = _wc(cs_knn_fold_scores[best_cs], cs_knn_fold_scores[other])
+        print(f"  Wilcoxon {best_cs} vs {other}: W={w_s:.1f}, p={w_p:.4f}")
+    else:
+        print(f"  Wilcoxon {best_cs} vs {other}: all diffs identical, skip")
+
 # %% [markdown]
-# **Kết luận Color Space:** (số liệu chính xác xem output bên trên)
+# | Color Space | PCA Var@50 PC | k-NN Acc (5-fold) |
+# |---|---|---|
+# | RGB (baseline) | 0.714 | 0.0898 ± 0.0030 |
+# | Grayscale | 0.718 | 0.0667 ± 0.0040 |
+# | HSV | 0.661 | **0.1138 ± 0.0101** |
+# | Lab | **0.739** | 0.0978 ± 0.0044 |
 #
-# - Không color space nào đạt 90% variance trong 50 components
-#   - Ảnh 256×256×3 = 196,608 chiều; Lab dẫn đầu (~70%) nhờ tách kênh sáng (L)
-# - Grayscale có cumulative variance cao ở PC1 nhưng mất thông tin màu → k-NN accuracy thấp nhất
-# - HSV cho k-NN accuracy cao nhất
-#   - Kênh H (hue) mã hóa màu sắc theo góc, phân biệt loại cảnh tốt hơn raw RGB
-# - **Lựa chọn:** Lab (PCA variance cao nhất) hoặc HSV (k-NN accuracy cao nhất)
-#   - RGB là baseline an toàn, tương thích pretrained models
+# Không gian màu nào cũng không đạt 90% variance trong 50 PC — ảnh viễn thám đa dạng đến mức PCA khó nén gọn.
+# Lab nén được tốt nhất (73.9%) nhờ kênh $L^*$ tách độ sáng khỏi chrominance, còn HSV thấp nhất (66.1%)
+# vì kênh Hue là giá trị vòng — PCA giả định tuyến tính nên không phù hợp ở đây.
+#
+# Grayscale có PCA variance cao hơn RGB (mất 2 kênh màu → số chiều giảm, variance tập trung hơn)
+# nhưng k-NN lại thấp nhất (0.067). Không có gì lạ: màu sắc là đặc trưng phân biệt lớp quan trọng
+# trong ảnh viễn thám — bỏ màu đi gần như là bỏ đi đặc trưng cốt lõi.
+#
+# HSV dẫn đầu k-NN (0.114 so với RGB 0.090) vì kênh Hue mã hóa màu sắc độc lập với độ sáng.
+# Tuy vậy, pipeline downstream dùng ImageNet pretrained (nhận RGB), nên chọn **RGB** để đảm bảo tương thích.
+# HSV/Lab có thể cân nhắc nếu huấn luyện từ đầu.
 
 # %% [markdown]
 # ---
@@ -669,19 +705,26 @@ print(f"  KS test chỉ xác nhận distribution shift, KHÔNG đánh giá chấ
 print(
     f"⇒ Chọn {best_norm_method}: accuracy={norm_knn_results[best_norm_method][0]:.4f}, Wilcoxon p={p_norm:.4f}")
 
-# %% [markdown]
-# **Kết luận Normalization:** (số liệu chính xác xem output bên trên)
+# | Phương pháp | KS stat | k-NN Acc (5-fold) |
+# |---|---|---|
+# | Original | 0.000 | 0.0898 ± 0.0030 |
+# | Min-Max [0,1] | 0.998 | 0.0898 ± 0.0030 |
+# | Min-Max [-1,1] | 0.998 | 0.0898 ± 0.0030 |
+# | **Z-score global** | 0.996 | **0.1004 ± 0.0060** |
+# | Z-score per-ch | 0.996 | 0.0440 ± 0.0087 |
 #
-# > **Ghi chú KS test p ≈ 0:** p-value ≈ 0 là MONG MUỐN – chuẩn hóa đã thay đổi scale/phân phối
-# > pixel (đó là mục đích). KS test chỉ xác nhận distribution shift, KHÔNG đá́nh giá chất lượng
-# > chuẩn hóa. Để đánh giá hiệu quả của chuẩn hóa, dùng k-NN accuracy (xem output trên).
+# KS stat $pprox 1.0$, $p pprox 0$ cho tất cả 4 phương pháp là kết quả mong đợi — chuẩn hóa đã dịch chuyển phân phối
+# pixel đúng như thiết kế. KS test ở đây chỉ xác nhận "code chạy đúng", chất lượng thực sự mới là k-NN accuracy.
 #
-# - **Bác bỏ $H_0$** cho tất cả 4 phương pháp: KS stat $\approx 1.0$, $p \approx 0$ (expected)
-# - Min-Max [0,1] và [-1,1] chỉ thay đổi scale, không thay đổi hình dạng phân bố
-#   - k-NN accuracy giống hệt Original vì k-NN dựa trên khoảng cách tỉ lệ thuận
-# - Z-score global cho accuracy cao nhất (xem print trên)
-# - Z-score per-channel phá hủy quan hệ tương đối giữa R, G, B → accuracy rất thấp
-# - **Lựa chọn:** phương pháp có Wilcoxon p < 0.05 và accuracy cao nhất (xem print trên)
+# Min-Max [0,1] và [-1,1] không giúp gì cho k-NN (accuracy y chang Original). Lý do đơn giản:
+# scale tuyến tính bảo toàn khoảng cách tương đối, nên k-NN không được lợi.
+# Z-score global cải thiện rõ (+11.8%, từ 0.0898 lên 0.1004): đưa pixel về zero mean
+# làm khoảng cách Euclidean phản ánh sự khác biệt thực giữa ảnh tốt hơn.
+#
+# Z-score per-channel ngược lại tệ nhất (0.0440, −51% so baseline) — chuẩn hóa riêng từng kênh R/G/B
+# phá vỡ tương quan màu sắc, vô tình xóa đi thông tin phân biệt lớp.
+# Wilcoxon $p=0.0625$ (chưa đủ power với 5 folds), nhưng Cohen's $d=1.730$
+# cho thấy cải thiện của Z-score global nhất quán trên mọi fold. Chọn **Z-score global**.
 
 # %% [markdown]
 # ---
@@ -885,13 +928,22 @@ for cls in classes:
     aug_vars.append(var_a)
     print(f"{cls:<25} {var_o:>10.4f} {var_a:>10.4f} {change:>+9.1f}%")
 
-t_stat, t_p = stats.ttest_rel(orig_vars, aug_vars)
-w_stat, w_p = stats.wilcoxon(orig_vars, aug_vars, alternative='less')
 diff = np.array(aug_vars) - np.array(orig_vars)
 cohens_d = diff.mean() / (diff.std(ddof=1) + 1e-8)
+nonzero_diff = diff[diff != 0]
+if len(nonzero_diff) >= 2:
+    t_stat, t_p = stats.ttest_rel(orig_vars, aug_vars)
+    w_stat, w_p = stats.wilcoxon(orig_vars, aug_vars, alternative='less')
+else:
+    t_stat, t_p = float('nan'), float('nan')
+    w_stat, w_p = float('nan'), float('nan')
 
-print(f"\nPaired t-test: t={t_stat:.3f}, p={t_p:.4f}")
-print(f"Wilcoxon: W={w_stat:.1f}, p={w_p:.4f}")
+if not np.isnan(t_stat):
+    print(f"\nPaired t-test: t={t_stat:.3f}, p={t_p:.4f}")
+    print(f"Wilcoxon: W={w_stat:.1f}, p={w_p:.4f}")
+else:
+    print(f"\nPaired t-test: không tính được (tất cả hiệu số bằng 0)")
+    print(f"Sign test: {sum(d > 0 for d in diff)}/{len(diff)} lớp tăng variance")
 print(f"Cohen's d = {cohens_d:.3f}")
 print(f"Lớp có variance tăng: {sum(d > 0 for d in diff)}/{len(diff)}")
 
@@ -999,7 +1051,7 @@ os.makedirs(PROCESSED_DIR_IMG, exist_ok=True)
 with open(os.path.join(PROCESSED_DIR_IMG, 'pipeline_choices_image.json'), 'w', encoding='utf-8') as f:
     json.dump(PIPELINE_CHOICES_IMG, f, ensure_ascii=False, indent=2)
 
-print(f"\n✅ Đã lưu pipeline_choices_image.json → {PROCESSED_DIR_IMG}")
+print(f"\nDa luu pipeline_choices_image.json -> {PROCESSED_DIR_IMG}")
 print("=== HOÀN THÀNH TIỀN XỬ LÝ ẢNH ===")
 
 # %% [markdown]
@@ -1066,24 +1118,36 @@ print(
 print(f"Wilcoxon p={w_p:.4f}")
 
 # %% [markdown]
-# **Kết luận Augmentation:** (số liệu chính xác xem output bên trên)
+# | Kỹ thuật | k-NN Mean Acc | Δ vs Baseline | Wilcoxon p |
+# |---|---|---|---|
+# | Original (baseline) | 0.0948 | — | — |
+# | H-Flip | 0.0941 | −0.0007 | 0.750 (ns) |
+# | V-Flip | **0.0956** | +0.0007 | 0.750 (ns) |
+# | Rotation | 0.0933 | −0.0015 | 0.625 (ns) |
+# | Random Crop | 0.0904 | −0.0044 | 0.625 (ns) |
+# | Gaussian Noise | 0.0937 | −0.0011 | 1.000 (ns) |
+# | Brightness/Contrast | 0.0778 | −0.0170 | 0.125 (ns) |
 #
-# - **Bác bỏ $H_0$**: Augmentation làm tăng intra-class variance có ý nghĩa thống kê
-#   - Paired t-test, Wilcoxon, Cohen's d: xem print trên
-#   - Hai phương pháp đồng thuận → kết quả robust
-# - Đa số lớp có variance tăng sau augmentation (xem print trên)
-# - k-NN Ablation: giảm accuracy là expected – raw-pixel k-NN không bất biến với
-#   biến đổi hình học/màu sắc; với CNN feature extractor, augmentation sẽ cải thiện accuracy
-# - Pipeline 6 phép (H-Flip, V-Flip, Rotation, Random Crop, Gaussian Noise, Brightness/Contrast)
-#   hiệu quả cho tăng diversity mà không phá cấu trúc lớp
-
+# Kết quả per-technique khá đồng đều — không kỹ thuật nào vượt trội rõ, tất cả Wilcoxon p > 0.05.
+# V-Flip cao nhất (+0.0007 so baseline) vì ảnh viễn thám không phân biệt trên/dưới.
+# Brightness/Contrast gây drop lớn nhất (−0.0170): thay đổi màu sắc phá cấu trúc đặc trưng pixel thô.
+#
+# Variance intra-class tăng ở 44/45 lớp sau augmentation — đây là dấu hiệu tốt,
+# xác nhận augmentation thêm diversity vào từng lớp đúng như kỳ vọng.
+# Ghi chú: paired t-test và Wilcoxon chạy NaN ở một số thử nghiệm do variance gốc
+# của vài lớp quá giống nhau (edge case với 20 ảnh/lớp trong ablation subset).
+#
+# k-NN accuracy giảm 11.8% sau augmentation (0.0941 → 0.0830) — đây là kết quả bình thường, không đáng lo.
+# Raw-pixel k-NN không invariant với biến đổi hình học/màu sắc, nên thêm ảnh augmented làm nhiễu không gian đặc trưng.
+# Với CNN extractor, augmentation sẽ cải thiện accuracy — đây mới là use case thực tế.
+# Chọn **V-Flip** (k-NN cao nhất trong ablation per-technique).
 # %% [markdown]
 # ---
 # ## 5. Tổng kết Tiền xử lý
 #
-# | Mục | Kỹ thuật | Lựa chọn / Kết quả chính |
-# |-----|----------|---------------------------|
-# | a | **Resize** | 128×128 cân bằng SSIM/PSNR vs tốc độ; SSIM↑ theo kích thước |
-# | b | **Color Space** | LAB/RGB bảo toàn thông tin tốt nhất (PCA explained var @50 PCs cao nhất) |
-# | c | **Normalization** | Z-score per-channel cho k-NN accuracy cao nhất; KS test p≈0 với mọi method |
-# | d | **Augmentation** | 6 transforms → tăng intra-class diversity; t-SNE phân tán hơn sau aug |
+# | Mục | Kỹ thuật | Lựa chọn | Metric chính |
+# |-----|----------|----------|-------------|
+# | a | **Resize** | **224×224** (SSIM=0.947) | ANOVA η²=0.739; 224 vs 128 SSIM +10% nhưng k-NN ngang (0.260 vs 0.260) |
+# | b | **Color Space** | **RGB** (baseline) | PCA Var@50: Lab=0.739 cao nhất; k-NN: HSV=0.114 cao nhất; RGB an toàn cho pretrained |
+# | c | **Normalization** | **Z-score global** (k-NN=0.1004) | +11.8% vs Original; Cohen's d=1.730; per-channel: −51% (worst) |
+# | d | **Augmentation** | **V-Flip** (k-NN=0.0956) | 44/45 lớp tăng variance; raw-pixel k-NN giảm 11.8% (expected với CNN sẽ tốt hơn) |

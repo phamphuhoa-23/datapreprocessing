@@ -14,86 +14,138 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Phân công công việc chi tiết}{6}{subsection.1.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Bảng phân công công việc chi tiết}}{6}{table.caption.2}\protected@file@percent }
 \newlabel{tab:work_distribution}{{2}{6}{Bảng phân công công việc chi tiết}{table.caption.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}TÓM TẮT ĐIỀU HÀNH}{6}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}PHẦN 1: TIỀN XỬ LÝ DỮ LIỆU ẢNH SỐ}{7}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Mô tả tập dữ liệu}{7}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}TÓM TẮT ĐIỀU HÀNH}{7}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}PHẦN 1: TIỀN XỬ LÝ DỮ LIỆU ẢNH SỐ}{8}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Mô tả tập dữ liệu}{8}{subsection.3.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Thông tin tập dữ liệu NWPU-RESISC45}}{8}{table.caption.3}\protected@file@percent }
 \newlabel{tab:img_dataset}{{3}{8}{Thông tin tập dữ liệu NWPU-RESISC45}{table.caption.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Phân tích thống kê tập dữ liệu (EDA)}{8}{subsection.3.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Phân phối giá trị pixel}{8}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Phân tích cân bằng lớp (Class Imbalance)}{8}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Phân tích cân bằng lớp (Class Imbalance)}{9}{subsubsection.3.2.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Phát hiện ảnh trùng lặp (Duplicate Detection)}{9}{subsubsection.3.2.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Phân tích độ sáng và độ tương phản}{9}{subsubsection.3.2.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Kết quả ANOVA cho brightness và contrast theo lớp}}{9}{table.caption.4}\protected@file@percent }
 \newlabel{tab:img_anova_bc}{{4}{9}{Kết quả ANOVA cho brightness và contrast theo lớp}{table.caption.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Các kỹ thuật tiền xử lý và phân tích tác động}{9}{subsection.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}Thay đổi kích thước ảnh (Resize Ablation)}{9}{subsubsection.3.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces So sánh resize theo SSIM, PSNR và k-NN Accuracy (256$\times $256 = gốc, 32$\times $32 không có k-NN do ít dùng)}}{10}{table.caption.5}\protected@file@percent }
+\newlabel{tab:resize_ablation}{{5}{10}{So sánh resize theo SSIM, PSNR và k-NN Accuracy (256$\times $256 = gốc, 32$\times $32 không có k-NN do ít dùng)}{table.caption.5}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Chuyển đổi không gian màu (Color Space Ablation)}{10}{subsubsection.3.3.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces So sánh các không gian màu theo PCA variance và k-NN accuracy}}{10}{table.caption.5}\protected@file@percent }
-\newlabel{tab:colorspace}{{5}{10}{So sánh các không gian màu theo PCA variance và k-NN accuracy}{table.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces So sánh các không gian màu theo PCA variance và k-NN accuracy}}{10}{table.caption.6}\protected@file@percent }
+\newlabel{tab:colorspace}{{6}{10}{So sánh các không gian màu theo PCA variance và k-NN accuracy}{table.caption.6}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Chuẩn hóa dữ liệu (Normalization Ablation)}{10}{subsubsection.3.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.4}Tăng cường dữ liệu (Data Augmentation)}{10}{subsubsection.3.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Phân tích nâng cao}{11}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Phân tích PCA trên không gian đặc trưng ảnh}{11}{subsubsection.3.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Phát hiện cạnh và phân tích đặc trưng cục bộ}{11}{subsubsection.3.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Phân tích Edge Density theo lớp}}{12}{table.caption.6}\protected@file@percent }
-\newlabel{tab:edge_density}{{6}{12}{Phân tích Edge Density theo lớp}{table.caption.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}PHẦN 2: TIỀN XỬ LÝ DỮ LIỆU DẠNG BẢNG}{12}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Mô tả tập dữ liệu}{12}{subsection.4.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Thông tin tập dữ liệu IEEE-CIS Fraud Detection}}{12}{table.caption.7}\protected@file@percent }
-\newlabel{tab:tabular_dataset}{{7}{12}{Thông tin tập dữ liệu IEEE-CIS Fraud Detection}{table.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Phân tích thống kê khám phá (EDA)}{12}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Kiểm tra phân phối (Normality Tests)}{12}{subsubsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Phân tích tương quan đa biến}{13}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Phân tích giá trị thiếu}{13}{subsubsection.4.2.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Tỉ lệ giá trị thiếu theo nhóm đặc trưng}}{13}{table.caption.8}\protected@file@percent }
-\newlabel{tab:missing_rates}{{8}{13}{Tỉ lệ giá trị thiếu theo nhóm đặc trưng}{table.caption.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Các kỹ thuật tiền xử lý và đánh giá định lượng}{13}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Xử lý giá trị thiếu (Imputation)}{13}{subsubsection.4.3.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Các chiến lược điền khuyết được so sánh}}{14}{table.caption.9}\protected@file@percent }
-\newlabel{tab:imputation_methods}{{9}{14}{Các chiến lược điền khuyết được so sánh}{table.caption.9}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Phát hiện và xử lý ngoại lai (Outlier Detection)}{14}{subsubsection.4.3.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces So sánh 5 phương pháp phát hiện ngoại lai}}{14}{table.caption.10}\protected@file@percent }
-\newlabel{tab:outlier_methods}{{10}{14}{So sánh 5 phương pháp phát hiện ngoại lai}{table.caption.10}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Chuẩn hóa dữ liệu (Scaling)}{14}{subsubsection.4.3.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces So sánh 5 phương pháp chuẩn hóa}}{15}{table.caption.11}\protected@file@percent }
-\newlabel{tab:scaling_methods}{{11}{15}{So sánh 5 phương pháp chuẩn hóa}{table.caption.11}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.4}Mã hóa biến phân loại (Categorical Encoding)}{15}{subsubsection.4.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.5}Lựa chọn và giảm chiều đặc trưng (Feature Selection)}{15}{subsubsection.4.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.6}Xử lý mất cân bằng lớp (Class Imbalance)}{16}{subsubsection.4.3.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces So sánh các chiến lược xử lý mất cân bằng lớp (kết quả tính tại runtime)}}{16}{table.caption.12}\protected@file@percent }
-\newlabel{tab:imbalance_methods}{{12}{16}{So sánh các chiến lược xử lý mất cân bằng lớp (kết quả tính tại runtime)}{table.caption.12}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}PHẦN 3: TIỀN XỬ LÝ DỮ LIỆU VĂN BẢN}{16}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Mô tả tập dữ liệu}{16}{subsection.5.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Thông tin tập dữ liệu RAGTruth}}{17}{table.caption.13}\protected@file@percent }
-\newlabel{tab:text_dataset}{{13}{17}{Thông tin tập dữ liệu RAGTruth}{table.caption.13}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Phân tích thống kê văn bản (Text EDA)}{17}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Phân phối độ dài văn bản}{17}{subsubsection.5.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Word Cloud và Type-Token Ratio}{17}{subsubsection.5.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.3}Phân tích phân phối Zipf}{17}{subsubsection.5.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Các kỹ thuật tiền xử lý và phân tích tác động}{17}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Pipeline chuẩn hóa văn bản (9 bước)}{18}{subsubsection.5.3.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Pipeline chuẩn hóa văn bản 9 bước}}{18}{table.caption.14}\protected@file@percent }
-\newlabel{tab:text_pipeline}{{14}{18}{Pipeline chuẩn hóa văn bản 9 bước}{table.caption.14}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}So sánh chiến lược Tokenization}{18}{subsubsection.5.3.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces So sánh 4 chiến lược tokenization (kết quả tính tại runtime)}}{18}{table.caption.15}\protected@file@percent }
-\newlabel{tab:tokenization}{{15}{18}{So sánh 4 chiến lược tokenization (kết quả tính tại runtime)}{table.caption.15}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.3}Loại bỏ Stop Words và Phân tích thông tin}{18}{subsubsection.5.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.4}Stemming, Lemmatization và So sánh định lượng}{19}{subsubsection.5.3.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces So sánh stemming và lemmatization (kết quả runtime)}}{19}{table.caption.16}\protected@file@percent }
-\newlabel{tab:stemlem}{{16}{19}{So sánh stemming và lemmatization (kết quả runtime)}{table.caption.16}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.5}Vector hóa văn bản (Vectorization)}{19}{subsubsection.5.3.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {17}{\ignorespaces So sánh các phương pháp vector hóa văn bản (kết quả runtime)}}{20}{table.caption.17}\protected@file@percent }
-\newlabel{tab:vectorization}{{17}{20}{So sánh các phương pháp vector hóa văn bản (kết quả runtime)}{table.caption.17}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.6}[Nâng cao] Biểu diễn ngữ nghĩa bằng Sentence Transformer}{20}{subsubsection.5.3.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Bảng xếp hạng phân loại cuối cùng}{20}{subsection.5.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {18}{\ignorespaces Bảng xếp hạng phân loại cuối cùng trên RAGTruth}}{20}{table.caption.18}\protected@file@percent }
-\newlabel{tab:classification_leaderboard}{{18}{20}{Bảng xếp hạng phân loại cuối cùng trên RAGTruth}{table.caption.18}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}PHÂN TÍCH SO SÁNH TỔNG HỢP}{21}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Tổng hợp lựa chọn pipeline}{21}{subsection.6.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {19}{\ignorespaces Tổng hợp các lựa chọn pipeline cuối cùng}}{21}{table.caption.19}\protected@file@percent }
-\newlabel{tab:pipeline_summary}{{19}{21}{Tổng hợp các lựa chọn pipeline cuối cùng}{table.caption.19}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Thảo luận}{21}{subsection.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}KẾT LUẬN}{22}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{TÀI LIỆU THAM KHẢO}{22}{section.7}\protected@file@percent }
-\gdef \@abspage@last{24}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Kết quả ablation chuẩn hóa ảnh: KS test so với Original và k-NN 5-fold CV}}{11}{table.caption.7}\protected@file@percent }
+\newlabel{tab:norm_ablation}{{7}{11}{Kết quả ablation chuẩn hóa ảnh: KS test so với Original và k-NN 5-fold CV}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.4}Tăng cường dữ liệu (Data Augmentation)}{11}{subsubsection.3.3.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Kết quả ablation từng kỹ thuật augmentation (k-NN 5-fold, Wilcoxon so với Baseline; ns = not significant)}}{12}{table.caption.8}\protected@file@percent }
+\newlabel{tab:aug_ablation}{{8}{12}{Kết quả ablation từng kỹ thuật augmentation (k-NN 5-fold, Wilcoxon so với Baseline; ns = not significant)}{table.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Phân tích nâng cao}{12}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Phân tích PCA trên không gian đặc trưng ảnh}{12}{subsubsection.3.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Phát hiện cạnh và phân tích đặc trưng cục bộ}{12}{subsubsection.3.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Phân tích Edge Density theo lớp}}{13}{table.caption.9}\protected@file@percent }
+\newlabel{tab:edge_density}{{9}{13}{Phân tích Edge Density theo lớp}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}PHẦN 2: TIỀN XỬ LÝ DỮ LIỆU DẠNG BẢNG}{13}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Mô tả tập dữ liệu}{13}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Thông tin tập dữ liệu IEEE-CIS Fraud Detection}}{13}{table.caption.10}\protected@file@percent }
+\newlabel{tab:tabular_dataset}{{10}{13}{Thông tin tập dữ liệu IEEE-CIS Fraud Detection}{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Phân tích thống kê khám phá (EDA)}{13}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Kiểm tra phân phối (Normality Tests)}{13}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Phân tích tương quan đa biến}{14}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Heatmap tương quan Spearman (top-30 cột ít missing). Nhóm V-Vesta (V1--V339) có cấu trúc block tương quan cao nội nhóm ($|r| > 0{,}9$), cho thấy sự dư thừa thông tin đáng kể -- lý do cần feature selection.}}{14}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:correlation_heatmap}{{1}{14}{Heatmap tương quan Spearman (top-30 cột ít missing). Nhóm V-Vesta (V1--V339) có cấu trúc block tương quan cao nội nhóm ($|r| > 0{,}9$), cho thấy sự dư thừa thông tin đáng kể -- lý do cần feature selection}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Phân tích giá trị thiếu}{14}{subsubsection.4.2.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Tỉ lệ giá trị thiếu theo nhóm đặc trưng}}{14}{table.caption.12}\protected@file@percent }
+\newlabel{tab:missing_rates}{{11}{14}{Tỉ lệ giá trị thiếu theo nhóm đặc trưng}{table.caption.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Các kỹ thuật tiền xử lý và đánh giá định lượng}{15}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Xử lý giá trị thiếu (Imputation)}{15}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces So sánh chiến lược điền khuyết (benchmark 10\% MCAR nhân tạo, 5.000 dòng $\times $ 15 cột)}}{15}{table.caption.13}\protected@file@percent }
+\newlabel{tab:imputation_methods}{{12}{15}{So sánh chiến lược điền khuyết (benchmark 10\% MCAR nhân tạo, 5.000 dòng $\times $ 15 cột)}{table.caption.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces So sánh 7 chiến lược điền khuyết: RMSE trên benchmark 10\% MCAR nhân tạo (trái) và thống kê per-column (phải). MICE đạt RMSE tốt nhất nhưng có chi phí tính toán rất cao.}}{15}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:imputation_comparison}{{2}{15}{So sánh 7 chiến lược điền khuyết: RMSE trên benchmark 10\% MCAR nhân tạo (trái) và thống kê per-column (phải). MICE đạt RMSE tốt nhất nhưng có chi phí tính toán rất cao}{figure.caption.14}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Phát hiện và xử lý ngoại lai (Outlier Detection)}{16}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces So sánh 5 phương pháp phát hiện ngoại lai (tỉ lệ phát hiện tính tại runtime)}}{16}{table.caption.15}\protected@file@percent }
+\newlabel{tab:outlier_methods}{{13}{16}{So sánh 5 phương pháp phát hiện ngoại lai (tỉ lệ phát hiện tính tại runtime)}{table.caption.15}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Ma trận Jaccard similarity giữa các tập ngoại lai do 5 phương pháp phát hiện. Nhận xét: Isolation Forest (các mức contamination khác nhau) có sự đồng thuận nội bộ cao; IQR và multivariate detectors gần như không đồng thuận (Jaccard $\leq 0{,}02$).}}{17}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:outlier_jaccard}{{3}{17}{Ma trận Jaccard similarity giữa các tập ngoại lai do 5 phương pháp phát hiện. Nhận xét: Isolation Forest (các mức contamination khác nhau) có sự đồng thuận nội bộ cao; IQR và multivariate detectors gần như không đồng thuận (Jaccard $\leq 0{,}02$)}{figure.caption.16}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Chuẩn hóa dữ liệu (Scaling)}{17}{subsubsection.4.3.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces So sánh 5 phương pháp chuẩn hóa và kết quả Levene's test homoscedasticity}}{17}{table.caption.17}\protected@file@percent }
+\newlabel{tab:scaling_methods}{{14}{17}{So sánh 5 phương pháp chuẩn hóa và kết quả Levene's test homoscedasticity}{table.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Violin plot phân phối sau 5 phương pháp chuẩn hóa (5 cột đại diện). RobustScaler thu hẹp phân phối đuôi dài tốt hơn Min-Max và Z-score; Quantile-Normal cho phân phối đối xứng nhất nhưng làm mất thứ tự tương quan của outlier.}}{18}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:scaling_violin}{{4}{18}{Violin plot phân phối sau 5 phương pháp chuẩn hóa (5 cột đại diện). RobustScaler thu hẹp phân phối đuôi dài tốt hơn Min-Max và Z-score; Quantile-Normal cho phân phối đối xứng nhất nhưng làm mất thứ tự tương quan của outlier}{figure.caption.18}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.4}Mã hóa biến phân loại (Categorical Encoding)}{18}{subsubsection.4.3.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces So sánh 5 phương pháp mã hóa biến phân loại: số chiều và VIF (kết quả runtime)}}{19}{table.caption.19}\protected@file@percent }
+\newlabel{tab:encoding_vif}{{15}{19}{So sánh 5 phương pháp mã hóa biến phân loại: số chiều và VIF (kết quả runtime)}{table.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces So sánh VIF trung bình và số chiều của 5 phương pháp mã hóa. One-Hot Encoding tạo ra đa cộng tuyến cực kỳ cao (VIF $\sim 10^{11}$); Target Encoding (CV) cho VIF thấp nhất trong khi vẫn có 5 chiều.}}{19}{figure.caption.20}\protected@file@percent }
+\newlabel{fig:vif_encoding}{{5}{19}{So sánh VIF trung bình và số chiều của 5 phương pháp mã hóa. One-Hot Encoding tạo ra đa cộng tuyến cực kỳ cao (VIF $\sim 10^{11}$); Target Encoding (CV) cho VIF thấp nhất trong khi vẫn có 5 chiều}{figure.caption.20}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.5}Lựa chọn và giảm chiều đặc trưng (Feature Selection)}{19}{subsubsection.4.3.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Feature importance: Random Forest (trái) và Gradient Boosting (phải) -- top-20 đặc trưng theo Gini impurity. \texttt  {TransactionAmt}, \texttt  {card1}, và các đặc trưng V-Vesta nhất quán nằm trong top.}}{20}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:feature_importance}{{6}{20}{Feature importance: Random Forest (trái) và Gradient Boosting (phải) -- top-20 đặc trưng theo Gini impurity. \texttt {TransactionAmt}, \texttt {card1}, và các đặc trưng V-Vesta nhất quán nằm trong top}{figure.caption.21}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Tầng 1 -- Statistical filter: điểm ANOVA F-test (trái) và Mutual Information (phải) theo từng đặc trưng. Cả hai phương pháp đồng thuận về top features nhưng có sự khác biệt ở các đặc trưng hạng giữa.}}{20}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:statistical_filters}{{7}{20}{Tầng 1 -- Statistical filter: điểm ANOVA F-test (trái) và Mutual Information (phải) theo từng đặc trưng. Cả hai phương pháp đồng thuận về top features nhưng có sự khác biệt ở các đặc trưng hạng giữa}{figure.caption.22}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces So sánh các tầng lựa chọn đặc trưng. 5-fold CV F1-macro được đánh giá trên tập Union RF+GB (kết quả chi tiết tại Bảng~\ref {tab:rfe_results} và Hình~\ref {fig:feature_importance}).}}{21}{table.caption.23}\protected@file@percent }
+\newlabel{tab:feat_sel_results}{{16}{21}{So sánh các tầng lựa chọn đặc trưng. 5-fold CV F1-macro được đánh giá trên tập Union RF+GB (kết quả chi tiết tại Bảng~\ref {tab:rfe_results} và Hình~\ref {fig:feature_importance})}{table.caption.23}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {17}{\ignorespaces Kết quả RFE với Logistic Regression (mẫu 1.000 dòng, 3-fold CV)}}{21}{table.caption.24}\protected@file@percent }
+\newlabel{tab:rfe_results}{{17}{21}{Kết quả RFE với Logistic Regression (mẫu 1.000 dòng, 3-fold CV)}{table.caption.24}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Tầng 3 -- Giảm chiều: PCA cumulative explained variance. Đường ngang tại 95\% và 99\% cho thấy số thành phần cần thiết. Tập tabular này yêu cầu số PC lớn để giải thích 95\% phương sai, phản ánh tính đa chiều cao của đặc trưng V-Vesta.}}{21}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:pca_cumvar}{{8}{21}{Tầng 3 -- Giảm chiều: PCA cumulative explained variance. Đường ngang tại 95\% và 99\% cho thấy số thành phần cần thiết. Tập tabular này yêu cầu số PC lớn để giải thích 95\% phương sai, phản ánh tính đa chiều cao của đặc trưng V-Vesta}{figure.caption.25}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces t-SNE 2D ($n=3000$ mẫu, perplexity=30) trên tập đặc trưng đã chọn, tô màu theo nhãn isFraud. Sự xen lẫn giữa hai lớp xác nhận bài toán fraud detection là phi tuyến và khó phân tách trong không gian nguyên bản.}}{22}{figure.caption.26}\protected@file@percent }
+\newlabel{fig:tsne_tabular}{{9}{22}{t-SNE 2D ($n=3000$ mẫu, perplexity=30) trên tập đặc trưng đã chọn, tô màu theo nhãn isFraud. Sự xen lẫn giữa hai lớp xác nhận bài toán fraud detection là phi tuyến và khó phân tách trong không gian nguyên bản}{figure.caption.26}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.6}Xử lý mất cân bằng lớp (Class Imbalance)}{22}{subsubsection.4.3.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {18}{\ignorespaces So sánh các chiến lược xử lý mất cân bằng lớp (kết quả tính tại runtime)}}{22}{table.caption.27}\protected@file@percent }
+\newlabel{tab:imbalance_methods}{{18}{22}{So sánh các chiến lược xử lý mất cân bằng lớp (kết quả tính tại runtime)}{table.caption.27}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces So sánh 4 chiến lược xử lý mất cân bằng lớp: Precision, Recall, F1-macro và AUC-ROC. SMOTE/ADASYN/RUS tăng Recall (phát hiện nhiều fraud hơn) nhưng giảm mạnh Precision. No Resampling có F1-macro cao nhất do Precision rất cao.}}{23}{figure.caption.28}\protected@file@percent }
+\newlabel{fig:imbalance_comparison}{{10}{23}{So sánh 4 chiến lược xử lý mất cân bằng lớp: Precision, Recall, F1-macro và AUC-ROC. SMOTE/ADASYN/RUS tăng Recall (phát hiện nhiều fraud hơn) nhưng giảm mạnh Precision. No Resampling có F1-macro cao nhất do Precision rất cao}{figure.caption.28}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}PHẦN 3: TIỀN XỬ LÝ DỮ LIỆU VĂN BẢN}{23}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Mô tả tập dữ liệu}{23}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {19}{\ignorespaces Thông tin tập dữ liệu RAGTruth}}{23}{table.caption.29}\protected@file@percent }
+\newlabel{tab:text_dataset}{{19}{23}{Thông tin tập dữ liệu RAGTruth}{table.caption.29}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Phân tích thống kê văn bản (Text EDA)}{23}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Phân phối độ dài văn bản}{23}{subsubsection.5.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Phân phối độ dài văn bản (số từ, số ký tự, số câu) theo nhãn lớp (Supported vs. Hallucinated)}}{24}{figure.caption.30}\protected@file@percent }
+\newlabel{fig:text_length}{{11}{24}{Phân phối độ dài văn bản (số từ, số ký tự, số câu) theo nhãn lớp (Supported vs. Hallucinated)}{figure.caption.30}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Word Cloud và Type-Token Ratio}{24}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Word cloud toàn tập (trái), lớp Supported (giữa) và lớp Hallucinated (phải)}}{24}{figure.caption.31}\protected@file@percent }
+\newlabel{fig:wordclouds}{{12}{24}{Word cloud toàn tập (trái), lớp Supported (giữa) và lớp Hallucinated (phải)}{figure.caption.31}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Top-20 từ phổ biến nhất theo nhãn Supported (trái) và Hallucinated (phải)}}{25}{figure.caption.32}\protected@file@percent }
+\newlabel{fig:top20}{{13}{25}{Top-20 từ phổ biến nhất theo nhãn Supported (trái) và Hallucinated (phải)}{figure.caption.32}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.3}Phân tích phân phối Zipf}{25}{subsubsection.5.2.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Log-log plot phân phối Zipf: toàn corpus (trái) và so sánh hai nhãn (phải)}}{25}{figure.caption.33}\protected@file@percent }
+\newlabel{fig:zipf}{{14}{25}{Log-log plot phân phối Zipf: toàn corpus (trái) và so sánh hai nhãn (phải)}{figure.caption.33}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Các kỹ thuật tiền xử lý và phân tích tác động}{25}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Pipeline chuẩn hóa văn bản (9 bước)}{26}{subsubsection.5.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {20}{\ignorespaces Thống kê per-step pipeline chuẩn hóa văn bản (9 bước)}}{26}{table.caption.34}\protected@file@percent }
+\newlabel{tab:text_pipeline}{{20}{26}{Thống kê per-step pipeline chuẩn hóa văn bản (9 bước)}{table.caption.34}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}So sánh chiến lược Tokenization}{26}{subsubsection.5.3.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces So sánh phân phối độ dài token (trái) và kích thước từ vựng (phải) giữa 4 chiến lược tokenization}}{26}{figure.caption.35}\protected@file@percent }
+\newlabel{fig:tokenization}{{15}{26}{So sánh phân phối độ dài token (trái) và kích thước từ vựng (phải) giữa 4 chiến lược tokenization}{figure.caption.35}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {21}{\ignorespaces So sánh 4 chiến lược tokenization (OOV tính trên split 80/20 train/test)}}{27}{table.caption.36}\protected@file@percent }
+\newlabel{tab:tokenization}{{21}{27}{So sánh 4 chiến lược tokenization (OOV tính trên split 80/20 train/test)}{table.caption.36}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.3}Loại bỏ Stop Words và Phân tích thông tin}{27}{subsubsection.5.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.4}Stemming, Lemmatization và So sánh định lượng}{27}{subsubsection.5.3.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Collision rate (trái) và F1-macro Logistic Regression 5-fold CV (phải) cho các phương pháp stemming/lemmatization}}{27}{figure.caption.37}\protected@file@percent }
+\newlabel{fig:stemlem}{{16}{27}{Collision rate (trái) và F1-macro Logistic Regression 5-fold CV (phải) cho các phương pháp stemming/lemmatization}{figure.caption.37}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {22}{\ignorespaces So sánh stemming và lemmatization (kết quả runtime)}}{27}{table.caption.38}\protected@file@percent }
+\newlabel{tab:stemlem}{{22}{27}{So sánh stemming và lemmatization (kết quả runtime)}{table.caption.38}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.5}Vector hóa văn bản và phân tích không gian đặc trưng}{28}{subsubsection.5.3.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces t-SNE 2D visualization của tất cả phương pháp vector hóa (2.000 mẫu). Sentence Transformer cho cụm rõ hơn về mặt trực quan nhưng Silhouette Score vẫn thấp ($<0{,}1$), xác nhận ranh giới lexical giữa hai nhãn yếu.}}{28}{figure.caption.39}\protected@file@percent }
+\newlabel{fig:tsne_all}{{17}{28}{t-SNE 2D visualization của tất cả phương pháp vector hóa (2.000 mẫu). Sentence Transformer cho cụm rõ hơn về mặt trực quan nhưng Silhouette Score vẫn thấp ($<0{,}1$), xác nhận ranh giới lexical giữa hai nhãn yếu}{figure.caption.39}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {18}{\ignorespaces t-SNE 2D visualization chi tiết cho 5 phương pháp vector hóa chính (2.000 mẫu, màu xanh = Supported, màu đỏ = Hallucinated). Không có phương pháp nào tạo ra sự phân tách rõ ràng -- xác nhận đây là bài toán phân loại khó dựa trên đặc trưng từ vựng.}}{29}{figure.caption.40}\protected@file@percent }
+\newlabel{fig:tsne}{{18}{29}{t-SNE 2D visualization chi tiết cho 5 phương pháp vector hóa chính (2.000 mẫu, màu xanh = Supported, màu đỏ = Hallucinated). Không có phương pháp nào tạo ra sự phân tách rõ ràng -- xác nhận đây là bài toán phân loại khó dựa trên đặc trưng từ vựng}{figure.caption.40}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {23}{\ignorespaces So sánh các phương pháp vector hóa văn bản ($^*$Silhouette của Sentence Transformer dùng K-Means labels, các phương pháp khác dùng GT labels)}}{29}{table.caption.41}\protected@file@percent }
+\newlabel{tab:vectorization}{{23}{29}{So sánh các phương pháp vector hóa văn bản ($^*$Silhouette của Sentence Transformer dùng K-Means labels, các phương pháp khác dùng GT labels)}{table.caption.41}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.6}[Nâng cao] Biểu diễn ngữ nghĩa bằng Sentence Transformer}{29}{subsubsection.5.3.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {19}{\ignorespaces So sánh K-Means silhouette score (trái) và Linear SVM F1-macro (phải) giữa TF-IDF, Word2Vec và Sentence Transformer}}{30}{figure.caption.42}\protected@file@percent }
+\newlabel{fig:advanced}{{19}{30}{So sánh K-Means silhouette score (trái) và Linear SVM F1-macro (phải) giữa TF-IDF, Word2Vec và Sentence Transformer}{figure.caption.42}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Bảng xếp hạng phân loại cuối cùng}{30}{subsection.5.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {24}{\ignorespaces Bảng xếp hạng phân loại cuối cùng trên RAGTruth}}{30}{table.caption.43}\protected@file@percent }
+\newlabel{tab:classification_leaderboard}{{24}{30}{Bảng xếp hạng phân loại cuối cùng trên RAGTruth}{table.caption.43}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {20}{\ignorespaces Bảng xếp hạng hiệu năng phân loại (F1-macro 5-fold CV) trên tập RAGTruth}}{31}{figure.caption.44}\protected@file@percent }
+\newlabel{fig:leaderboard}{{20}{31}{Bảng xếp hạng hiệu năng phân loại (F1-macro 5-fold CV) trên tập RAGTruth}{figure.caption.44}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}PHÂN TÍCH SO SÁNH TỔNG HỢP}{31}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Tổng hợp lựa chọn pipeline}{31}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {25}{\ignorespaces Tổng hợp các lựa chọn pipeline cuối cùng}}{31}{table.caption.45}\protected@file@percent }
+\newlabel{tab:pipeline_summary}{{25}{31}{Tổng hợp các lựa chọn pipeline cuối cùng}{table.caption.45}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Thảo luận}{31}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}KẾT LUẬN}{33}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{TÀI LIỆU THAM KHẢO}{33}{section.7}\protected@file@percent }
+\gdef \@abspage@last{35}

@@ -350,12 +350,15 @@ plt.show()
 # %%
 groups_pc1 = [X_pca_transformed[y_pca == c, 0] for c in classes]
 
-# Normality
-print("Normality (Shapiro-Wilk, 5 lớp mẫu):")
-for cls in classes[:5]:
+# Normality (Shapiro-Wilk trên tất cả 45 lớp, tóm tắt)
+sw_results = []
+for cls in classes:
     vals = X_pca_transformed[y_pca == cls, 0]
-    w, p = stats.shapiro(vals)
-    print(f"  {cls}: W={w:.4f}, p={p:.4f}")
+    w, p = stats.shapiro(vals[:50])  # cap at 50; Shapiro-Wilk unreliable on n>50
+    sw_results.append((cls, w, p))
+n_normal = sum(p > 0.05 for _, _, p in sw_results)
+print(f"Normality (Shapiro-Wilk, 45 lớp, n=50/lớp): {n_normal}/45 lớp không bác bỏ H0 (p > 0.05)")
+print(f"  Median W = {np.median([w for _, w, _ in sw_results]):.4f}")
 
 # Levene
 lev_s, lev_p = stats.levene(*groups_pc1)
@@ -376,13 +379,18 @@ eta_sq = ss_between / ss_total
 print(f"\nEta² = {eta_sq:.3f}")
 
 # %% [markdown]
-# **Kết luận PCA:**
+# 800 components chỉ đạt 88.2% variance — tức $n_{90}$, $n_{95}$, $n_{99}$ đều vượt 800.
+# Ảnh viễn thám 256×256 đa dạng đến mức PCA không nén được, variance phân tán đều qua hàng trăm components.
+# Để so sánh: Eigenfaces (ảnh khuôn mặt) thường đạt 95% ở ~150 components vì khuôn mặt cấu trúc lặp lại nhiều hơn.
 #
-# - PC1 là thành phần dominant (xem % variance in output trên).
-# - Eigenimages cho thấy PC1 nắm bắt pattern độ sáng tổng thể; PC2-PC3 nắm bắt cạnh/texture.
-# - Số components đạt 90/95/99% variance in ra bên trên — đây là số thực sự đo được.
-# - Levene test + Kruskal-Wallis (xem output): nếu p ≈ 0 → bác bỏ H₀ → các lớp
-#   phân tách được trên PC1. Eta² cho biết mức độ effect size (>0.14 là large).
+# Eigenimage PC1 nắm độ sáng tổng thể, PC2–PC3 nắm gradient ngang/dọc (gần giống Sobel),
+# PC4 trở đi mới bắt đầu bắt texture và pattern địa hình đặc thù.
+#
+# ARI = 0.023 khi dùng K-Means 45 cụm trên 2D PCA — gần 0 nghĩa là K-Means gần như ngẫu nhiên.
+# Hiển nhiên: 2 PC đầu không đủ để phân tách 45 lớp.
+# Ngược lại, Kruskal-Wallis trên PC1 cho $H=11165.09$, $\eta^2=0.461$ —
+# tức 45 lớp phân tách rõ theo PC1 khi xét từng lớp riêng lẻ, không phải khi gom cụm.
+# IncrementalPCA được dùng thay PCA thường để xử lý 27,000 ảnh × 4096 chiều mà không tràn RAM.
 
 # %% [markdown]
 # ---
@@ -582,6 +590,21 @@ for T in T_VALUES:
 BEST_T = max(best_T_eta2, key=best_T_eta2.get)
 print(f"\n→ Chọn T={BEST_T} (η² cao nhất = {best_T_eta2[BEST_T]:.3f})")
 
+# Spearman rank correlation: class ranking ổn định qua các T?
+print("\nSpearman rank correlation giữa các T (xếp hạng lớp theo Sobel mean):")
+class_ranks = {}
+for T in T_VALUES:
+    col = f'sobel_T{T}'
+    class_mean = df_ablation.groupby('class')[col].mean()
+    class_ranks[T] = class_mean.rank()
+
+T_list = list(T_VALUES)
+for i in range(len(T_list)):
+    for j in range(i + 1, len(T_list)):
+        Ti, Tj = T_list[i], T_list[j]
+        rho, p_sp = stats.spearmanr(class_ranks[Ti], class_ranks[Tj])
+        print(f"  T={Ti} vs T={Tj}: ρ={rho:.4f}, p={p_sp:.2e}")
+
 # %% [markdown]
 # ### 2.3 Ablation: Tham số Canny (sigma, T₁, T₂)
 #
@@ -738,24 +761,35 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
 
 # %% [markdown]
 # **Kết luận Edge Detection:**
+# | T | Sobel mean | Prewitt mean | $\eta^2$ (Sobel) |
+# |---|---|---|---|
+# | 30 | 0.6154 | 0.5155 | **0.503** ← best |
+# | 50 | 0.4499 | 0.3473 | 0.486 |
+# | 80 | 0.2984 | 0.2092 | 0.476 |
+# | 120 | 0.1856 | 0.1165 | 0.478 |
 #
-# - **Ngưỡng T là siêu tham số chính:** T tăng → density giảm mạnh;
-#   tỷ lệ xếp hạng lớp ổn định qua các T → cho phép so sánh lớp.
-# - **Prewitt vs Sobel:** cho kết quả edge density gần nhau vì cả hai dùng kernel 3×3;
-#   Sobel dùng trọng số trung tâm lớn hơn (2) so với Prewitt (1), nên nhạy hơn một chút
-#   với cạnh dọc/ngang, nhưng khác biệt không đáng kể ở ngưỡng T tương đương.
-# - **Canny:** T₂/T₁ ≈ 2–3; σ=2 làm trơn noise tốt hơn trên ảnh vệ tinh.
-# - **ANOVA + Kruskal-Wallis** (xem output): p ≈ 0, Eta² lớn → bác bỏ H₀,
-#   edge density khác biệt có ý nghĩa giữa 45 lớp.
-# - Lớp edge cao nhất: cấu trúc đô thị/thực vật dày (dense_residential, chaparral).
-# - Lớp edge thấp nhất: bề mặt đồng nhất (island, runway, sea_ice).
-
+# T = 30 cho $\eta^2$ cao nhất (0.503): ngưỡng thấp giữ nhiều cạnh hơn nên phân biệt lớp tốt hơn.
+# Khi T tăng, density giảm mạnh và đơn điệu, nhưng thứ tự xếp hạng lớp hầu như không đổi
+# (Spearman $ho \geq 0.99$ giữa mọi cặp T) — T chỉ ảnh hưởng scale, không ảnh hưởng ranking.
+#
+# Sobel và Prewitt cho density gần nhau (T=30: Sobel=0.615, Prewitt=0.516);
+# Sobel nhạy hơn nhẹ vì trọng số trung tâm ×2 so với Prewitt ×1.
+# Kruskal-Wallis $H=636.31$, $p pprox 0$; ANOVA $F=29.97$, $\eta^2=0.503$ — bác bỏ $H_0$, effect size large.
+#
+# Canny (best: $\sigma=1.0$, $T_1=100$, $T_2=200$, $\eta^2=0.474$) cho density thấp hơn nhiều (mean=0.058)
+# do hysteresis loại bỏ cạnh yếu. $\sigma=1$ tốt hơn $\sigma=2$ vì ảnh viễn thám 256×256 đã ít noise —
+# làm mờ thêm chỉ làm mất cạnh mịn.
+#
+# Lớp edge cao nhất (Sobel T=30): chaparral (0.799), dense\_residential (0.793), forest (0.788) — thực vật dày và đô thị có nhiều đường biên.
+# Thấp nhất: island (0.266), runway (0.343), ship (0.380) — bề mặt đồng nhất, ít cạnh.
 # %% [markdown]
 # ---
 # ## 3. Tổng kết Phân tích nâng cao
 #
 # | Phân tích | Kết quả chính |
 # |-----------|---------------|
-# | PCA | Xem output cell: % variance PC1, n_90/n_95/n_99. Eta² (Kruskal) → các lớp phân tách trên PC1. |
-# | Eigenimages | PC1 = brightness tổng thể, PC2-3 = cấu trúc cạnh/texture. |
-# | Sobel/Prewitt/Canny | Xem output: ablation T → BEST_T, Eta² lớn, Kruskal p≈0. Ngưỡng T là siêu tham số chính. |
+# | **PCA** | 800 components chỉ đạt 88.2% variance ($n_{90/95/99} > 800$) — ảnh viễn thám rất phức tạp; ARI=0.023 (phân tách kém trong 2D); Kruskal $H=11165$, $\eta^2=0.461$ (lớp phân tách có ý nghĩa trên PC1) |
+# | **Eigenimages** | PC1 = brightness tổng thể; PC2–PC3 = gradient ngang/dọc; PC4+ = texture/pattern địa hình |
+# | **t-SNE** | Perplexity=30 và 50 cho kết quả tương tự; cấu trúc local rõ hơn PCA; lớp đô thị phức tạp (harbor, dense\_residential) overlap nhiều |
+# | **Sobel/Prewitt** | Best T=30 (η²=0.503); Sobel mean=0.615, Prewitt=0.516; Kruskal $H=636$, $p\approx 0$ |
+# | **Canny** | Best config: σ=1.0, T₁=100, T₂=200 (η²=0.474); mean density=0.058; Kruskal $H=689$, $p\approx 0$ |
