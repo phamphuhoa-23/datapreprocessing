@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.6)  20 APR 2026 16:21
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.6)  20 APR 2026 17:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1004,266 +1004,387 @@ Overfull \hbox (91.39166pt too wide) in paragraph at lines 456--464
  [][] 
  []
 
-[10] [11] [12]
-Overfull \hbox (58.89746pt too wide) in paragraph at lines 560--566
+[10] [11]
+<../data/processed/fig_aug_knn_ablation.png, id=386, 857.8449pt x 351.2322pt>
+File: ../data/processed/fig_aug_knn_ablation.png Graphic file (type png)
+<use ../data/processed/fig_aug_knn_ablation.png>
+Package pdftex.def Info: ../data/processed/fig_aug_knn_ablation.png  used on in
+put line 537.
+(pdftex.def)             Requested size: 409.71692pt x 167.75348pt.
+ [12 <../data/processed/fig_aug_knn_ablation.png>]
+Overfull \hbox (58.89746pt too wide) in paragraph at lines 569--575
  [][] 
  []
 
 LaTeX Font Info:    Trying to load font information for T5+cmtt on input line 5
-85.
+94.
 (C:\Users\admin\AppData\Local\Programs\MiKTeX\tex/latex/vntex\t5cmtt.fd
 File: t5cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-Overfull \hbox (86.2319pt too wide) in paragraph at lines 580--591
+Overfull \hbox (86.2319pt too wide) in paragraph at lines 589--600
  [][] 
  []
 
 [13]
-<../data/processed/fig_02_correlation_heatmap.png, id=396, 1950.5673pt x 954.68
+<../data/processed/fig_02_correlation_heatmap.png, id=399, 1950.5673pt x 954.68
 67pt>
 File: ../data/processed/fig_02_correlation_heatmap.png Graphic file (type png)
 <use ../data/processed/fig_02_correlation_heatmap.png>
 Package pdftex.def Info: ../data/processed/fig_02_correlation_heatmap.png  used
- on input line 615.
+ on input line 624.
 (pdftex.def)             Requested size: 409.71692pt x 200.51926pt.
- [14 <../data/processed/fig_02_correlation_heatmap.png>]
-<../data/processed/fig_05_imputation_comparison.png, id=404, 711.8595pt x 351.9
+ [14]
+<../data/processed/eda_04_transamt.png, id=406, 1001.6622pt x 356.2911pt>
+File: ../data/processed/eda_04_transamt.png Graphic file (type png)
+<use ../data/processed/eda_04_transamt.png>
+Package pdftex.def Info: ../data/processed/eda_04_transamt.png  used on input l
+ine 654.
+(pdftex.def)             Requested size: 409.71692pt x 145.73235pt.
+ [15 <../data/processed/fig_02_correlation_heatmap.png>]
+<../data/processed/eda_05_cat_fraud_rate.png, id=413, 1291.4649pt x 852.0633pt>
+
+File: ../data/processed/eda_05_cat_fraud_rate.png Graphic file (type png)
+<use ../data/processed/eda_05_cat_fraud_rate.png>
+Package pdftex.def Info: ../data/processed/eda_05_cat_fraud_rate.png  used on i
+nput line 661.
+(pdftex.def)             Requested size: 409.71692pt x 270.31256pt.
+ [16 <../data/processed/eda_04_transamt.png> <../data/processed/eda_05_cat_frau
+d_rate.png>]
+<../data/processed/fig_05_imputation_comparison.png, id=422, 711.8595pt x 351.9
 549pt>
 File: ../data/processed/fig_05_imputation_comparison.png Graphic file (type png
 )
 <use ../data/processed/fig_05_imputation_comparison.png>
 Package pdftex.def Info: ../data/processed/fig_05_imputation_comparison.png  us
-ed on input line 670.
+ed on input line 693.
 (pdftex.def)             Requested size: 418.82375pt x 207.07695pt.
- [15 <../data/processed/fig_05_imputation_comparison.png>]
-Overfull \hbox (78.03955pt too wide) in paragraph at lines 683--692
+
+Overfull \hbox (78.03955pt too wide) in paragraph at lines 706--715
  [][] 
  []
 
-<../data/processed/fig_06_outlier_jaccard.png, id=411, 787.743pt x 641.0349pt>
+[17 <../data/processed/fig_05_imputation_comparison.png>]
+<../data/processed/fig_06_outlier_jaccard.png, id=430, 787.743pt x 641.0349pt>
 File: ../data/processed/fig_06_outlier_jaccard.png Graphic file (type png)
 <use ../data/processed/fig_06_outlier_jaccard.png>
 Package pdftex.def Info: ../data/processed/fig_06_outlier_jaccard.png  used on 
-input line 700.
+input line 723.
 (pdftex.def)             Requested size: 409.71692pt x 333.4183pt.
-[16]
-Overfull \hbox (140.47119pt too wide) in paragraph at lines 713--722
+
+Overfull \hbox (140.47119pt too wide) in paragraph at lines 736--745
  [][] 
  []
 
-[17 <../data/processed/fig_06_outlier_jaccard.png>]
-<../data/processed/fig_07_scaling_violin.png, id=422, 1500.3252pt x 1418.6601pt
+[18 <../data/processed/fig_06_outlier_jaccard.png>]
+<../data/processed/fig_07_scaling_violin.png, id=439, 1500.3252pt x 1418.6601pt
 >
 File: ../data/processed/fig_07_scaling_violin.png Graphic file (type png)
 <use ../data/processed/fig_07_scaling_violin.png>
 Package pdftex.def Info: ../data/processed/fig_07_scaling_violin.png  used on i
-nput line 730.
+nput line 753.
 (pdftex.def)             Requested size: 418.82375pt x 396.00989pt.
- [18 <../data/processed/fig_07_scaling_violin.png>]
-<../data/processed/fig_07b_vif_encoding_comparison.png, id=432, 992.2671pt x 35
+ [19] [20 <../data/processed/fig_07_scaling_violin.png>]
+<../data/processed/fig_07b_vif_encoding_comparison.png, id=456, 992.2671pt x 35
 6.2911pt>
 File: ../data/processed/fig_07b_vif_encoding_comparison.png Graphic file (type 
 png)
 <use ../data/processed/fig_07b_vif_encoding_comparison.png>
 Package pdftex.def Info: ../data/processed/fig_07b_vif_encoding_comparison.png 
- used on input line 768.
+ used on input line 791.
 (pdftex.def)             Requested size: 400.61703pt x 143.84586pt.
- [19 <../data/processed/fig_07b_vif_encoding_comparison.png>]
-<../data/processed/fig_09_model_importance.png, id=444, 1291.4649pt x 568.7649p
+ [21 <../data/processed/fig_07b_vif_encoding_comparison.png>]
+<../data/processed/fig_09_model_importance.png, id=465, 1291.4649pt x 568.7649p
 t>
 File: ../data/processed/fig_09_model_importance.png Graphic file (type png)
 <use ../data/processed/fig_09_model_importance.png>
 Package pdftex.def Info: ../data/processed/fig_09_model_importance.png  used on
- input line 802.
+ input line 825.
 (pdftex.def)             Requested size: 409.71692pt x 180.43765pt.
-<../data/processed/fig_08_statistical_filters.png, id=445, 1436.0049pt x 427.11
+<../data/processed/fig_08_statistical_filters.png, id=466, 1436.0049pt x 427.11
 57pt>
 File: ../data/processed/fig_08_statistical_filters.png Graphic file (type png)
 <use ../data/processed/fig_08_statistical_filters.png>
 Package pdftex.def Info: ../data/processed/fig_08_statistical_filters.png  used
- on input line 809.
+ on input line 832.
 (pdftex.def)             Requested size: 400.61703pt x 119.15492pt.
 
-Overfull \hbox (126.9255pt too wide) in paragraph at lines 816--825
+Overfull \hbox (126.9255pt too wide) in paragraph at lines 839--848
  [][] 
  []
 
-[20 <../data/processed/fig_09_model_importance.png> <../data/processed/fig_08_s
+[22 <../data/processed/fig_09_model_importance.png> <../data/processed/fig_08_s
 tatistical_filters.png>]
-<../data/processed/fig_10_pca_cumvar.png, id=457, 713.3049pt x 351.9549pt>
+<../data/processed/fig_13_rfe_f1_curve.png, id=480, 568.0422pt x 279.6849pt>
+File: ../data/processed/fig_13_rfe_f1_curve.png Graphic file (type png)
+<use ../data/processed/fig_13_rfe_f1_curve.png>
+Package pdftex.def Info: ../data/processed/fig_13_rfe_f1_curve.png  used on inp
+ut line 866.
+(pdftex.def)             Requested size: 409.71692pt x 201.73146pt.
+<../data/processed/fig_10_pca_cumvar.png, id=481, 713.3049pt x 351.9549pt>
 File: ../data/processed/fig_10_pca_cumvar.png Graphic file (type png)
 <use ../data/processed/fig_10_pca_cumvar.png>
 Package pdftex.def Info: ../data/processed/fig_10_pca_cumvar.png  used on input
- line 843.
+ line 873.
 (pdftex.def)             Requested size: 409.71692pt x 202.16304pt.
-<../data/processed/fig_11_tsne.png, id=458, 713.3049pt x 496.4949pt>
+<../data/processed/fig_11_tsne.png, id=482, 713.3049pt x 496.4949pt>
 File: ../data/processed/fig_11_tsne.png Graphic file (type png)
 <use ../data/processed/fig_11_tsne.png>
 Package pdftex.def Info: ../data/processed/fig_11_tsne.png  used on input line 
-850.
+880.
 (pdftex.def)             Requested size: 386.96027pt x 269.34569pt.
- [21 <../data/processed/fig_10_pca_cumvar.png>]
-<../data/processed/fig_14_imbalance_comparison.png, id=465, 1284.2379pt x 356.2
+ [23 <../data/processed/fig_13_rfe_f1_curve.png> <../data/processed/fig_10_pca_
+cumvar.png>]
+<../data/processed/fig_12_umap.png, id=491, 713.3049pt x 496.4949pt>
+File: ../data/processed/fig_12_umap.png Graphic file (type png)
+<use ../data/processed/fig_12_umap.png>
+Package pdftex.def Info: ../data/processed/fig_12_umap.png  used on input line 
+887.
+(pdftex.def)             Requested size: 386.96027pt x 269.34569pt.
+ [24 <../data/processed/fig_11_tsne.png> <../data/processed/fig_12_umap.png>]
+<../data/processed/fig_14_imbalance_comparison.png, id=501, 1284.2379pt x 356.2
 911pt>
 File: ../data/processed/fig_14_imbalance_comparison.png Graphic file (type png)
 
 <use ../data/processed/fig_14_imbalance_comparison.png>
 Package pdftex.def Info: ../data/processed/fig_14_imbalance_comparison.png  use
-d on input line 884.
+d on input line 921.
 (pdftex.def)             Requested size: 418.82375pt x 116.19553pt.
-
-[22 <../data/processed/fig_11_tsne.png>]
-<../data/processed/text_length_distribution.png, id=472, 1433.8368pt x 851.3406
+ [25 <../data/processed/fig_14_imbalance_comparison.png>]
+<../data/processed/label_distribution.png, id=509, 959.7456pt x 350.2686pt>
+File: ../data/processed/label_distribution.png Graphic file (type png)
+<use ../data/processed/label_distribution.png>
+Package pdftex.def Info: ../data/processed/label_distribution.png  used on inpu
+t line 955.
+(pdftex.def)             Requested size: 341.43307pt x 124.61078pt.
+<../data/processed/text_length_distribution.png, id=510, 1433.8368pt x 851.3406
 pt>
 File: ../data/processed/text_length_distribution.png Graphic file (type png)
 <use ../data/processed/text_length_distribution.png>
 Package pdftex.def Info: ../data/processed/text_length_distribution.png  used o
-n input line 922.
+n input line 966.
 (pdftex.def)             Requested size: 432.48051pt x 256.78113pt.
- [23 <../data/processed/fig_14_imbalance_comparison.png>]
-<../data/processed/wordclouds.png, id=479, 1722.9168pt x 311.2428pt>
+ [26 <../data/processed/label_distribution.png>]
+<../data/processed/wordclouds.png, id=517, 1722.9168pt x 311.2428pt>
 File: ../data/processed/wordclouds.png Graphic file (type png)
 <use ../data/processed/wordclouds.png>
 Package pdftex.def Info: ../data/processed/wordclouds.png  used on input line 9
-33.
+77.
 (pdftex.def)             Requested size: 432.48051pt x 78.12395pt.
-<../data/processed/top20_words.png, id=482, 1289.2968pt x 567.5604pt>
+<../data/processed/top20_words.png, id=520, 1289.2968pt x 567.5604pt>
 File: ../data/processed/top20_words.png Graphic file (type png)
 <use ../data/processed/top20_words.png>
 Package pdftex.def Info: ../data/processed/top20_words.png  used on input line 
-947.
+991.
 (pdftex.def)             Requested size: 386.96027pt x 170.33871pt.
- [24 <../data/processed/text_length_distribution.png> <../data/processed/wordcl
+ [27 <../data/processed/text_length_distribution.png> <../data/processed/wordcl
 ouds.png>]
-<../data/processed/zipf_law.png, id=493, 1287.8514pt x 493.3632pt>
+<../data/processed/zipf_law.png, id=530, 1287.8514pt x 493.3632pt>
 File: ../data/processed/zipf_law.png Graphic file (type png)
 <use ../data/processed/zipf_law.png>
-Package pdftex.def Info: ../data/processed/zipf_law.png  used on input line 963
-.
+Package pdftex.def Info: ../data/processed/zipf_law.png  used on input line 100
+7.
 (pdftex.def)             Requested size: 386.96027pt x 148.23595pt.
 
-Overfull \hbox (35.42265pt too wide) in paragraph at lines 975--989
+Overfull \hbox (35.42265pt too wide) in paragraph at lines 1019--1033
  [][] 
  []
 
-[25 <../data/processed/top20_words.png> <../data/processed/zipf_law.png>]
-<../data/processed/tokenization_comparison.png, id=501, 1000.2168pt x 423.0204p
+[28 <../data/processed/top20_words.png> <../data/processed/zipf_law.png>]
+<../data/processed/tokenization_comparison.png, id=539, 1000.2168pt x 423.0204p
 t>
 File: ../data/processed/tokenization_comparison.png Graphic file (type png)
 <use ../data/processed/tokenization_comparison.png>
 Package pdftex.def Info: ../data/processed/tokenization_comparison.png  used on
- input line 999.
+ input line 1043.
 (pdftex.def)             Requested size: 386.96027pt x 163.6605pt.
 
-Overfull \hbox (112.01794pt too wide) in paragraph at lines 1006--1014
+Overfull \hbox (112.01794pt too wide) in paragraph at lines 1050--1058
  [][] 
  []
 
-[26 <../data/processed/tokenization_comparison.png>]
-<../data/processed/stemming_lemmatization.png, id=508, 1144.7568pt x 422.5386pt
+[29 <../data/processed/tokenization_comparison.png>]
+<../data/processed/stemming_lemmatization.png, id=547, 1144.7568pt x 422.5386pt
 >
 File: ../data/processed/stemming_lemmatization.png Graphic file (type png)
 <use ../data/processed/stemming_lemmatization.png>
 Package pdftex.def Info: ../data/processed/stemming_lemmatization.png  used on 
-input line 1031.
+input line 1075.
 (pdftex.def)             Requested size: 373.3035pt x 137.78763pt.
- [27 <../data/processed/stemming_lemmatization.png>]
-Overfull \hbox (79.7132pt too wide) in paragraph at lines 1058--1059
+ [30 <../data/processed/stemming_lemmatization.png>]
+Overfull \hbox (79.7132pt too wide) in paragraph at lines 1102--1103
 [][]\T5/cmr/bx/n/12 BoW (Bag-of-Words)[]\T5/cmr/m/n/12 : \T5/cmtt/m/n/12 _build
 _vocab() $\OMS/cmsy/m/n/12 !$ \T5/cmtt/m/n/12 _bow_transform() \T5/cmr/m/n/12 d
 òng \T5/cmtt/m/n/12 scipy.sparse.csr_matrix
  []
 
 
-Overfull \hbox (18.77946pt too wide) in paragraph at lines 1063--1064
+Overfull \hbox (18.77946pt too wide) in paragraph at lines 1107--1108
 [][]\T5/cmr/bx/n/12 Word2Vec[] \T5/cmr/m/n/12 (gen-sim): vec-tor_size=100, win-
 dow=5, min_count=2, epochs=20, CBOW;
  []
 
-<../data/processed/tsne_all_methods.png, id=515, 1722.9168pt x 494.8086pt>
+<../data/processed/tsne_all_methods.png, id=557, 1722.9168pt x 494.8086pt>
 File: ../data/processed/tsne_all_methods.png Graphic file (type png)
 <use ../data/processed/tsne_all_methods.png>
 Package pdftex.def Info: ../data/processed/tsne_all_methods.png  used on input 
-line 1076.
+line 1120.
 (pdftex.def)             Requested size: 432.48051pt x 124.20015pt.
-<../data/processed/tsne_visualization.png, id=516, 1578.3768pt x 926.9832pt>
+<../data/processed/tsne_visualization.png, id=558, 1578.3768pt x 926.9832pt>
 File: ../data/processed/tsne_visualization.png Graphic file (type png)
 <use ../data/processed/tsne_visualization.png>
 Package pdftex.def Info: ../data/processed/tsne_visualization.png  used on inpu
-t line 1083.
+t line 1127.
 (pdftex.def)             Requested size: 432.48051pt x 253.99469pt.
-[28 <../data/processed/tsne_all_methods.png>]
-Overfull \hbox (14.73097pt too wide) in paragraph at lines 1109--1110
+[31 <../data/processed/tsne_all_methods.png>]
+Overfull \hbox (14.73097pt too wide) in paragraph at lines 1153--1154
 [][]\T5/cmr/bx/n/12 Linear SVM[] \T5/cmr/m/n/12 (Lin-earSVC, max_iter=5.000): 5
 -fold F1-macro cho TF-IDF, Word2Vec,
  []
 
-[29 <../data/processed/tsne_visualization.png>]
-<../data/processed/advanced_comparison.png, id=529, 1144.7568pt x 423.0204pt>
+[32 <../data/processed/tsne_visualization.png>]
+<../data/processed/advanced_comparison.png, id=572, 1144.7568pt x 423.0204pt>
 File: ../data/processed/advanced_comparison.png Graphic file (type png)
 <use ../data/processed/advanced_comparison.png>
 Package pdftex.def Info: ../data/processed/advanced_comparison.png  used on inp
-ut line 1116.
+ut line 1160.
 (pdftex.def)             Requested size: 373.3035pt x 137.94473pt.
-<../data/processed/classification_leaderboard.png, id=530, 1000.2168pt x 566.11
+<../data/processed/classification_leaderboard.png, id=573, 1000.2168pt x 566.11
 5pt>
 File: ../data/processed/classification_leaderboard.png Graphic file (type png)
 <use ../data/processed/classification_leaderboard.png>
 Package pdftex.def Info: ../data/processed/classification_leaderboard.png  used
- on input line 1146.
+ on input line 1190.
 (pdftex.def)             Requested size: 341.43307pt x 193.24535pt.
- [30 <../data/processed/advanced_comparison.png>]
-Overfull \hbox (184.36237pt too wide) in paragraph at lines 1159--1173
+ [33 <../data/processed/advanced_comparison.png>]
+Overfull \hbox (94.39049pt too wide) in paragraph at lines 1204--1225
  [][] 
  []
 
-[31 <../data/processed/classification_leaderboard.png>] [32]
-Overfull \hbox (103.04509pt too wide) in paragraph at lines 1225--1226
+
+Overfull \hbox (184.36237pt too wide) in paragraph at lines 1233--1247
+ [][] 
+ []
+
+[34 <../data/processed/classification_leaderboard.png>]
+Overfull \hbox (165.00243pt too wide) in paragraph at lines 1257--1265
+ [][] 
+ []
+
+[35] [36] [37]
+Overfull \hbox (103.04509pt too wide) in paragraph at lines 1332--1333
 []\T5/cmr/m/n/12 IEEE-CIS Fraud De-tec-tion Com-pe-ti-tion. Kag-gle. [][]$\T5/c
 mtt/m/n/12 https : / / www . kaggle . com / c / ieee-[]fraud-[]detection$[][] 
  []
 
-[33] [34] (main.aux)
+[38] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
-Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 224F4107C5DFA92C559F25C3766BE589;14867.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `main.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main.out':
+(rerunfilecheck)             Before: 224F4107C5DFA92C559F25C3766BE589;14867
+(rerunfilecheck)             After:  2BAA8EA00175320C9CFF160444ECD986;15353.
  ) 
 Here is how much of TeX's memory you used:
- 18829 strings out of 467871
- 304019 string characters out of 5418377
- 915937 words of memory out of 5000000
- 47282 multiletter control sequences out of 15000+600000
+ 18907 strings out of 467871
+ 306512 string characters out of 5418377
+ 917937 words of memory out of 5000000
+ 47332 multiletter control sequences out of 15000+600000
  651866 words of font info for 88 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,14n,79p,1522b,628s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\admin\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcbx
-1200.pk> <C:\Users\admin\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi60
-0\tcrm1200.pk><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/
-amsfonts/cm/cmex10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type
-1/public/amsfonts/cm/cmmi12.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/f
-onts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/admin/AppData/Local/Programs/
-MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/admin/AppData/Local/P
-rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/admin/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/admin
-/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/User
-s/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><
-C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cms
-y10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
-ts/cm/cmsy8.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/publi
-c/amsfonts/symbols/msbm10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fon
-ts/type1/vntex/vnr/vnbx10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fon
-ts/type1/vntex/vnr/vnbx12.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fon
-ts/type1/vntex/vnr/vnr10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/font
-s/type1/vntex/vnr/vnr12.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts
-/type1/vntex/vnr/vnr8.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/t
-ype1/vntex/vnr/vnti12.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/t
-ype1/vntex/vnr/vntt12.pfb>
-Output written on main.pdf (35 pages, 5422276 bytes).
+
+pdfTeX warning (dest): name{figure.caption.32} has been referenced but does not
+ exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.45} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.43} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.41} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.38} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.36} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.29} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.24} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.23} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.19} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.17} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.15} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.12} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.9} has been referenced but does not e
+xist, replaced by a fixed one
+
+ <C:\Users\admin\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcbx12
+00.pk> <C:\Users\admin\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\
+tcrm1200.pk><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/am
+sfonts/cm/cmex10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/
+public/amsfonts/cm/cmmi10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fon
+ts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/admin/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/admin/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/admin/AppData/
+Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/admin/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/User
+s/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><
+C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
+8.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
+/cm/cmsy10.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmsy8.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX/fonts/type
+1/public/amsfonts/symbols/msbm10.pfb><C:/Users/admin/AppData/Local/Programs/MiK
+TeX/fonts/type1/urw/zapfding/uzdr.pfb><C:/Users/admin/AppData/Local/Programs/Mi
+KTeX/fonts/type1/vntex/vnr/vnbx10.pfb><C:/Users/admin/AppData/Local/Programs/Mi
+KTeX/fonts/type1/vntex/vnr/vnbx12.pfb><C:/Users/admin/AppData/Local/Programs/Mi
+KTeX/fonts/type1/vntex/vnr/vnr10.pfb><C:/Users/admin/AppData/Local/Programs/MiK
+TeX/fonts/type1/vntex/vnr/vnr12.pfb><C:/Users/admin/AppData/Local/Programs/MiKT
+eX/fonts/type1/vntex/vnr/vnr8.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX
+/fonts/type1/vntex/vnr/vnti12.pfb><C:/Users/admin/AppData/Local/Programs/MiKTeX
+/fonts/type1/vntex/vnr/vntt12.pfb>
+Output written on main.pdf (39 pages, 5777468 bytes).
 PDF statistics:
- 684 PDF objects out of 1000 (max. 8388607)
- 149 named destinations out of 1000 (max. 500000)
- 509 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 755 PDF objects out of 1000 (max. 8388607)
+ 177 named destinations out of 1000 (max. 500000)
+ 539 words of extra memory for PDF output out of 10000 (max. 10000000)
 

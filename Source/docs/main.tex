@@ -532,6 +532,15 @@ Brightness/Contrast & 0{,}0778 $\pm$ 0{,}0126 & $-$0{,}0170 & 0{,}125 & ns \\ \h
 \label{tab:aug_ablation}
 \end{table}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\textwidth]{../data/processed/fig_aug_knn_ablation.png}
+\caption{Ablation study augmentation: k-NN accuracy (với 95\% CI) cho từng kỹ thuật. Tất cả Wilcoxon $p > 0{,}05$ -- không có kỹ thuật nào cải thiện đáng kể pixel-level k-NN, xác nhận CNN là downstream target thực sự của augmentation. Brightness/Contrast giảm accuracy nhiều nhất ($\Delta = -0{,}017$), V-Flip nhỉnh hơn baseline nhẹ nhất ($+0{,}0008$).}
+\label{fig:aug_ablation}
+\end{figure}
+
+\textbf{Nhận xét phê bình}: Kết quả Wilcoxon $p > 0{,}05$ cho tất cả kỹ thuật không có nghĩa augmentation vô dụng -- nó phản ánh sự thiếu invariance của k-NN trên pixel. Một thiết kế augmentation ablation với CNN (ResNet-18) sẽ cho kết quả khác biệt rõ ràng hơn; đây là hạn chế của phương pháp đánh giá proxy, không phải của augmentation.
+
 \subsection{Phân tích nâng cao}
 
 \subsubsection{Phân tích PCA trên không gian đặc trưng ảnh}
@@ -639,6 +648,20 @@ Transaction, C-count & 0\% & -- \\ \hline
 \end{table}
 
 \textbf{Bằng chứng MAR/MNAR}: $>30\%$ tổng số cột có $|\text{corr}(\text{missing indicator}, \texttt{isFraud})| > 0{,}05$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\textwidth]{../data/processed/eda_04_transamt.png}
+\caption{Phân phối \texttt{TransactionAmt} theo nhãn isFraud (log-scale). Giao dịch gian lận tập trung ở vùng $<\$500$ nhiều hơn giao dịch bình thường; đuôi phải ($>\$1000$) có tỉ lệ fraud thấp hơn -- điều này hợp lý vì gian lận quy mô lớn dễ bị phát hiện thủ công.}
+\label{fig:transamt}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\textwidth]{../data/processed/eda_05_cat_fraud_rate.png}
+\caption{Tỉ lệ fraud theo các đặc trưng phân loại chính (card4, card6, P\_emaildomain, R\_emaildomain). Visa có tỉ lệ fraud thấp hơn Mastercard; một số email domain có fraud rate cực cao (lên đến $>20\%$) -- xác nhận email domain là đặc trưng phân biệt quan trọng.}
+\label{fig:cat_fraud}
+\end{figure}
 
 \subsection{Các kỹ thuật tiền xử lý và đánh giá định lượng}
 
@@ -840,6 +863,13 @@ Model -- GB Top20       & 20 & GB importance, n\_estimators=100, max\_depth=4 \\
 
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.90\textwidth]{../data/processed/fig_13_rfe_f1_curve.png}
+\caption{Đường cong F1-macro theo số đặc trưng chọn (Logistic Regression, 5-fold CV). Hiệu năng tăng nhanh từ 5 đến 30 đặc trưng, sau đó bình ổn -- xác nhận Union RF+GB (32 đặc trưng) là điểm tối ưu về hiệu năng/chi phí.}
+\label{fig:rfe_curve}
+\end{figure}
+
+\begin{figure}[H]
+\centering
 \includegraphics[width=0.90\textwidth]{../data/processed/fig_10_pca_cumvar.png}
 \caption{Tầng 3 -- Giảm chiều: PCA cumulative explained variance. Đường ngang tại 95\% và 99\% cho thấy số thành phần cần thiết. Tập tabular này yêu cầu số PC lớn để giải thích 95\% phương sai, phản ánh tính đa chiều cao của đặc trưng V-Vesta.}
 \label{fig:pca_cumvar}
@@ -850,6 +880,13 @@ Model -- GB Top20       & 20 & GB importance, n\_estimators=100, max\_depth=4 \\
 \includegraphics[width=0.85\textwidth]{../data/processed/fig_11_tsne.png}
 \caption{t-SNE 2D ($n=3000$ mẫu, perplexity=30) trên tập đặc trưng đã chọn, tô màu theo nhãn isFraud. Sự xen lẫn giữa hai lớp xác nhận bài toán fraud detection là phi tuyến và khó phân tách trong không gian nguyên bản.}
 \label{fig:tsne_tabular}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../data/processed/fig_12_umap.png}
+\caption{UMAP 2D ($n\_neighbors=15$, $min\_dist=0{,}1$) trên 32 đặc trưng được chọn. So với t-SNE, UMAP bảo toàn cấu trúc toàn cục tốt hơn và nhanh hơn ($\approx 3\times$). Sự xen lẫn hai lớp tương tự t-SNE -- xác nhận rằng fraud detection yêu cầu mô hình phi tuyến phức tạp, không đơn thuần là vấn đề đặc trưng.}
+\label{fig:umap_tabular}
 \end{figure}
 
 \subsubsection{Xử lý mất cân bằng lớp (Class Imbalance)}
@@ -912,6 +949,13 @@ Nguồn & HuggingFace -- \texttt{wandb/RAGTruth-processed} \\ \hline
 \end{table}
 
 \subsection{Phân tích thống kê văn bản (Text EDA)}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{../data/processed/label_distribution.png}
+\caption{Phân phối nhãn RAGTruth: Supported vs. Hallucinated. Tập dữ liệu gần cân bằng hơn so với IEEE-CIS ($\approx 60/40$), tuy nhiên vẫn có sự lệch nhất định -- cần chú ý khi đánh giá bằng F1-macro thay vì accuracy.}
+\label{fig:label_dist}
+\end{figure}
 
 \subsubsection{Phân phối độ dài văn bản}
 
@@ -1152,6 +1196,36 @@ Linear SVM & Sentence Transformer & 0{,}6948 \\ \hline
 \section{PHÂN TÍCH SO SÁNH TỔNG HỢP}
 % ====================================================================
 
+\subsection{Tổng hợp kiểm định thống kê}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Phần} & \textbf{Kiểm định} & \textbf{Mục đích} & \textbf{Kết quả chính} \\ \hline
+\multirow{5}{*}{P1 -- Ảnh}
+  & Kruskal-Wallis & Phân phối pixel theo lớp & $p \approx 0$, $\eta^2 \in [0{,}437; 0{,}500]$ \\ \cline{2-4}
+  & ANOVA          & Brightness/Contrast theo lớp & $\eta^2 = 0{,}492$ (Contrast) \\ \cline{2-4}
+  & Wilcoxon       & Augmentation ablation vs. baseline & $p > 0{,}05$ tất cả kỹ thuật (ns) \\ \cline{2-4}
+  & KS test        & Normalization shift distribution & $p \approx 0$ (shift có chủ đích) \\ \cline{2-4}
+  & ANOVA          & Edge Density theo lớp & $p \approx 0$ (cạnh phân biệt lớp) \\ \hline
+\multirow{5}{*}{P2 -- Bảng}
+  & D'Agostino-P.  & Normality test toàn cột & 399/400 không chuẩn ($p \leq 0{,}05$) \\ \cline{2-4}
+  & Little's MCAR  & Cơ chế missing data & Tất cả nhóm: MAR/MNAR ($p = 0{,}0$) \\ \cline{2-4}
+  & Friedman       & So sánh 7 imputation methods & $\chi^2$ lớn, $p \approx 0$ \\ \cline{2-4}
+  & KS 2-sample    & Outlier removal effect & $p > 0{,}05$ (phân phối bảo toàn) \\ \cline{2-4}
+  & Levene's test  & Homoscedasticity sau scaling & $p \approx 0$ tất cả (expected) \\ \hline
+\multirow{4}{*}{P3 -- Văn bản}
+  & Mann-Whitney U & Độ dài văn bản theo lớp & $r = 0{,}22$--$0{,}28$ (nhỏ) \\ \cline{2-4}
+  & OLS regression & Zipf $\alpha$ estimation & $R^2 = 0{,}936$, $\alpha = 1{,}63$ \\ \cline{2-4}
+  & Wilcoxon       & Stop words removal F1 impact & $W = 7{,}00$, $p = 1{,}000$ (ns) \\ \cline{2-4}
+  & Friedman       & Stemming/Lemmatization F1 & $\chi^2$ + pairwise Wilcoxon \\ \hline
+\end{tabular}
+\caption{Tổng hợp các kiểm định thống kê được sử dụng trong toàn bộ đồ án}
+\label{tab:stats_summary}
+\end{table}
+
 \subsection{Tổng hợp lựa chọn pipeline}
 
 \begin{table}[H]
@@ -1174,24 +1248,57 @@ Linear SVM & Sentence Transformer & 0{,}6948 \\ \hline
 \label{tab:pipeline_summary}
 \end{table}
 
+\subsection{Tổng hợp kết quả Nâng cao}
+
+Nhóm đã hoàn thành tất cả \textbf{4 yêu cầu [Nâng cao]} được đề ra trong đặc tả đồ án:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|c|}
+\hline
+\textbf{STT} & \textbf{Phần} & \textbf{Nội dung [Nâng cao]} & \textbf{Hoàn thành} \\ \hline
+1 & Phần 1 -- Ảnh (mục e) & IncrementalPCA: scree plot, ARI, t-SNE 2D/3D tô màu theo lớp & \cmark \\ \hline
+2 & Phần 1 -- Ảnh (mục f) & Edge detection (Sobel, Prewitt, Canny), Edge Density, ANOVA & \cmark \\ \hline
+3 & Phần 2 -- Bảng (mục f) & SMOTE, ADASYN, RUS; Precision/Recall/F1-macro/AUC-ROC & \cmark \\ \hline
+4 & Phần 3 -- Văn bản (mục f) & Sentence Transformer, K-Means silhouette, Linear SVM so sánh & \cmark \\ \hline
+\end{tabular}
+\caption{Danh sách các yêu cầu Nâng cao đã hoàn thành}
+\label{tab:advanced_checklist}
+\end{table}
+
+\textbf{Kết quả nổi bật của từng mục Nâng cao:}
+
+\begin{itemize}
+    \item \textbf{PCA (Nâng cao 1)}: IncrementalPCA trên 27.000 ảnh ($27.000 \times 4.096$, 440 MB) đạt 88{,}2\% phương sai tại $n=800$ -- xác nhận đặc trưng pixel viễn thám có chiều thực rất cao. Kruskal-Wallis trên PC1: $p \approx 0$, $\eta^2$ lớn. ARI trên PCA 2D: thấp -- cần t-SNE phi tuyến để phân tách tốt hơn.
+    \item \textbf{Edge Detection (Nâng cao 2)}: ANOVA/Kruskal-Wallis trên Edge Density ($p \approx 0$) -- thông tin cạnh phân biệt được các lớp. Sobel và Canny tương quan cao theo per-class mean. dense\_residential và chaparral có Edge Density cao nhất; island và sea\_ice thấp nhất.
+    \item \textbf{Class Imbalance (Nâng cao 3)}: SMOTE/ADASYN tăng Recall fraud từ 0{,}178 lên 0{,}875 nhưng giảm Precision từ 0{,}116 xuống 0{,}047. AUC-ROC tăng từ 0{,}483 (No Resampling) lên 0{,}738 (SMOTE) -- AUC-ROC là chỉ số phù hợp hơn F1-macro cho bài toán mất cân bằng.
+    \item \textbf{Sentence Transformer (Nâng cao 4)}: TF-IDF K-Means silhouette (0{,}183) $>$ ST silhouette (0{,}083). Linear SVM: TF-IDF F1 (0{,}722) $>$ Word2Vec (0{,}697) $>$ ST (0{,}695). Kết quả ngược chiều kỳ vọng -- giải thích: RAGTruth chứa nhiều tín hiệu bề mặt (citation, hedging) mà TF-IDF nắm bắt tốt hơn semantic embedding tổng quát.
+\end{itemize}
+
 \subsection{Thảo luận}
 
 \textbf{Phần 1 -- Ảnh:}
-Việc chọn NWPU-RESISC45 với 45 lớp cân bằng là lý tưởng cho ablation study vì loại bỏ được yếu tố nhiễu từ class imbalance. Kết quả IncrementalPCA (88{,}2\% tại $n=800$) cho thấy đặc trưng pixel viễn thám có chiều thực sự rất cao -- đây là lý do tại sao t-SNE (phi tuyến) phân tách lớp tốt hơn PCA 2D. Hạn chế chính: k-NN trên pixel features không phản ánh được khả năng học đặc trưng sâu của CNN -- các kết luận về augmentation (Wilcoxon $p > 0{,}05$ cho mọi kỹ thuật) và color space có thể khác biệt đáng kể khi dùng feature extractor CNN như ResNet.
+Việc chọn NWPU-RESISC45 với 45 lớp hoàn toàn cân bằng là quyết định thiết kế tốt vì loại bỏ được yếu tố nhiễu từ class imbalance trong ablation study. Kết quả IncrementalPCA (88{,}2\% tại $n=800$) cho thấy đặc trưng pixel viễn thám có chiều thực rất cao, giải thích tại sao t-SNE (phi tuyến, $O(n^2)$) phân tách lớp tốt hơn PCA 2D.
 
-Một phát hiện thú vị: 224$\times$224 cho k-NN accuracy bằng 128$\times$128 (0{,}260) -- cho thấy pixel-level k-NN không hưởng lợi từ độ phân giải cao hơn; lý do chọn 224$\times$224 là tính tương thích với ImageNet pretrained models (downstream fine-tuning).
+\textbf{Nhận xét phê bình về proxy evaluation}: Toàn bộ ablation study sử dụng k-NN trên pixel features làm proxy đánh giá. Đây là phương pháp phổ biến nhưng có thiên vị: (1) k-NN không invariant với phép xoay/lật nên augmentation không cải thiện được (Wilcoxon $p > 0{,}05$); (2) k-NN không capture được hierachical features; (3) k-NN accuracy cực thấp ($\approx 9\%$ cho 45 lớp) -- baseline của random classifier chỉ $2{,}2\%$ -- nên mọi so sánh đều có noise cao. Mọi kết luận về color space và normalization cần được xác nhận lại với CNN feature extractor để có giá trị thực tiễn.
+
+Một phát hiện đáng chú ý: 224$\times$224 cho k-NN accuracy \textit{bằng} 128$\times$128 (0{,}260) -- cho thấy độ phân giải cao hơn không giúp ích cho pixel-level features; lý do chọn 224$\times$224 là tính tương thích ImageNet pretrained models (downstream fine-tuning), không phải hiệu năng ablation.
 
 \textbf{Phần 2 -- Dữ liệu bảng:}
-Tập IEEE-CIS có tỉ lệ missing cực cao (nhóm Identity: 84,5\%) và mất cân bằng lớp nghiêm trọng (28:1) -- đây là hai thách thức lớn nhất. Việc chọn \textbf{Mean} thay vì MICE là sự đánh đổi thực tế giữa hiệu năng (MICE: RMSE=97{,}35) và khả năng tính toán (MICE OOM với $>400$ cột $\times$ 590K hàng). Với dữ liệu thực tế quy mô lớn, cân nhắc dùng MissForest hoặc deep learning imputation như GAIN là hướng cải tiến tiềm năng.
+Tập IEEE-CIS đặt ra hai thách thức kỹ thuật chính: tỉ lệ missing cực cao (Identity: 84,5\%, MAR/MNAR) và mất cân bằng lớp nghiêm trọng (fraud $\approx 3{,}5\%$, ratio 28:1). Các quyết định xử lý phản ánh ưu tiên thực tế về tính scalable:
 
-Nhận xét quan trọng về Levene test: tất cả 5 phương pháp chuẩn hóa đều bác bỏ $H_0$ ($p \approx 0$) -- đây là kết quả kỳ vọng với dữ liệu có 399/400 cột không chuẩn, không phải điểm yếu của phương pháp. Tiêu chí phân biệt là Levene $F$ thấp nhất (RobustScaler = 1.527,92) và tính bền vững với outlier sau IQR clipping.
+Việc chọn \textbf{Mean} thay vì MICE (RMSE tốt nhất = 97{,}35) là sự đánh đổi có lý giải rõ: MICE OOM với $>400$ cột $\times$ 590K hàng, không khả thi trong production. Tuy nhiên, Mean imputation giả định MCAR trong khi dữ liệu thực sự là MAR/MNAR -- đây là nguồn bias tiềm ẩn. Hướng cải tiến: MissForest (ensemble-based, memory-efficient) hoặc GAIN (deep learning imputation).
 
-Về feature selection: sự đồng thuận giữa RF và GB trong top features (TransactionAmt, card1, V-groups) xác nhận đây là các tín hiệu phân biệt thực sự (không phải overfitting). Intersection RF$\cap$GB chiếm $>$60\% của Union, cho thấy hai bộ đặc trưng có thể thay thế nhau trong hầu hết các trường hợp.
+\textbf{Nhận xét phê bình về SMOTE}: Kết quả bảng~\ref{tab:imbalance_methods} cho thấy No Resampling có F1-macro cao nhất (0{,}5502) nhưng Recall thấp (0{,}178). Đây là kết quả đặc thù của chỉ số F1-macro với dữ liệu mất cân bằng: mô hình không resampling dự đoán gần như tất cả là class 0 (Normal) nên Precision class 1 rất cao khi Recall thấp. AUC-ROC là chỉ số phù hợp hơn cho bài toán này -- SMOTE (AUC=0{,}738) vượt trội No Resampling (AUC=0{,}483) rõ ràng. Trong fraud detection thực tế, bỏ sót fraud (FN) thường tốn kém hơn cảnh báo nhầm (FP), nên ưu tiên Recall $>$ Precision.
+
+Về feature selection: đồng thuận RF-GB trên top features (TransactionAmt, card1, V-groups) xác nhận tính robustness -- hai bộ ensemble học từ gốc khác nhau (Gini vs. gradient descent) đồng ý là bằng chứng mạnh về thực chất của đặc trưng.
 
 \textbf{Phần 3 -- Văn bản:}
-RAGTruth là tập dữ liệu thú vị và hiện đại (hallucination detection cho LLM RAG systems). Kết quả cho thấy TF-IDF vẫn cạnh tranh mạnh với Sentence Transformer trong các task phân loại nhị phân có tín hiệu từ vựng rõ ràng: LR + TF-IDF bigram (F1=0{,}7331) $>$ SVM + TF-IDF (0{,}7223) $>$ SVM + Word2Vec (0{,}6965) $>$ SVM + Sentence Transformer (0{,}6948). Nguyên nhân: Sentence Transformer được huấn luyện cho task semantic similarity chung -- với task hallucination detection, các tín hiệu surface-form (citation patterns, hedging language) mà TF-IDF nắm bắt tốt hơn có thể mang nhiều thông tin hơn ngữ nghĩa sâu.
+RAGTruth là tập dữ liệu hiện đại (hallucination detection cho LLM RAG systems) với đặc tính ngôn ngữ học đặc biệt: $\alpha_{Zipf} = 1{,}63$ (lệch so với corpus tự nhiên $\alpha \approx 1{,}0$) do văn bản được tạo bởi LLM có phân phối từ vựng khác với ngôn ngữ người viết.
 
-Hạn chế: Zipf $\alpha = 1{,}63$ cho thấy corpus khá chuyên biệt (responses của LLM) so với văn bản tự nhiên thông thường ($\alpha \approx 1{,}0$); việc loại bỏ stop words không cải thiện phân loại (Cohen's $d = 0{,}017$) -- đây là dấu hiệu cho thấy cấu trúc ngữ pháp (thường ở stop words) có thể mang thông tin phân biệt hallucination.
+\textbf{Nhận xét phê bình về Sentence Transformer}: Kết quả TF-IDF $>$ Sentence Transformer (F1: 0{,}7223 vs. 0{,}6948) là counterintuitive nhưng có giải thích hợp lý: (1) Hallucination detection phụ thuộc nhiều vào surface-form signals (citation patterns, hedging language, specific lexical choices) hơn là semantic meaning -- đây là điểm mạnh của TF-IDF; (2) \texttt{all-MiniLM-L6-v2} được huấn luyện cho semantic similarity task, không phải hallucination detection; (3) Fine-tuning BERT/RoBERTa trên RAGTruth có khả năng cao sẽ vượt trội TF-IDF đáng kể.
+
+Kết quả stop words: Wilcoxon $p = 1{,}000$, Cohen's $d = 0{,}017$ -- stop words không mang thông tin phân biệt trong corpus này. Giải thích: RAGTruth là AI-generated responses trong RAG pipeline -- cấu trúc ngữ pháp (stop words) giữa Supported và Hallucinated tương tự nhau; sự khác biệt nằm ở nội dung (content words) và cách diễn đạt thực tế.
 
 % ====================================================================
 \section{KẾT LUẬN}
