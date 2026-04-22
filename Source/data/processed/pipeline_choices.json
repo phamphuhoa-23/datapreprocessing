@@ -1,40 +1,15 @@
 {
-  "imputation": {
-    "benchmark_best": "MICE",
-    "production_choice": "Mean",
-    "reason": "Scalable O(n·d); AUC không thua kNN/MICE có ý nghĩa thống kê (Wilcoxon ns)"
-  },
-  "outlier": {
-    "ks_best_method": "DBSCAN",
-    "production_choice": "IQR_clipping",
-    "reason": "Bảo toàn số dòng; KS stat thấp nhất trong nhóm có phát hiện; O(n·d) scalable"
-  },
-  "scaling": {
-    "auc_tie_methods": [
-      "Min-Max",
-      "Z-score",
-      "Robust"
-    ],
-    "production_choice": "RobustScaler",
-    "reason": "Levene stat thấp nhất (1527); robust với outlier; phù hợp 399/400 cột phi chuẩn"
-  },
-  "encoding": {
-    "low_card": "Frequency Encoding (cardinality <= 20)",
-    "high_card": "Target Encoding 5-fold CV (cardinality > 20)",
-    "dropped": "OHE (VIF~10^12), Binary (VIF max=123), Ordinal"
-  },
-  "feature_selection": {
-    "strategy": "Vote >= 3/5 (ANOVA, MI, Chi2, RF, GB) -> benchmark validation",
-    "candidate_pool": 77,
-    "core_vote_feats": 19,
-    "final_set": "Best Tầng 2 (30 feats)",
-    "n_features_final": 30,
-    "final_auc": 0.8838,
-    "final_f1": 0.8053
-  },
-  "imbalance": {
-    "imbalance_ratio": 27.58,
-    "best_method": "No Resampling (baseline)",
-    "eval_metric": "F1-macro on unsampled val set"
+  "decision_1_tokenizer": "Word-level",
+  "decision_2_stopwords": "remove",
+  "decision_3_stemlem": "None (baseline)",
+  "decision_4_vectorizer": "LR + TF-IDF bi",
+  "X_shape": [
+    17790,
+    10000
+  ],
+  "n_classes": 2,
+  "label_map": {
+    "0": "Supported",
+    "1": "Hallucinated"
   }
 }
