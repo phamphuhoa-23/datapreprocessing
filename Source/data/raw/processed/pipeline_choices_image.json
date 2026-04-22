@@ -16,8 +16,8 @@
     "justification": "Z-score global đạt accuracy cao nhất; Wilcoxon vs Original"
   },
   "step4_augmentation": {
-    "chosen_technique": "V-Flip",
+    "chosen_technique": "Gaussian Noise",
     "metric": "5-fold k-NN accuracy per-technique (original + augmented_by_fn)",
-    "justification": "V-Flip tăng accuracy nhiều nhất so với baseline"
+    "justification": "Gaussian Noise tăng accuracy nhiều nhất so với baseline"
   }
 }

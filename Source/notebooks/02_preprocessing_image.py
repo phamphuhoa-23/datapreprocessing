@@ -55,10 +55,13 @@ except NameError:
 
 _IMG_ROOT = _SOURCE_DIR / 'data' / 'raw' / 'image'
 TRAIN_DIR = str(_IMG_ROOT / 'train')
-OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
+OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed' / 'image')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-print(f"TRAIN_DIR  = {TRAIN_DIR}")
-print(f"OUTPUT_DIR = {OUTPUT_DIR}")
+FIGURES_DIR = str(_SOURCE_DIR / 'outputs' / 'image')
+os.makedirs(FIGURES_DIR, exist_ok=True)
+print(f"TRAIN_DIR   = {TRAIN_DIR}")
+print(f"OUTPUT_DIR  = {OUTPUT_DIR}")
+print(f"FIGURES_DIR = {FIGURES_DIR}")
 
 # ── Chain check: đọc danh sách duplicate từ 01_EDA_image (nếu có) ──────────
 _dup_csv = os.path.join(OUTPUT_DIR, 'duplicate_paths.csv')
@@ -176,6 +179,7 @@ sns.boxplot(data=df_resize, x='size', y='psnr', ax=axes[1], palette='Oranges_d',
 axes[1].set_title("PSNR theo kích thước resize (dB)")
 axes[1].set_ylabel("PSNR (dB)")
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_01_resize_comparison.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -208,6 +212,7 @@ axes[1].set_title("PSNR theo kích thước resize")
 axes[1].set_xticks(sizes_px)
 
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_02_augmentation_demo.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -245,6 +250,7 @@ ax.set_ylabel("k-NN Accuracy (5-fold CV)")
 ax.set_xlabel("Kích thước")
 ax.set_title("k-NN Accuracy theo kích thước resize (256x256 = gốc)")
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_03_normalization_demo.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -263,6 +269,7 @@ for row, (img, cls) in enumerate([(samples[0][0], samples[0][1]), (samples[60][0
         axes[row][col+1].axis('off')
 plt.suptitle("So sánh chất lượng ảnh qua các kích thước resize", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_04_noise_demo.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -421,6 +428,7 @@ axes[1].set_title("Cumulative Explained Variance")
 axes[1].legend()
 axes[1].set_xlim(0, 30)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_05_denoising_comparison.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -650,6 +658,7 @@ if len(norm_pixels) < 6:
     axes[1][2].axis('off')
 plt.suptitle("Phân bố pixel sau mỗi phương pháp Normalization", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_06_color_space_demo.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 
@@ -823,6 +832,7 @@ for row, (img, cls) in enumerate(vis_sample):
 plt.suptitle(
     f"{len(AUGMENTATIONS)} phép Augmentation trên ảnh mẫu", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_07_edge_detection.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -885,6 +895,7 @@ for col, (mask_val, title) in enumerate([(0, "Trước Augmentation"), (1, "Sau 
 plt.suptitle(
     f"t-SNE: Feature Space trước/sau Augmentation (perplexity={perplexity_val})", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_08_ablation_summary.png'), dpi=150, bbox_inches='tight')
 plt.show()
 print(f"t-SNE done: {len(X_orig)} ảnh gốc + {len(X_aug)} ảnh augmented")
 

@@ -1,0 +1,28 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {table}{\numberline {1}{\ignorespaces Thông tin các thành viên nhóm}}{5}{table.caption.1}%
+\contentsline {table}{\numberline {2}{\ignorespaces Bảng phân công công việc chi tiết}}{5}{table.caption.2}%
+\contentsline {table}{\numberline {3}{\ignorespaces Thông tin tập dữ liệu NWPU-RESISC45}}{7}{table.caption.3}%
+\contentsline {table}{\numberline {4}{\ignorespaces Kết quả ANOVA cho brightness và contrast theo lớp}}{8}{table.caption.4}%
+\contentsline {table}{\numberline {5}{\ignorespaces So sánh resize theo SSIM, PSNR và k-NN Accuracy (256$\times $256 = gốc, 32$\times $32 không có k-NN do ít dùng)}}{9}{table.caption.5}%
+\contentsline {table}{\numberline {6}{\ignorespaces So sánh các không gian màu theo PCA variance và k-NN accuracy}}{9}{table.caption.6}%
+\contentsline {table}{\numberline {7}{\ignorespaces Kết quả ablation chuẩn hóa ảnh: KS test so với Original và k-NN 5-fold CV}}{10}{table.caption.7}%
+\contentsline {table}{\numberline {8}{\ignorespaces Kết quả ablation từng kỹ thuật augmentation (k-NN 5-fold, Wilcoxon so với Baseline; ns = not significant)}}{11}{table.caption.8}%
+\contentsline {table}{\numberline {9}{\ignorespaces Phân tích Edge Density theo lớp}}{12}{table.caption.10}%
+\contentsline {table}{\numberline {10}{\ignorespaces Thông tin tập dữ liệu IEEE-CIS Fraud Detection}}{13}{table.caption.11}%
+\contentsline {table}{\numberline {11}{\ignorespaces Tỉ lệ giá trị thiếu theo nhóm đặc trưng}}{14}{table.caption.13}%
+\contentsline {table}{\numberline {12}{\ignorespaces So sánh chiến lược điền khuyết (benchmark 10\% MCAR nhân tạo, 5.000 dòng $\times $ 15 cột)}}{16}{table.caption.16}%
+\contentsline {table}{\numberline {13}{\ignorespaces So sánh 5 phương pháp phát hiện ngoại lai (tỉ lệ phát hiện tính tại runtime)}}{17}{table.caption.18}%
+\contentsline {table}{\numberline {14}{\ignorespaces So sánh 5 phương pháp chuẩn hóa và kết quả Levene's test homoscedasticity}}{18}{table.caption.20}%
+\contentsline {table}{\numberline {15}{\ignorespaces So sánh 5 phương pháp mã hóa biến phân loại: số chiều và VIF (kết quả runtime)}}{20}{table.caption.22}%
+\contentsline {table}{\numberline {16}{\ignorespaces So sánh các tầng lựa chọn đặc trưng. Benchmark validation (LR 5-fold CV) đánh giá AUC và F1-macro trên từng tập ứng viên; Best Tầng 2 (30 đặc trưng, vote $\geq $3/5) đạt hiệu năng cao nhất.}}{22}{table.caption.26}%
+\contentsline {table}{\numberline {17}{\ignorespaces Kết quả RFE với Logistic Regression ($k \in \{5,10,20,30,50\}$, 5-fold CV). Best: $k=30$.}}{22}{table.caption.27}%
+\contentsline {table}{\numberline {18}{\ignorespaces So sánh các chiến lược xử lý mất cân bằng lớp (kết quả tính tại runtime)}}{24}{table.caption.32}%
+\contentsline {table}{\numberline {19}{\ignorespaces Thông tin tập dữ liệu RAGTruth}}{25}{table.caption.34}%
+\contentsline {table}{\numberline {20}{\ignorespaces Thống kê per-step pipeline chuẩn hóa văn bản (9 bước)}}{28}{table.caption.40}%
+\contentsline {table}{\numberline {21}{\ignorespaces So sánh 4 chiến lược tokenization (OOV tính trên split 80/20 train/test)}}{29}{table.caption.42}%
+\contentsline {table}{\numberline {22}{\ignorespaces So sánh stemming và lemmatization (kết quả runtime)}}{30}{table.caption.44}%
+\contentsline {table}{\numberline {23}{\ignorespaces So sánh các phương pháp vector hóa văn bản ($^*$Silhouette của Sentence Transformer dùng K-Means labels, các phương pháp khác dùng GT labels)}}{32}{table.caption.47}%
+\contentsline {table}{\numberline {24}{\ignorespaces Bảng xếp hạng phân loại cuối cùng trên RAGTruth}}{33}{table.caption.49}%
+\contentsline {table}{\numberline {25}{\ignorespaces Tổng hợp các kiểm định thống kê được sử dụng trong toàn bộ đồ án}}{34}{table.caption.51}%
+\contentsline {table}{\numberline {26}{\ignorespaces Tổng hợp các lựa chọn pipeline cuối cùng}}{34}{table.caption.52}%
+\contentsline {table}{\numberline {27}{\ignorespaces Danh sách các yêu cầu Nâng cao đã hoàn thành}}{34}{table.caption.53}%

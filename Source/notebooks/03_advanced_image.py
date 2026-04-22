@@ -55,7 +55,10 @@ except NameError:
     _SOURCE_DIR = Path.cwd().parent
 
 TRAIN_DIR = str(_SOURCE_DIR / 'data' / 'raw' / 'image' / 'train')
-print(f"TRAIN_DIR = {TRAIN_DIR}")
+FIGURES_DIR = str(_SOURCE_DIR / 'outputs' / 'image')
+os.makedirs(FIGURES_DIR, exist_ok=True)
+print(f"TRAIN_DIR   = {TRAIN_DIR}")
+print(f"FIGURES_DIR = {FIGURES_DIR}")
 classes = sorted(os.listdir(TRAIN_DIR))
 print(f"Số lớp: {len(classes)}")
 
@@ -189,6 +192,7 @@ axes[1].set_ylabel("Cumulative Explained Variance")
 axes[1].set_title("Cumulative Explained Variance")
 axes[1].legend(fontsize=9)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_01_eigenimages.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -205,6 +209,7 @@ for idx, ax in enumerate(axes.ravel()):
 plt.suptitle(
     "Top 20 Eigenimages (IncrementalPCA, 27,000 ảnh 64×64)", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_02_pca_variance.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -215,6 +220,7 @@ ax.imshow(mean_img, cmap='gray')
 ax.set_title("Mean Image (toàn bộ 27,000 ảnh train)")
 ax.axis('off')
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_03_pca_reconstruction.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -236,6 +242,7 @@ ax.set_ylabel(f"PC2 ({ipca.explained_variance_ratio_[1]*100:.1f}%)")
 ax.set_title("PCA 2D Projection — toàn bộ 45 lớp (27,000 ảnh)")
 ax.legend(fontsize=6, loc='best', ncol=5, markerscale=2)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_04_pca_components_grid.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -267,6 +274,7 @@ ax.set_zlabel(f"PC3 ({ipca.explained_variance_ratio_[2]*100:.1f}%)")
 ax.set_title("PCA 3D Projection — toàn bộ 45 lớp (27,000 ảnh)")
 ax.legend(fontsize=5, loc="upper left", ncol=5, markerscale=2)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_05_edge_sobel_prewitt.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 
@@ -305,6 +313,7 @@ ax.set_xlabel("t-SNE 1")
 ax.set_ylabel("t-SNE 2")
 ax.legend(fontsize=6, loc='best', ncol=5, markerscale=2)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_06_canny_comparison.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -333,6 +342,7 @@ for ax_t, X_t, perp in zip(axes_tsne, [X_tsne, X_tsne_50], [30, 50]):
     ax_t.legend(fontsize=5, loc='best', ncol=5, markerscale=2)
 plt.suptitle("So sánh t-SNE Perplexity=30 vs Perplexity=50", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_07_edge_density.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 
@@ -502,6 +512,7 @@ for row, (img, cls) in enumerate(demo_samples):
 plt.suptitle(
     "Ảnh hưởng của ngưỡng T lên Sobel edge map (T nhỏ → nhiều cạnh hơn)", fontsize=12)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_08_pca_tsne_2d.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -552,6 +563,7 @@ ax.set_title("Ablation ngưỡng T — Sobel vs Prewitt (45 lớp)")
 ax.legend()
 ax.set_xticks(T_VALUES)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_09_pca_knn_accuracy.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -571,6 +583,7 @@ ax.set_ylabel("Sobel edge density")
 ax.set_title(
     "Phân bố Sobel edge density theo ngưỡng T (toàn bộ 45 lớp × 30 ảnh)")
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_10_pca_3d_scatter.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # Chọn T tốt nhất: T phân biệt các lớp tốt nhất (eta² cao nhất)
@@ -655,6 +668,7 @@ ax.set_ylabel("Canny edge density")
 ax.set_title("Ablation Canny: so sánh 4 cấu hình (sigma, T₁, T₂)")
 ax.set_xticklabels(ax.get_xticklabels(), rotation=20, ha='right')
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_11_edge_statistical_test.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # ANOVA eta² cho mỗi config
@@ -736,6 +750,7 @@ for ax, col, title in zip(axes,
 plt.suptitle(
     "Edge Density theo lớp — 3 bộ lọc với tham số tốt nhất", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_12_ssim_psnr_analysis.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -770,7 +785,8 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
 #
 # T = 30 cho $\eta^2$ cao nhất (0.503): ngưỡng thấp giữ nhiều cạnh hơn nên phân biệt lớp tốt hơn.
 # Khi T tăng, density giảm mạnh và đơn điệu, nhưng thứ tự xếp hạng lớp hầu như không đổi
-# (Spearman $ho \geq 0.99$ giữa mọi cặp T) — T chỉ ảnh hưởng scale, không ảnh hưởng ranking.
+# (Spearman $
+ho \geq 0.99$ giữa mọi cặp T) — T chỉ ảnh hưởng scale, không ảnh hưởng ranking.
 #
 # Sobel và Prewitt cho density gần nhau (T=30: Sobel=0.615, Prewitt=0.516);
 # Sobel nhạy hơn nhẹ vì trọng số trung tâm ×2 so với Prewitt ×1.

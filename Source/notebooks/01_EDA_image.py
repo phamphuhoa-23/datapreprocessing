@@ -68,12 +68,15 @@ except NameError:
 _IMG_ROOT = _SOURCE_DIR / 'data' / 'raw' / 'image'
 TRAIN_DIR = str(_IMG_ROOT / 'train')
 TEST_DIR = str(_IMG_ROOT / 'test')
-OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
+OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed' / 'image')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+FIGURES_DIR = str(_SOURCE_DIR / 'outputs' / 'image')
+os.makedirs(FIGURES_DIR, exist_ok=True)
 
-print(f"TRAIN_DIR  = {TRAIN_DIR}")
-print(f"TEST_DIR   = {TEST_DIR}")
-print(f"OUTPUT_DIR = {OUTPUT_DIR}")
+print(f"TRAIN_DIR   = {TRAIN_DIR}")
+print(f"TEST_DIR    = {TEST_DIR}")
+print(f"OUTPUT_DIR  = {OUTPUT_DIR}")
+print(f"FIGURES_DIR = {FIGURES_DIR}")
 
 classes = sorted(os.listdir(TRAIN_DIR))
 print(f"Số lớp: {len(classes)}")
@@ -161,6 +164,7 @@ for ax, (name, vals, color) in zip(axes, [
 plt.suptitle(
     "Boxplot pixel mean per-image theo kênh (toàn bộ 27,000 ảnh)", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_01_pixel_boxplot.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -205,6 +209,7 @@ for ax, (name, vals, color) in zip(axes, [
 plt.suptitle(
     "Phân bố pixel trung bình theo kênh (per-image, toàn bộ 45 lớp)", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_02_pixel_histogram.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -243,6 +248,7 @@ ax.set_ylabel("Mean pixel value")
 ax.set_title("Mean pixel R/G/B theo lớp (sắp xếp tăng dần theo overall mean)")
 ax.legend()
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_03_mean_rgb_per_class.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -284,6 +290,7 @@ for ch_idx, ch_name in enumerate(['R', 'G', 'B']):
     axes[ch_idx].set_xlabel("Pixel value")
 plt.suptitle("So sánh phân bố pixel giữa 5 lớp đại diện", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_04_pixel_dist_5classes.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -431,6 +438,7 @@ for ax, split, counts_col in zip(axes,
 plt.suptitle("Phan bo so anh theo lop - Dataset can bang hoan hao (45 lop bang nhau)",
              fontsize=12)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_05_class_distribution.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -489,6 +497,7 @@ for idx in range(len(classes), n_rows * n_cols):
     axes[row][col].axis('off')
 plt.suptitle("Ảnh mẫu từ toàn bộ 45 lớp (NWPU-RESISC45)", fontsize=14)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_06_sample_images.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -578,6 +587,7 @@ if exact_dupes:
             axes[idx][col].axis('off')
     plt.suptitle("Ảnh trùng lặp (exact pHash match)", fontsize=12)
     plt.tight_layout()
+    plt.savefig(os.path.join(FIGURES_DIR, 'fig_07_duplicate_images.png'), dpi=150, bbox_inches='tight')
     plt.show()
 
 # %% [markdown]
@@ -658,6 +668,7 @@ if near_dupes:
         axes[idx][1].axis('off')
     plt.suptitle("Near-duplicate examples", fontsize=12)
     plt.tight_layout()
+    plt.savefig(os.path.join(FIGURES_DIR, 'fig_08_near_duplicates.png'), dpi=150, bbox_inches='tight')
     plt.show()
 
 # %%
@@ -765,6 +776,7 @@ for col, (metric, color) in enumerate([('brightness', '#f39c12'), ('contrast', '
 plt.suptitle(
     "Phân bố Brightness & Contrast (L-channel, toàn bộ 27,000 ảnh)", fontsize=13)
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_09_brightness_contrast_hist.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -797,6 +809,7 @@ axes[1].set_title("Contrast (std L-channel) theo lớp")
 axes[1].set_xlabel("")
 
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_10_brightness_contrast_bar.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -833,6 +846,7 @@ axes[1].set_xticklabels(axes[1].get_xticklabels(),
 axes[1].set_title("Contrast (5 thấp nhất + 5 cao nhất)")
 
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_11_brightness_contrast_extreme.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -859,6 +873,7 @@ ax.set_xlabel("Mean Brightness (L-channel)")
 ax.set_ylabel("Mean Contrast (L-channel std)")
 ax.set_title("Brightness vs Contrast theo lớp")
 plt.tight_layout()
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_12_brightness_vs_contrast.png'), dpi=150, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]

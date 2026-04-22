@@ -125,9 +125,12 @@ try:
 except NameError:
     _SOURCE_DIR = Path.cwd().parent
 
-OUTPUT_DIR = _SOURCE_DIR / 'data' / 'processed'
+OUTPUT_DIR = _SOURCE_DIR / 'data' / 'processed' / 'text'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-print(f'OUTPUT_DIR = {OUTPUT_DIR}')
+FIGURES_DIR = _SOURCE_DIR / 'outputs' / 'text'
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+print(f'OUTPUT_DIR  = {OUTPUT_DIR}')
+print(f'FIGURES_DIR = {FIGURES_DIR}')
 print('All libraries imported successfully!')
 
 # %% [markdown]
@@ -139,11 +142,29 @@ print('All libraries imported successfully!')
 # Load dataset từ local parquet
 
 
-DATA_RAW = _SOURCE_DIR / 'data' / 'raw' / 'text'
-df = pd.read_parquet(DATA_RAW / 'ragtruth_full.parquet')
+DATA_RAW = _SOURCE_DIR / 'data' / 'raw' / 'text' / 'data'
+df_train = pd.read_parquet(DATA_RAW / 'train-00000-of-00001.parquet')
+df_test = pd.read_parquet(DATA_RAW / 'test-00000-of-00001.parquet')
+df = pd.concat([df_train, df_test], ignore_index=True)
 
-print(f"Tải thành công: {DATA_RAW / 'ragtruth_full.parquet'}")
-print(f"Dataset shape: {df.shape}")
+# Anh xa cot thuc te vao ten code mong doi
+# 'output' -> 'text'
+# 'hallucination_labels_processed' -> 'label'
+# Anh xa cot thuc te vao ten code mong doi
+# 'output' -> 'text'
+df = df.rename(columns={'output': 'text'})
+
+# Trich xuat nhan tu Dict {'evident_conflict': 0, 'baseless_info': 0}
+# Neu co bat ky gia tri nao la 1 -> Hallucinated (1), nguoc lai -> Supported (0)
+df['label'] = df['hallucination_labels_processed'].apply(
+    lambda x: 1 if any(v == 1 for v in x.values()) else 0
+)
+
+# Tao label_name de hien thi
+df['label_name'] = df['label'].map({0: 'Supported', 1: 'Hallucinated'})
+
+print(f"Tai thanh cong du lieu tu: {DATA_RAW}")
+print(f"Dataset shape: {df.shape} (Train: {len(df_train)}, Test: {len(df_test)})")
 print(f"\nLabel distribution:")
 print(df['label_name'].value_counts())
 print(f"\nLabel ratio:")
@@ -188,7 +209,7 @@ axes[1].pie(label_counts.values, labels=label_counts.index, autopct='%1.1f%%',
 axes[1].set_title('Tỉ lệ nhãn', fontsize=14)
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'label_distribution.png',
+plt.savefig(FIGURES_DIR / 'label_distribution.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -294,7 +315,7 @@ axes[1, 2].legend()
 
 plt.suptitle("Phân phối độ dài văn bản: số từ, số câu, số ký tự", fontsize=15)
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'text_length_distribution.png',
+plt.savefig(FIGURES_DIR / 'text_length_distribution.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -427,7 +448,7 @@ axes[2].set_title('Word Cloud - Hallucinated', fontsize=14)
 axes[2].axis('off')
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'wordclouds.png', dpi=150, bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'wordclouds.png', dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -471,7 +492,7 @@ axes[1].set_title('Top-20 từ phổ biến - Hallucinated', fontsize=14)
 axes[1].set_xlabel('Tần suất')
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'top20_words.png', dpi=150, bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'top20_words.png', dpi=150, bbox_inches='tight')
 plt.show()
 
 # %%
@@ -575,7 +596,7 @@ axes[1].set_title('Zipf theo nhóm nhãn', fontsize=14)
 axes[1].legend(fontsize=12)
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'zipf_law.png', dpi=150, bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'zipf_law.png', dpi=150, bbox_inches='tight')
 plt.show()
 print(f"Zipf \u03b1: {abs(slope):.3f} (to\u00e0n corpus) | "
       f"{abs(_zipf_slopes['Supported']):.3f} (Supported) | "
@@ -806,7 +827,7 @@ for bar, v in zip(bars, vocab_sizes):
                  100, f'{v:,}', ha='center', fontweight='bold')
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'tokenization_comparison.png',
+plt.savefig(FIGURES_DIR / 'tokenization_comparison.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -1136,7 +1157,7 @@ for bar, v in zip(bars, f1_means):
                  0.005, f'{v:.4f}', ha='center', fontweight='bold')
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'stemming_lemmatization.png',
+plt.savefig(FIGURES_DIR / 'stemming_lemmatization.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -1250,7 +1271,7 @@ axes[1].set_xlabel('Số token / văn bản')
 axes[1].legend()
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'length_distribution_ablation.png',
+plt.savefig(FIGURES_DIR / 'length_distribution_ablation.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -1480,7 +1501,7 @@ for i, (name, emb) in enumerate(tsne_map.items()):
 axes[-1].axis('off')
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'tsne_visualization.png',
+plt.savefig(FIGURES_DIR / 'tsne_visualization.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 print("t-SNE hoàn tất!")
@@ -1704,7 +1725,7 @@ for bar, v in zip(bars2, svm_scores):
                  0.008, f'{v:.4f}', ha='center', fontweight='bold')
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'advanced_comparison.png',
+plt.savefig(FIGURES_DIR / 'advanced_comparison.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -1725,7 +1746,7 @@ for ax, X_tsne, title in zip(axes,
     ax.legend(*scatter.legend_elements(), labels=['Supported', 'Hallucinated'])
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'tsne_all_methods.png', dpi=150, bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'tsne_all_methods.png', dpi=150, bbox_inches='tight')
 plt.show()
 print("Hoàn tất!")
 
@@ -1921,7 +1942,7 @@ for bar, v in zip(bars, f1_sorted):
             va='center', fontweight='bold', fontsize=10)
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'classification_leaderboard.png',
+plt.savefig(FIGURES_DIR / 'classification_leaderboard.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 
@@ -2013,7 +2034,7 @@ disp = ConfusionMatrixDisplay(cm, display_labels=['Supported', 'Hallucinated'])
 disp.plot(ax=ax, cmap='Blues', values_format='d')
 ax.set_title(f'Confusion Matrix - {best_method}', fontsize=14)
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / 'confusion_matrix_best.png',
+plt.savefig(FIGURES_DIR / 'confusion_matrix_best.png',
             dpi=150, bbox_inches='tight')
 plt.show()
 

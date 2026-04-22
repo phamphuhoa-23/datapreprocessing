@@ -90,7 +90,7 @@ except NameError:
     _SOURCE_DIR = Path.cwd().parent
 
 DATA_DIR   = str(_SOURCE_DIR / 'data' / 'raw' / 'tabular')
-OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed')
+OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed' / 'tabular')
 
 # Fallback: nếu đường dẫn gốc không tồn tại, tìm thư mục chứa train_transaction.csv
 if not os.path.exists(os.path.join(DATA_DIR, 'train_transaction.csv')):
@@ -111,8 +111,11 @@ if not os.path.exists(os.path.join(DATA_DIR, 'train_transaction.csv')):
         )
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-print(f"DATA_DIR   = {DATA_DIR}")
-print(f"OUTPUT_DIR = {OUTPUT_DIR}")
+FIGURES_DIR = str(_SOURCE_DIR / 'outputs' / 'tabular')
+os.makedirs(FIGURES_DIR, exist_ok=True)
+print(f"DATA_DIR    = {DATA_DIR}")
+print(f"OUTPUT_DIR  = {OUTPUT_DIR}")
+print(f"FIGURES_DIR = {FIGURES_DIR}")
 
 print("Đang tải dữ liệu...")
 train_transaction = pd.read_csv(os.path.join(DATA_DIR, 'train_transaction.csv'))
@@ -418,7 +421,7 @@ for i, col in enumerate(num_cols[:12]):
 plt.suptitle(
     "Phân phối 12 thuộc tính số đầu - D'Agostino-Pearson test", fontsize=13, y=1.01)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_01_distributions.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_01_distributions.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -473,7 +476,7 @@ axes[1].tick_params(axis='y', labelsize=7)
 
 plt.suptitle('So sánh Pearson vs Spearman Correlation Matrix', fontsize=14)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_02_correlation_heatmap.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_02_correlation_heatmap.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -610,7 +613,7 @@ ax.tick_params(axis='x', rotation=20)
 for i, v in enumerate(miss_series.values):
     ax.text(i, v + 0.5, f'{v:.1f}%', ha='center', fontsize=9)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'eda_02_missing_by_group.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'eda_02_missing_by_group.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -680,7 +683,7 @@ for b, lbl in zip(group_boundaries, group_labels):
     prev = b
 
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'eda_03_v_missing_pattern.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'eda_03_v_missing_pattern.png'),
             dpi=120, bbox_inches='tight')
 plt.show()
 
@@ -707,7 +710,7 @@ ax1.set_title(
     fontsize=16, fontweight='bold', pad=15)
 ax1.tick_params(axis='x', rotation=45, labelsize=9)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_03a_missing_matrix.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_03a_missing_matrix.png'),
             dpi=120, bbox_inches='tight')
 plt.show()
 
@@ -721,7 +724,7 @@ ax2.set_title(
     fontsize=16, fontweight='bold', pad=15)
 ax2.tick_params(axis='x', rotation=60, labelsize=10)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_03b_missing_bar.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_03b_missing_bar.png'),
             dpi=120, bbox_inches='tight')
 plt.show()
 
@@ -781,7 +784,7 @@ axes[1].legend(fontsize=11)
 axes[1].invert_yaxis()
 
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_04_missing_bar.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_04_missing_bar.png'),
             dpi=120, bbox_inches='tight')
 plt.show()
 
@@ -1085,7 +1088,7 @@ axes[1].set_ylabel('Pearson r')
 axes[1].tick_params(axis='x', rotation=30)
 
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'eda_08_d_cols.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'eda_08_d_cols.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -1120,7 +1123,7 @@ for j in range(i+1, len(axes)):
 
 plt.suptitle('Identity features (id_01–id_06): Fraud vs Normal', fontsize=13)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'eda_09_identity.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'eda_09_identity.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -1436,7 +1439,7 @@ ax.axvline(mar_df.loc[best_scalable_mar, 'RMSE_MAR'], color='red',
            linestyle='--', linewidth=1, label=f'Best scalable: {best_scalable_mar}')
 ax.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_imp_mar_benchmark.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_imp_mar_benchmark.png'),
             dpi=120, bbox_inches='tight')
 plt.show()
 
@@ -1456,7 +1459,7 @@ ax.axvline(imp_compare_df['RMSE_trung_bình'].min(), color='red', linestyle='--'
            label=f'Min RMSE = {imp_compare_df["RMSE_trung_bình"].min()}')
 ax.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_05_imputation_comparison.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_05_imputation_comparison.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -1700,7 +1703,7 @@ sns.heatmap(jaccard_mat.astype(float), annot=True, fmt='.2f', cmap='YlOrRd',
 ax.set_title(
     'Jaccard Similarity giữa các phương pháp phát hiện ngoại lai', fontsize=13)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_06_outlier_jaccard.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_06_outlier_jaccard.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -1941,7 +1944,7 @@ for j in range(i + 1, len(axes_flat)):
 fig.suptitle(
     'Phân phối sau các phương pháp chuẩn hóa (tất cả cột benchmark)', fontsize=13)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_07_scaling_violin.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_07_scaling_violin.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -2229,7 +2232,7 @@ plt.suptitle('So sánh đa cộng tuyến (VIF) sau mỗi phương pháp mã hó
              f'(demo trên {len(demo_cols)} cột: {demo_cols})', fontsize=11)
 plt.tight_layout()
 plt.savefig(os.path.join(
-    OUTPUT_DIR, 'fig_07b_vif_encoding_comparison.png'), dpi=100, bbox_inches='tight')
+    FIGURES_DIR, 'fig_07b_vif_encoding_comparison.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # %% [markdown]
@@ -2653,7 +2656,7 @@ for ax in axes:
 plt.suptitle(
     'Tầng 1 - Lọc thống kê: ANOVA · Mutual Information · Chi-square', fontsize=13)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_08_statistical_filters.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_08_statistical_filters.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -2889,7 +2892,7 @@ axes[1].set_xlabel('Importance')
 plt.suptitle(
     'Tầng 2 - Model-based: RF vs GB Feature Importance', fontsize=13)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_09_model_importance.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_09_model_importance.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -2997,7 +3000,7 @@ ax.set_title(
 ax.set_ylim(0, max(f1s) * 1.15)
 ax.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_09b_rfe_f1.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_09b_rfe_f1.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -3034,7 +3037,7 @@ ax.set_title('PCA - Phương sai giải thích tích lũy', fontsize=12)
 ax.legend()
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_10_pca_cumvar.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_10_pca_cumvar.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -3163,7 +3166,7 @@ ax.set_title('Tầng 3 – Hiệu năng mô hình theo số thành phần PCA', 
 ax.legend(fontsize=9)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_11_pca_benchmark.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_11_pca_benchmark.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
@@ -3281,7 +3284,7 @@ ax.set_title('t-SNE 2D (stratified 500+500): Phân tách Fraud vs Normal',
 ax.legend(markerscale=3)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_11_tsne.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_11_tsne.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 print("  -> t-SNE hoàn thành.")
@@ -3328,7 +3331,7 @@ try:
     ax.legend(markerscale=3)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'fig_12_umap.png'),
+    plt.savefig(os.path.join(FIGURES_DIR, 'fig_12_umap.png'),
                 dpi=100, bbox_inches='tight')
     plt.show()
     print("  -> UMAP hoàn thành.")
@@ -3688,7 +3691,7 @@ for ax, metric in zip(axes, metrics_plot):
 plt.suptitle('So sánh chiến lược xử lý mất cân bằng lớp\n'
              f'(Đánh giá trên val set chưa resampled, n={len(X_val):,})', fontsize=12)
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'fig_14_imbalance_comparison.png'),
+plt.savefig(os.path.join(FIGURES_DIR, 'fig_14_imbalance_comparison.png'),
             dpi=100, bbox_inches='tight')
 plt.show()
 
