@@ -82,7 +82,7 @@
 ## Hướng dẫn chạy đồ án
 
 ### 1. Yêu cầu hệ thống
-- **Ngôn ngữ**: Python **3.12.12**
+- **Ngôn ngữ**: Python **3.12.2**
 - **Thư viện**: Xem file `requirements.txt`
 
 ### 2. Chuẩn bị dữ liệu (bắt buộc)
@@ -97,12 +97,13 @@
   - `train-00000-of-00001.parquet`
   - `test-00000-of-00001.parquet`
 
-### 3. Cài đặt thư viện
+### 3. Tạo môi trường và cài đặt thư viện
 
 ```bash
 cd Source
-conda env create -f environment.yml
+conda create -n lab1 python=3.12.2
 conda activate lab1
+pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
 
