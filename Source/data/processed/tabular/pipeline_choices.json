@@ -25,12 +25,12 @@
   },
   "feature_selection": {
     "strategy": "Vote >= 3/5 (ANOVA, MI, Chi2, RF, GB) -> benchmark validation",
-    "candidate_pool": 77,
+    "candidate_pool": 80,
     "core_vote_feats": 19,
     "final_set": "Best Tầng 2 (30 feats)",
     "n_features_final": 30,
-    "final_auc": 0.8838,
-    "final_f1": 0.8053
+    "final_auc": 0.8833,
+    "final_f1": 0.8059
   },
   "imbalance": {
     "imbalance_ratio": 27.58,

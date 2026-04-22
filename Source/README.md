@@ -1,6 +1,7 @@
 # Đồ Án 1 — Tiền Xử Lý Dữ Liệu
 
 **Môn học:** Khai thác dữ liệu và ứng dụng (CSC14004) — HK2 2025/2026
+
 **Trường:** Đại học Khoa học Tự nhiên, ĐHQG TP.HCM
 
 ---
@@ -69,42 +70,61 @@
      │   ├── 01_EDA_image.ipynb
      │   ├── 02_preprocessing_image.ipynb
      │   ├── 03_advanced_image.ipynb
-     │   ├── 04_tabular_preprocessing.ipynb
-     │   └── 05_text_preprocessing.ipynb
+     │   ├── 04_EDA_tabular.ipynb
+     │   ├── 05_preprocessing_tabular.ipynb
+     │   └── 06_text_preprocessing.ipynb
      └── docs/
-         └── report/main.pdf  # Báo cáo PDF
+         └── Report.pdf  # Báo cáo PDF
      ```
 
 ---
 
-## 🛠️ Hướng dẫn chạy đồ án
+## Hướng dẫn chạy đồ án
 
 ### 1. Yêu cầu hệ thống
-- **Ngôn ngữ**: Python **3.12.9**
-- **RAM**: Khuyến nghị ≥ 16 GB
+- **Ngôn ngữ**: Python **3.12.12**
 - **Thư viện**: Xem file `requirements.txt`
 
-### 2. Cài đặt thư viện
+### 2. Chuẩn bị dữ liệu (bắt buộc)
+
+Đặt dữ liệu đúng cấu trúc (bên trong thư mục `Source/`):
+
+- **Ảnh**: `Source/data/raw/image/{train,test}/<class>/*.jpg`
+- **Bảng**: `Source/data/raw/tabular/` gồm 4 file:
+  - `train_transaction.csv`, `train_identity.csv`
+  - `test_transaction.csv`, `test_identity.csv`
+- **Văn bản**: `Source/data/raw/text/data/` gồm 2 file parquet:
+  - `train-00000-of-00001.parquet`
+  - `test-00000-of-00001.parquet`
+
+### 3. Cài đặt thư viện
 
 ```bash
 cd Source
-pip install -r requirements.txt
+conda env create -f environment.yml
+conda activate lab1
 python -m spacy download en_core_web_sm
 ```
 
-### 3. Chạy Notebook
+### 4. Chạy Notebook
 
-> **Lưu ý**: Dự án sử dụng **Jupytext** để đồng bộ giữa file Python (`.py`) và Notebook (`.ipynb`).
-
-Mở JupyterLab/VS Code và chạy các file trong thư mục `notebooks/` theo thứ tự:
+> Mở JupyterLab/VS Code và chạy các file trong thư mục `notebooks/` theo thứ tự:
 
 - `01_EDA_image.ipynb` -> `02_preprocessing_image.ipynb` -> `03_advanced_image.ipynb`
-- `04_tabular_preprocessing.ipynb`
-- `05_text_preprocessing.ipynb`
+- `04_EDA_tabular.ipynb` -> `05_preprocessing_tabular.ipynb`
+- `06_text_preprocessing.ipynb`
 
-### 4. Lưu ý về đường dẫn (Path)
+### 5. Output sinh ra (sau khi chạy)
 
-Tất cả các file code đều sử dụng đường dẫn tương đối (Relative Path). Chỉ cần bạn đặt thư mục `data` đúng vị trí như hướng dẫn ở trên, code sẽ tự động nhận diện và chạy được trên mọi hệ điều hành (Windows/Linux/macOS) mà không cần chỉnh sửa bất kỳ dòng code nào.
+- **Figures**: `Source/outputs/{image,tabular,text}/`
+- **Processed**: `Source/data/processed/{image,tabular,text}/`
+  - Image: `duplicate_paths.csv`, `near_duplicate_paths.csv`, `pipeline_choices_image.json`
+  - Tabular: `X_train_processed.npy`, `y_train.npy`, `X_test_processed.npy`, `feature_names.npy`, `pipeline_choices.json`
+  - Text: `ragtruth_processed.csv`, `X_processed_best.(npz|npy)`, `y_labels.npy`, `pipeline_choices.json`
+
+### 6. Lưu ý về đường dẫn
+
+Tất cả các file code đều sử dụng đường dẫn tương đối (Relative Path). Chỉ cần đặt thư mục `data` đúng vị trí như hướng dẫn ở trên, code sẽ tự động nhận diện mà không cần chỉnh sửa bất kỳ dòng code nào.
 
 ---
 

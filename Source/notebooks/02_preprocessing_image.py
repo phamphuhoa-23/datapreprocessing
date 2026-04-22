@@ -54,6 +54,24 @@ except NameError:
     _SOURCE_DIR = Path.cwd().parent
 
 _IMG_ROOT = _SOURCE_DIR / 'data' / 'raw' / 'image'
+if not (_IMG_ROOT / 'train').exists():
+    _candidates = [
+        _IMG_ROOT,
+        _SOURCE_DIR / 'data' / 'image',
+        _SOURCE_DIR.parent / 'data' / 'raw' / 'image',
+        _SOURCE_DIR.parent / 'data' / 'image',
+        _SOURCE_DIR.parent / 'Source' / 'data' / 'raw' / 'image',
+    ]
+    for _c in _candidates:
+        if (_c / 'train').exists():
+            _IMG_ROOT = _c
+            print(f"[INFO] Dùng đường dẫn dự phòng cho image root: {_IMG_ROOT}")
+            break
+    else:
+        raise FileNotFoundError(
+            "Không tìm thấy thư mục `image/train`. "
+            f"Đã thử các đường dẫn: {[str(c) for c in _candidates]}"
+        )
 TRAIN_DIR = str(_IMG_ROOT / 'train')
 OUTPUT_DIR = str(_SOURCE_DIR / 'data' / 'processed' / 'image')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -1057,6 +1075,11 @@ for step, info in PIPELINE_CHOICES_IMG.items():
     print(f"  {step}: {chosen}")
 
 PROCESSED_DIR_IMG = str(Path(_IMG_ROOT).parent / 'processed')
+os.makedirs(PROCESSED_DIR_IMG, exist_ok=True)
+
+# Lưu về đúng chuẩn: Source/data/processed/image/
+# (tránh sinh thư mục lạ Source/data/raw/processed)
+PROCESSED_DIR_IMG = OUTPUT_DIR
 os.makedirs(PROCESSED_DIR_IMG, exist_ok=True)
 
 with open(os.path.join(PROCESSED_DIR_IMG, 'pipeline_choices_image.json'), 'w', encoding='utf-8') as f:

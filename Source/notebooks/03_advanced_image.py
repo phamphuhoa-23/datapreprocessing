@@ -54,7 +54,29 @@ try:
 except NameError:
     _SOURCE_DIR = Path.cwd().parent
 
-TRAIN_DIR = str(_SOURCE_DIR / 'data' / 'raw' / 'image' / 'train')
+_IMG_ROOT = _SOURCE_DIR / 'data' / 'raw' / 'image'
+
+# Fallback: nếu không tìm thấy `image/train`, tự dò các vị trí thường gặp
+if not (_IMG_ROOT / 'train').exists():
+    _candidates = [
+        _IMG_ROOT,
+        _SOURCE_DIR / 'data' / 'image',
+        _SOURCE_DIR.parent / 'data' / 'raw' / 'image',
+        _SOURCE_DIR.parent / 'data' / 'image',
+        _SOURCE_DIR.parent / 'Source' / 'data' / 'raw' / 'image',
+    ]
+    for _c in _candidates:
+        if (_c / 'train').exists():
+            _IMG_ROOT = _c
+            print(f"[INFO] Dùng đường dẫn dự phòng cho image root: {_IMG_ROOT}")
+            break
+    else:
+        raise FileNotFoundError(
+            "Không tìm thấy thư mục `image/train`. "
+            f"Đã thử các đường dẫn: {[str(c) for c in _candidates]}"
+        )
+
+TRAIN_DIR = str(_IMG_ROOT / 'train')
 FIGURES_DIR = str(_SOURCE_DIR / 'outputs' / 'image')
 os.makedirs(FIGURES_DIR, exist_ok=True)
 print(f"TRAIN_DIR   = {TRAIN_DIR}")
@@ -786,7 +808,7 @@ for col, label in [('sobel', f'Sobel T={BEST_T}'),
 # T = 30 cho $\eta^2$ cao nhất (0.503): ngưỡng thấp giữ nhiều cạnh hơn nên phân biệt lớp tốt hơn.
 # Khi T tăng, density giảm mạnh và đơn điệu, nhưng thứ tự xếp hạng lớp hầu như không đổi
 # (Spearman $
-ho \geq 0.99$ giữa mọi cặp T) — T chỉ ảnh hưởng scale, không ảnh hưởng ranking.
+# \rho \geq 0.99$ giữa mọi cặp T) — T chỉ ảnh hưởng scale, không ảnh hưởng ranking.
 #
 # Sobel và Prewitt cho density gần nhau (T=30: Sobel=0.615, Prewitt=0.516);
 # Sobel nhạy hơn nhẹ vì trọng số trung tâm ×2 so với Prewitt ×1.
