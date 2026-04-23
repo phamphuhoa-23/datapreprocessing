@@ -514,7 +514,7 @@ Brightness/Contrast & 0{,}0763 $\pm$ 0{,}0092 & $-$0{,}0215 & 0{,}125 & ns \\ \h
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../outputs/image/fig_02_augmentation_demo.png}
+\includegraphics[width=0.90\textwidth]{../outputs/image/fig_08_ablation_summary.png}
 \caption{Ablation study augmentation: k-NN accuracy (với 95\% CI) cho từng kỹ thuật. Tất cả Wilcoxon $p > 0{,}05$ -- không có kỹ thuật nào cải thiện đáng kể pixel-level k-NN, xác nhận CNN là downstream target thực sự của augmentation. Brightness/Contrast giảm accuracy nhiều nhất ($\Delta = -0{,}022$), Gaussian Noise nhỉnh hơn baseline ($+0{,}0015$).}
 \label{fig:aug_ablation}
 \end{figure}
@@ -603,7 +603,7 @@ Vẽ heatmap tương quan Pearson và Spearman (top-30 cột ít missing nhất)
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_11_pca_benchmark.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_02_correlation_heatmap.png}
 \caption{Heatmap tương quan Spearman (top-30 cột ít missing). Nhóm V-Vesta (V1--V339) có cấu trúc block tương quan cao nội nhóm ($|r| > 0{,}9$), cho thấy sự dư thừa thông tin đáng kể -- lý do cần feature selection.}
 \label{fig:correlation_heatmap}
 \end{figure}
@@ -633,7 +633,7 @@ Transaction, C-count & 0\% & -- \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_01_distributions.png}
 \caption{Phân phối \texttt{TransactionAmt} theo nhãn isFraud (log-scale). Giao dịch gian lận tập trung ở vùng $<\$500$ nhiều hơn giao dịch bình thường; đuôi phải ($>\$1000$) có tỉ lệ fraud thấp hơn -- điều này hợp lý vì gian lận quy mô lớn dễ bị phát hiện thủ công.}
 \label{fig:transamt}
 \end{figure}
@@ -672,7 +672,7 @@ MICE         & Multiple Imputation by Chained Equations & 97{,}35 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_05_imputation_comparison.png}
 \caption{So sánh 7 chiến lược điền khuyết: RMSE trên benchmark 10\% MCAR nhân tạo (trái) và thống kê per-column (phải). MICE đạt RMSE tốt nhất nhưng có chi phí tính toán rất cao.}
 \label{fig:imputation_comparison}
 \end{figure}
@@ -736,7 +736,7 @@ Quantile-Normal  & Ánh xạ về $\mathcal{N}(0,1)$ qua CDF thực nghiệm & 1
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_07_scaling_violin.png}
 \caption{Violin plot phân phối sau 5 phương pháp chuẩn hóa (5 cột đại diện). RobustScaler thu hẹp phân phối đuôi dài tốt hơn Min-Max và Z-score; Quantile-Normal cho phân phối đối xứng nhất nhưng làm mất thứ tự tương quan của outlier.}
 \label{fig:scaling_violin}
 \end{figure}
@@ -774,7 +774,7 @@ Frequency Encoding   & 5   & 9{,}14  & 15{,}16 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.88\textwidth]{../outputs/tabular/fig_11_pca_benchmark.png}
+\includegraphics[width=0.88\textwidth]{../outputs/tabular/fig_07b_vif_encoding_comparison.png}
 \caption{So sánh VIF trung bình và số chiều của 5 phương pháp mã hóa. One-Hot Encoding tạo ra đa cộng tuyến cực kỳ cao (VIF $\sim 10^{13}$); Target Encoding (CV) cho VIF thấp nhất trong khi vẫn có 5 chiều.}
 \label{fig:vif_encoding}
 \end{figure}
@@ -909,7 +909,7 @@ RUS              & 0{,}1269 & 0{,}7467 & 0{,}5549 & 0{,}8545 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_14_imbalance_comparison.png}
 \caption{So sánh 4 chiến lược xử lý mất cân bằng lớp: Precision, Recall, F1-macro và AUC-ROC. SMOTE/ADASYN/RUS tăng Recall (phát hiện nhiều fraud hơn) nhưng giảm Precision. No Resampling có Precision cao nhất nhưng Recall thấp; SMOTE đạt AUC-ROC cao nhất (0{,}856).}
 \label{fig:imbalance_comparison}
 \end{figure}
