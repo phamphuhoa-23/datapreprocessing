@@ -514,8 +514,8 @@ Brightness/Contrast & 0{,}0763 $\pm$ 0{,}0092 & $-$0{,}0215 & 0{,}125 & ns \\ \h
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../outputs/image/fig_02_augmentation_demo.png}
-\caption{Ablation study augmentation: k-NN accuracy (với 95\% CI) cho từng kỹ thuật. Tất cả Wilcoxon $p > 0{,}05$ -- không có kỹ thuật nào cải thiện đáng kể pixel-level k-NN, xác nhận CNN là downstream target thực sự của augmentation. Brightness/Contrast giảm accuracy nhiều nhất ($\Delta = -0{,}022$), Gaussian Noise nhỉnh hơn baseline ($+0{,}0015$).}
+\includegraphics[width=0.90\textwidth]{../outputs/image/fig_08_ablation_summary.png}
+\caption{t-SNE visualization của không gian đặc trưng trước/sau augmentation (45 lớp, $n=900$). Augmentation làm giãn cụm và tăng đa dạng biến thiên cục bộ; tuy nhiên raw-pixel k-NN không phản ánh đúng lợi ích này (xem Bảng~\ref{tab:aug_ablation}) vì k-NN trên pixel không bất biến với phép biến đổi hình học.}
 \label{fig:aug_ablation}
 \end{figure}
 
@@ -604,7 +604,7 @@ Vẽ heatmap tương quan Pearson và Spearman (top-30 cột ít missing nhất)
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_02_correlation_heatmap.png}
-\caption{Heatmap tương quan Spearman (top-30 cột ít missing). Nhóm V-Vesta (V1--V339) có cấu trúc block tương quan cao nội nhóm ($|r| > 0{,}9$), cho thấy sự dư thừa thông tin đáng kể -- lý do cần feature selection.}
+\caption{So sánh ma trận tương quan Pearson (trái) và Spearman (phải) cho top-30 cột ít missing. Cấu trúc block tương quan cao (đặc biệt trong nhóm V-Vesta) cho thấy sự dư thừa thông tin đáng kể -- lý do cần feature selection và/hoặc regularization.}
 \label{fig:correlation_heatmap}
 \end{figure}
 
@@ -633,11 +633,17 @@ Transaction, C-count & 0\% & -- \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_01_distributions.png}
-\caption{Phân phối \texttt{TransactionAmt} theo nhãn isFraud (log-scale). Giao dịch gian lận tập trung ở vùng $<\$500$ nhiều hơn giao dịch bình thường; đuôi phải ($>\$1000$) có tỉ lệ fraud thấp hơn -- điều này hợp lý vì gian lận quy mô lớn dễ bị phát hiện thủ công.}
-\label{fig:transamt}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_03a_missing_matrix.png}
+\caption{Ma trận giá trị thiếu (mẫu 500 dòng, 60 cột có NaN). Trắng = có dữ liệu, đen = thiếu (NaN). Missing xuất hiện theo cụm (block) thay vì ngẫu nhiên hoàn toàn, gợi ý cơ chế MAR/MNAR.}
+\label{fig:missing_matrix}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/eda_09_identity.png}
+\caption{So sánh phân phối một số đặc trưng Identity (id\_01--id\_06) giữa Normal và Fraud. Một số biến có sự dịch chuyển nhẹ về vị trí/đuôi phân phối, gợi ý tín hiệu phân biệt hữu ích nhưng không tuyến tính.}
+\label{fig:identity_fraud}
+\end{figure}
 \subsection{Các kỹ thuật tiền xử lý và đánh giá định lượng}
 
 \subsubsection{Xử lý giá trị thiếu (Imputation)}
