@@ -18,7 +18,7 @@
 % Graphics and figures
 % QUAN TRỌNG: Dùng [draft] để compile NHANH (chỉ show boxes)
 %              Bỏ [draft] khi muốn export PDF final (sẽ show hình thật)
-\usepackage{graphicx}  % Thêm 'draft' để compile nhanh!
+\usepackage{graphicx}
 \usepackage{float}
 \usepackage{caption}
 \usepackage{subcaption}
@@ -514,7 +514,7 @@ Brightness/Contrast & 0{,}0763 $\pm$ 0{,}0092 & $-$0{,}0215 & 0{,}125 & ns \\ \h
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/fig_aug_knn_ablation.png}
+\includegraphics[width=0.90\textwidth]{../outputs/image/fig_02_augmentation_demo.png}
 \caption{Ablation study augmentation: k-NN accuracy (với 95\% CI) cho từng kỹ thuật. Tất cả Wilcoxon $p > 0{,}05$ -- không có kỹ thuật nào cải thiện đáng kể pixel-level k-NN, xác nhận CNN là downstream target thực sự của augmentation. Brightness/Contrast giảm accuracy nhiều nhất ($\Delta = -0{,}022$), Gaussian Noise nhỉnh hơn baseline ($+0{,}0015$).}
 \label{fig:aug_ablation}
 \end{figure}
@@ -603,7 +603,7 @@ Vẽ heatmap tương quan Pearson và Spearman (top-30 cột ít missing nhất)
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/fig_02_correlation_heatmap.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_11_pca_benchmark.png}
 \caption{Heatmap tương quan Spearman (top-30 cột ít missing). Nhóm V-Vesta (V1--V339) có cấu trúc block tương quan cao nội nhóm ($|r| > 0{,}9$), cho thấy sự dư thừa thông tin đáng kể -- lý do cần feature selection.}
 \label{fig:correlation_heatmap}
 \end{figure}
@@ -633,14 +633,14 @@ Transaction, C-count & 0\% & -- \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/eda_04_transamt.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
 \caption{Phân phối \texttt{TransactionAmt} theo nhãn isFraud (log-scale). Giao dịch gian lận tập trung ở vùng $<\$500$ nhiều hơn giao dịch bình thường; đuôi phải ($>\$1000$) có tỉ lệ fraud thấp hơn -- điều này hợp lý vì gian lận quy mô lớn dễ bị phát hiện thủ công.}
 \label{fig:transamt}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/eda_05_cat_fraud_rate.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_06_outlier_jaccard.png}
 \caption{Tỉ lệ fraud theo các đặc trưng phân loại chính (card4, card6, P\_emaildomain, R\_emaildomain). Visa có tỉ lệ fraud thấp hơn Mastercard; một số email domain có fraud rate cực cao (lên đến $>20\%$) -- xác nhận email domain là đặc trưng phân biệt quan trọng.}
 \label{fig:cat_fraud}
 \end{figure}
@@ -672,7 +672,7 @@ MICE         & Multiple Imputation by Chained Equations & 97{,}35 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../data/processed/fig_05_imputation_comparison.png}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
 \caption{So sánh 7 chiến lược điền khuyết: RMSE trên benchmark 10\% MCAR nhân tạo (trái) và thống kê per-column (phải). MICE đạt RMSE tốt nhất nhưng có chi phí tính toán rất cao.}
 \label{fig:imputation_comparison}
 \end{figure}
@@ -704,7 +704,7 @@ Với mỗi phương pháp: báo cáo tỉ lệ phát hiện ngoại lai và \te
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/fig_06_outlier_jaccard.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_06_outlier_jaccard.png}
 \caption{Ma trận Jaccard similarity giữa các tập ngoại lai do 5 phương pháp phát hiện. Nhận xét: Isolation Forest (các mức contamination khác nhau) có sự đồng thuận nội bộ cao; IQR và multivariate detectors gần như không đồng thuận (Jaccard $\leq 0{,}02$).}
 \label{fig:outlier_jaccard}
 \end{figure}
@@ -736,7 +736,7 @@ Quantile-Normal  & Ánh xạ về $\mathcal{N}(0,1)$ qua CDF thực nghiệm & 1
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../data/processed/fig_07_scaling_violin.png}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
 \caption{Violin plot phân phối sau 5 phương pháp chuẩn hóa (5 cột đại diện). RobustScaler thu hẹp phân phối đuôi dài tốt hơn Min-Max và Z-score; Quantile-Normal cho phân phối đối xứng nhất nhưng làm mất thứ tự tương quan của outlier.}
 \label{fig:scaling_violin}
 \end{figure}
@@ -774,7 +774,7 @@ Frequency Encoding   & 5   & 9{,}14  & 15{,}16 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.88\textwidth]{../data/processed/fig_07b_vif_encoding_comparison.png}
+\includegraphics[width=0.88\textwidth]{../outputs/tabular/fig_11_pca_benchmark.png}
 \caption{So sánh VIF trung bình và số chiều của 5 phương pháp mã hóa. One-Hot Encoding tạo ra đa cộng tuyến cực kỳ cao (VIF $\sim 10^{13}$); Target Encoding (CV) cho VIF thấp nhất trong khi vẫn có 5 chiều.}
 \label{fig:vif_encoding}
 \end{figure}
@@ -808,14 +808,14 @@ Ba tầng lựa chọn đặc trưng:
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/fig_09_model_importance.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_09_model_importance.png}
 \caption{Feature importance: Random Forest (trái) và Gradient Boosting (phải) -- top-20 đặc trưng theo Gini impurity. \texttt{TransactionAmt}, \texttt{card1}, và các đặc trưng V-Vesta nhất quán nằm trong top.}
 \label{fig:feature_importance}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.88\textwidth]{../data/processed/fig_08_statistical_filters.png}
+\includegraphics[width=0.88\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
 \caption{Tầng 1 -- Statistical filter: điểm ANOVA F-test (trái) và Mutual Information (phải) theo từng đặc trưng. Cả hai phương pháp đồng thuận về top features nhưng có sự khác biệt ở các đặc trưng hạng giữa.}
 \label{fig:statistical_filters}
 \end{figure}
@@ -854,28 +854,28 @@ Model -- GB Top20       & 20 & GB importance, n\_estimators=100, max\_depth=4 \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{../data/processed/fig_09b_rfe_f1.png}
+\includegraphics[width=0.75\textwidth]{../outputs/tabular/fig_09b_rfe_f1.png}
 \caption{RFE với Logistic Regression (5-fold CV) tại $k \in \{5, 10, 20, 30, 50\}$ đặc trưng. \textbf{Best: $k=30$} (F1=0{,}760, highlight đỏ) -- F1 tăng từ 5 đến 30 rồi giảm nhẹ tại 50, xác nhận 30 đặc trưng là điểm tối ưu.}
 \label{fig:rfe_curve}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\textwidth]{../data/processed/fig_10_pca_cumvar.png}
+\includegraphics[width=0.90\textwidth]{../outputs/tabular/fig_10_pca_cumvar.png}
 \caption{Tầng 3 -- Giảm chiều: PCA cumulative explained variance. Đường ngang tại 95\% và 99\% cho thấy số thành phần cần thiết. Tập tabular này yêu cầu số PC lớn để giải thích 95\% phương sai, phản ánh tính đa chiều cao của đặc trưng V-Vesta.}
 \label{fig:pca_cumvar}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{../data/processed/fig_11_tsne.png}
+\includegraphics[width=0.85\textwidth]{../outputs/tabular/fig_11_tsne.png}
 \caption{t-SNE 2D ($n=3000$ mẫu, perplexity=30) trên tập đặc trưng đã chọn, tô màu theo nhãn isFraud. Sự xen lẫn giữa hai lớp xác nhận bài toán fraud detection là phi tuyến và khó phân tách trong không gian nguyên bản.}
 \label{fig:tsne_tabular}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{../data/processed/fig_12_umap.png}
+\includegraphics[width=0.85\textwidth]{../outputs/tabular/fig_12_umap.png}
 \caption{UMAP 2D ($n\_neighbors=15$, $min\_dist=0{,}1$) trên 30 đặc trưng được chọn. So với t-SNE, UMAP bảo toàn cấu trúc toàn cục tốt hơn và nhanh hơn ($\approx 3\times$). Sự xen lẫn hai lớp tương tự t-SNE -- xác nhận rằng fraud detection yêu cầu mô hình phi tuyến phức tạp, không đơn thuần là vấn đề đặc trưng.}
 \label{fig:umap_tabular}
 \end{figure}
@@ -909,7 +909,7 @@ RUS              & 0{,}1269 & 0{,}7467 & 0{,}5549 & 0{,}8545 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../data/processed/fig_14_imbalance_comparison.png}
+\includegraphics[width=0.92\textwidth]{../outputs/tabular/fig_08_statistical_filters.png}
 \caption{So sánh 4 chiến lược xử lý mất cân bằng lớp: Precision, Recall, F1-macro và AUC-ROC. SMOTE/ADASYN/RUS tăng Recall (phát hiện nhiều fraud hơn) nhưng giảm Precision. No Resampling có Precision cao nhất nhưng Recall thấp; SMOTE đạt AUC-ROC cao nhất (0{,}856).}
 \label{fig:imbalance_comparison}
 \end{figure}
@@ -943,7 +943,7 @@ Nguồn & HuggingFace -- \texttt{wandb/RAGTruth-processed} \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{../data/processed/label_distribution.png}
+\includegraphics[width=0.75\textwidth]{../outputs/text/label_distribution.png}
 \caption{Phân phối nhãn RAGTruth: Supported vs. Hallucinated. Tập dữ liệu gần cân bằng hơn so với IEEE-CIS ($\approx 60/40$), tuy nhiên vẫn có sự lệch nhất định -- cần chú ý khi đánh giá bằng F1-macro thay vì accuracy.}
 \label{fig:label_dist}
 \end{figure}
@@ -954,7 +954,7 @@ Tính và vẽ phân phối 3 chỉ số độ dài theo nhãn lớp: số từ 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{../data/processed/text_length_distribution.png}
+\includegraphics[width=0.95\textwidth]{../outputs/text/text_length_distribution.png}
 \caption{Phân phối độ dài văn bản (số từ, số ký tự, số câu) theo nhãn lớp (Supported vs. Hallucinated)}
 \label{fig:text_length}
 \end{figure}
@@ -965,7 +965,7 @@ Tính và vẽ phân phối 3 chỉ số độ dài theo nhãn lớp: số từ 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{../data/processed/wordclouds.png}
+\includegraphics[width=0.95\textwidth]{../outputs/text/wordclouds.png}
 \caption{Word cloud toàn tập (trái), lớp Supported (giữa) và lớp Hallucinated (phải)}
 \label{fig:wordclouds}
 \end{figure}
@@ -979,7 +979,7 @@ Tính và vẽ phân phối 3 chỉ số độ dài theo nhãn lớp: số từ 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{../data/processed/top20_words.png}
+\includegraphics[width=0.85\textwidth]{../outputs/text/top20_words.png}
 \caption{Top-20 từ phổ biến nhất theo nhãn Supported (trái) và Hallucinated (phải)}
 \label{fig:top20}
 \end{figure}
@@ -995,7 +995,7 @@ Vẽ \textbf{log-log plot} (tần suất từ vs. xếp hạng) và hồi quy OL
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{../data/processed/zipf_law.png}
+\includegraphics[width=0.85\textwidth]{../outputs/text/zipf_law.png}
 \caption{Log-log plot phân phối Zipf: toàn corpus (trái) và so sánh hai nhãn (phải)}
 \label{fig:zipf}
 \end{figure}
@@ -1031,7 +1031,7 @@ Vẽ \textbf{log-log plot} (tần suất từ vs. xếp hạng) và hồi quy OL
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{../data/processed/tokenization_comparison.png}
+\includegraphics[width=0.85\textwidth]{../outputs/text/tokenization_comparison.png}
 \caption{So sánh phân phối độ dài token (trái) và kích thước từ vựng (phải) giữa 4 chiến lược tokenization}
 \label{fig:tokenization}
 \end{figure}
@@ -1065,7 +1065,7 @@ Subword BPE (vocab${\approx}$10K) & 9.695 & 138{,}45 & 130{,}0 & 0{,}0023 \\ \hl
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\textwidth]{../data/processed/stemming_lemmatization.png}
+\includegraphics[width=0.82\textwidth]{../outputs/text/stemming_lemmatization.png}
 \caption{Collision rate (trái) và F1-macro Logistic Regression 5-fold CV (phải) cho các phương pháp stemming/lemmatization}
 \label{fig:stemlem}
 \end{figure}
@@ -1110,14 +1110,14 @@ Cài đặt \textbf{tự xây dựng} (không dùng \texttt{sklearn.TfidfVectori
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{../data/processed/tsne_all_methods.png}
+\includegraphics[width=0.95\textwidth]{../outputs/text/tsne_all_methods.png}
 \caption{t-SNE 2D visualization của tất cả phương pháp vector hóa (2.000 mẫu). Sentence Transformer cho cụm rõ hơn về mặt trực quan nhưng Silhouette Score vẫn thấp ($<0{,}1$), xác nhận ranh giới lexical giữa hai nhãn yếu.}
 \label{fig:tsne_all}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{../data/processed/tsne_visualization.png}
+\includegraphics[width=0.95\textwidth]{../outputs/text/tsne_visualization.png}
 \caption{t-SNE 2D visualization chi tiết cho 5 phương pháp vector hóa chính (2.000 mẫu, màu xanh = Supported, màu đỏ = Hallucinated). Không có phương pháp nào tạo ra sự phân tách rõ ràng -- xác nhận đây là bài toán phân loại khó dựa trên đặc trưng từ vựng.}
 \label{fig:tsne}
 \end{figure}
@@ -1150,7 +1150,7 @@ Sentence Transformer & 384 & 0\% & 0{,}0826$^*$ & 0{,}6948 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\textwidth]{../data/processed/advanced_comparison.png}
+\includegraphics[width=0.82\textwidth]{../outputs/text/advanced_comparison.png}
 \caption{So sánh K-Means silhouette score (trái) và Linear SVM F1-macro (phải) giữa TF-IDF, Word2Vec và Sentence Transformer}
 \label{fig:advanced}
 \end{figure}
@@ -1180,7 +1180,7 @@ Linear SVM & Sentence Transformer & 0{,}6948 \\ \hline
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{../data/processed/classification_leaderboard.png}
+\includegraphics[width=0.75\textwidth]{../outputs/text/classification_leaderboard.png}
 \caption{Bảng xếp hạng hiệu năng phân loại (F1-macro 5-fold CV) trên tập RAGTruth}
 \label{fig:leaderboard}
 \end{figure}

@@ -38,3 +38,17 @@ Thumbs.db
 desktop.ini
 
 data.zip
+
+# LaTeX build artifacts (Source/docs)
+Source/docs/*.aux
+Source/docs/*.bbl
+Source/docs/*.bcf
+Source/docs/*.blg
+Source/docs/*.fdb_latexmk
+Source/docs/*.fls
+Source/docs/*.log
+Source/docs/*.lot
+Source/docs/*.out
+Source/docs/*.run.xml
+Source/docs/*.synctex.gz
+Source/docs/*.toc
